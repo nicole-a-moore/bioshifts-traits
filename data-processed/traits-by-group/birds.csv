@@ -1,0 +1,299 @@
+"Database_name","trait","trait_common_name","useful_y_n"
+"amniota","female_maturity_d",NA,NA
+"amniota","litter_or_clutch_size_n",NA,NA
+"amniota","litters_or_clutches_per_y",NA,NA
+"amniota","adult_body_mass_g",NA,NA
+"amniota","maximum_longevity_y",NA,NA
+"amniota","gestation_d",NA,NA
+"amniota","weaning_d",NA,NA
+"amniota","birth_or_hatching_weight_g",NA,NA
+"amniota","weaning_weight_g",NA,NA
+"amniota","egg_mass_g",NA,NA
+"amniota","incubation_d",NA,NA
+"amniota","fledging_age_d",NA,NA
+"amniota","longevity_y",NA,NA
+"amniota","male_maturity_d",NA,NA
+"amniota","inter_litter_or_interbirth_interval_y",NA,NA
+"amniota","female_body_mass_g",NA,NA
+"amniota","male_body_mass_g",NA,NA
+"amniota","no_sex_body_mass_g",NA,NA
+"amniota","egg_width_mm",NA,NA
+"amniota","egg_length_mm",NA,NA
+"amniota","fledging_mass_g",NA,NA
+"amniota","adult_svl_cm",NA,NA
+"amniota","male_svl_cm",NA,NA
+"amniota","female_svl_cm",NA,NA
+"amniota","birth_or_hatching_svl_cm",NA,NA
+"amniota","female_svl_at_maturity_cm",NA,NA
+"amniota","female_body_mass_at_maturity_g",NA,NA
+"amniota","no_sex_svl_cm",NA,NA
+"amniota","no_sex_maturity_d",NA,NA
+"Amniote_Database 2015","female_maturity_d",NA,NA
+"Amniote_Database 2015","litter_or_clutch_size_n",NA,NA
+"Amniote_Database 2015","litters_or_clutches_per_y",NA,NA
+"Amniote_Database 2015","adult_body_mass_g",NA,NA
+"Amniote_Database 2015","maximum_longevity_y",NA,NA
+"Amniote_Database 2015","gestation_d",NA,NA
+"Amniote_Database 2015","weaning_d",NA,NA
+"Amniote_Database 2015","birth_or_hatching_weight_g",NA,NA
+"Amniote_Database 2015","weaning_weight_g",NA,NA
+"Amniote_Database 2015","egg_mass_g",NA,NA
+"Amniote_Database 2015","incubation_d",NA,NA
+"Amniote_Database 2015","fledging_age_d",NA,NA
+"Amniote_Database 2015","longevity_y",NA,NA
+"Amniote_Database 2015","male_maturity_d",NA,NA
+"Amniote_Database 2015","inter_litter_or_interbirth_interval_y",NA,NA
+"Amniote_Database 2015","female_body_mass_g",NA,NA
+"Amniote_Database 2015","male_body_mass_g",NA,NA
+"Amniote_Database 2015","no_sex_body_mass_g",NA,NA
+"Amniote_Database 2015","egg_width_mm",NA,NA
+"Amniote_Database 2015","egg_length_mm",NA,NA
+"Amniote_Database 2015","fledging_mass_g",NA,NA
+"Amniote_Database 2015","adult_svl_cm",NA,NA
+"Amniote_Database 2015","male_svl_cm",NA,NA
+"Amniote_Database 2015","female_svl_cm",NA,NA
+"Amniote_Database 2015","birth_or_hatching_svl_cm",NA,NA
+"Amniote_Database 2015","female_svl_at_maturity_cm",NA,NA
+"Amniote_Database 2015","female_body_mass_at_maturity_g",NA,NA
+"Amniote_Database 2015","no_sex_svl_cm",NA,NA
+"Amniote_Database 2015","no_sex_maturity_d",NA,NA
+"AnAge","Female maturity (days)",NA,NA
+"AnAge","Male maturity (days)",NA,NA
+"AnAge","Gestation/Incubation (days)",NA,NA
+"AnAge","Weaning (days)",NA,NA
+"AnAge","Litter/Clutch size",NA,NA
+"AnAge","Litters/Clutches per year",NA,NA
+"AnAge","Inter-litter/Interbirth interval",NA,NA
+"AnAge","Birth weight (g)",NA,NA
+"AnAge","Weaning weight (g)",NA,NA
+"AnAge","Adult weight (g)",NA,NA
+"AnAge","Growth rate (1/days)",NA,NA
+"AnAge","Maximum longevity (yrs)",NA,NA
+"AnAge","IMR (per yr)",NA,NA
+"AnAge","MRDT (yrs)",NA,NA
+"AnAge","Metabolic rate (W)",NA,NA
+"AnAge","Body mass (g)",NA,NA
+"AnAge","Temperature (K)",NA,NA
+"AVONET","Beak.Length_Culmen",NA,NA
+"AVONET","Beak.Length_Nares",NA,NA
+"AVONET","Beak.Width",NA,NA
+"AVONET","Beak.Depth",NA,NA
+"AVONET","Tarsus.Length",NA,NA
+"AVONET","Wing.Length",NA,NA
+"AVONET","Kipps.Distance",NA,NA
+"AVONET","Secondary1",NA,NA
+"AVONET","Hand-Wing.Index",NA,NA
+"AVONET","Tail.Length",NA,NA
+"AVONET","Mass",NA,NA
+"AVONET","Habitat",NA,NA
+"AVONET","Migration",NA,NA
+"AVONET","Trophic.Level",NA,NA
+"AVONET","Trophic.Niche",NA,NA
+"AVONET","Primary.Lifestyle",NA,NA
+"AVONET","Min.Latitude",NA,NA
+"AVONET","Max.Latitude",NA,NA
+"AVONET","Centroid.Latitude",NA,NA
+"AVONET","Centroid.Longitude",NA,NA
+"AVONET","Range.Size",NA,NA
+"BioTIME_BodySize-0.1.1","TR_BodyLength_mm",NA,NA
+"BioTIME_BodySize-0.1.1","TR_QualitativeBodySize",NA,NA
+"BioTIME_BodySize-0.1.1","TR_Mean_LengthMax",NA,NA
+"BioTIME_BodySize-0.1.1","TR_adult_body_mass_g",NA,NA
+"BioTIME_BodySize-0.1.1","TR_Mean_SeedMass",NA,NA
+"BioTIME_BodySize-0.1.1","TR_Max_Height",NA,NA
+"EltonTraits","Diet (inv, scavenger, fish, fruit, nectar, seed, plant)",NA,NA
+"EltonTraits","Trophic guild",NA,NA
+"EltonTraits","Forest stratum",NA,NA
+"EltonTraits","Pelagic (0/1)",NA,NA
+"EltonTraits","Diel",NA,NA
+"EltonTraits","Body mass",NA,NA
+"GARD [appendix_1]","adult mass (g)",NA,NA
+"GARD [appendix_1]","hatchling / neonate mass (g)",NA,NA
+"GARD [novosolov_et_al._2017]","Range size (sq km)",NA,NA
+"GARD [novosolov_et_al._2017]","Body mass (g)",NA,NA
+"GARD [novosolov_et_al._2017]","Population density (individuals/ha)",NA,NA
+"GARD [novosolov_et_al._2017]","Study area (ha)",NA,NA
+"GARD [novosolov_et_al._2017]","iqr mean annual temperature",NA,NA
+"GARD [novosolov_et_al._2017]","iqr precipitation",NA,NA
+"GARD [novosolov_et_al._2017]","iqr seasonality",NA,NA
+"GARD [novosolov_et_al._2017]","iqr altitude",NA,NA
+"GARD [novosolov_et_al._2017]","iqr NPP",NA,NA
+"GARD [novosolov_et_al._2017]","iqr solar radiation",NA,NA
+"GARD [novosolov_et_al._2017]","Diet (Proxy for Trophic level)",NA,NA
+"GARD [novosolov_et_al._2017]","Biogeographical realm",NA,NA
+"GARD [novosolov_et_al._2017]","Range size within biogeographical realm (sq km)",NA,NA
+"Heinen et al. 2017","Body.mass",NA,NA
+"Heinen et al. 2017","Flying",NA,NA
+"Heinen et al. 2017","Diet",NA,NA
+"Lislevand_et_al_2007","M_mass",NA,NA
+"Lislevand_et_al_2007","M_mass_N",NA,NA
+"Lislevand_et_al_2007","F_mass",NA,NA
+"Lislevand_et_al_2007","F_mass_N",NA,NA
+"Lislevand_et_al_2007","unsexed_mass",NA,NA
+"Lislevand_et_al_2007","unsexed_mass_N",NA,NA
+"Lislevand_et_al_2007","M_wing",NA,NA
+"Lislevand_et_al_2007","M_wing_N",NA,NA
+"Lislevand_et_al_2007","F_wing",NA,NA
+"Lislevand_et_al_2007","F_wing_N",NA,NA
+"Lislevand_et_al_2007","Unsexed_wing",NA,NA
+"Lislevand_et_al_2007","Unsexed_wing_N",NA,NA
+"Lislevand_et_al_2007","M_tarsus_N",NA,NA
+"Lislevand_et_al_2007","F_tarsus",NA,NA
+"Lislevand_et_al_2007","F_tarsus_N",NA,NA
+"Lislevand_et_al_2007","Unsexed_tarsus",NA,NA
+"Lislevand_et_al_2007","Unsexed_tarsus_N",NA,NA
+"Lislevand_et_al_2007","M_bill",NA,NA
+"Lislevand_et_al_2007","M_bill_N",NA,NA
+"Lislevand_et_al_2007","F_bill",NA,NA
+"Lislevand_et_al_2007","F_bill_N",NA,NA
+"Lislevand_et_al_2007","Unsexed_bill",NA,NA
+"Lislevand_et_al_2007","Unsexed_bill_N",NA,NA
+"Lislevand_et_al_2007","M_tail",NA,NA
+"Lislevand_et_al_2007","M_tail_N",NA,NA
+"Lislevand_et_al_2007","F_tail",NA,NA
+"Lislevand_et_al_2007","F_tail_N",NA,NA
+"Lislevand_et_al_2007","Unsexed_tail",NA,NA
+"Lislevand_et_al_2007","Unsexed_tail_N",NA,NA
+"Lislevand_et_al_2007","Clutch_size",NA,NA
+"Lislevand_et_al_2007","Egg_mass",NA,NA
+"Lislevand_et_al_2007","Mating_System",NA,NA
+"Marine Species traits","AMBI ecological group",NA,NA
+"Marine Species traits","assexual reproduction",NA,NA
+"Marine Species traits","blooming",NA,NA
+"Marine Species traits","body shape",NA,NA
+"Marine Species traits","body size",NA,NA
+"Marine Species traits","brooding",NA,NA
+"Marine Species traits","calcification",NA,NA
+"Marine Species traits","dispersion mode",NA,NA
+"Marine Species traits","environmental position",NA,NA
+"Marine Species traits","feeding type",NA,NA
+"Marine Species traits","fossil range",NA,NA
+"Marine Species traits","functional group",NA,NA
+"Marine Species traits","gamete type",NA,NA
+"Marine Species traits","gametophyte arrangement",NA,NA
+"Marine Species traits","larval development",NA,NA
+"Marine Species traits","life cycle",NA,NA
+"Marine Species traits","life span",NA,NA
+"Marine Species traits","mobility",NA,NA
+"Marine Species traits","plant habit",NA,NA
+"Marine Species traits","reproductive frequency",NA,NA
+"Marine Species traits","seasonality",NA,NA
+"Marine Species traits","sociability",NA,NA
+"Marine Species traits","spawning",NA,NA
+"Marine Species traits","species importance to society",NA,NA
+"Marine Species traits","thallus vertical space used",NA,NA
+"Marine Species traits","tolerance to pollutants",NA,NA
+"Marine Species traits","unicellularity",NA,NA
+"Marine Species traits","VME indicative taxon",NA,NA
+"Marine Species traits","wave exposure",NA,NA
+"Marine Species traits","zonation",NA,NA
+"Pigot et al. 2020","Realm",NA,NA
+"Pigot et al. 2020","TrophicLevel",NA,NA
+"Pigot et al. 2020","TrophicNiche",NA,NA
+"Pigot et al. 2020","ForagingNiche",NA,NA
+"Storchova & Horak 2018","LengthU_MEAN",NA,NA
+"Storchova & Horak 2018","WingU_MEAN",NA,NA
+"Storchova & Horak 2018","WingM_MEAN",NA,NA
+"Storchova & Horak 2018","WingF_MEAN",NA,NA
+"Storchova & Horak 2018","TailU_MEAN",NA,NA
+"Storchova & Horak 2018","TailM_MEAN",NA,NA
+"Storchova & Horak 2018","TailF_MEAN",NA,NA
+"Storchova & Horak 2018","BillU_MEAN",NA,NA
+"Storchova & Horak 2018","BillM_MEAN",NA,NA
+"Storchova & Horak 2018","BillF_MEAN",NA,NA
+"Storchova & Horak 2018","TarsusU_MEAN",NA,NA
+"Storchova & Horak 2018","TarsusM_MEAN",NA,NA
+"Storchova & Horak 2018","TarsusF_MEAN",NA,NA
+"Storchova & Horak 2018","WeightU_MEAN",NA,NA
+"Storchova & Horak 2018","WeightM_MEAN",NA,NA
+"Storchova & Horak 2018","WeightF_MEAN",NA,NA
+"Storchova & Horak 2018","Sexual",NA,NA
+"Storchova & Horak 2018","dimorphism",NA,NA
+"Storchova & Horak 2018","Clutch_MIN",NA,NA
+"Storchova & Horak 2018","Clutch_MAX",NA,NA
+"Storchova & Horak 2018","Clutch_MEAN",NA,NA
+"Storchova & Horak 2018","Broods per year",NA,NA
+"Storchova & Horak 2018","EggL_MEAN",NA,NA
+"Storchova & Horak 2018","EggW_MEAN",NA,NA
+"Storchova & Horak 2018","Egg_MASS",NA,NA
+"Storchova & Horak 2018","Young Association during nesting",NA,NA
+"Storchova & Horak 2018","Nest type",NA,NA
+"Storchova & Horak 2018","Nest building",NA,NA
+"Storchova & Horak 2018","Mating system",NA,NA
+"Storchova & Horak 2018","Incubation period",NA,NA
+"Storchova & Horak 2018","Incubation sex",NA,NA
+"Storchova & Horak 2018","Hatching",NA,NA
+"Storchova & Horak 2018","Eggshells",NA,NA
+"Storchova & Horak 2018","Nestling period",NA,NA
+"Storchova & Horak 2018","Fledging period",NA,NA
+"Storchova & Horak 2018","Parental feeding",NA,NA
+"Storchova & Horak 2018","Age of independence",NA,NA
+"Storchova & Horak 2018","Feeding independence",NA,NA
+"Storchova & Horak 2018","Age of first breeding",NA,NA
+"Storchova & Horak 2018","Life span",NA,NA
+"Storchova & Horak 2018","Post-fledging mortality",NA,NA
+"Storchova & Horak 2018","Mortality of adults",NA,NA
+"Storchova & Horak 2018","Association outside the breeding season",NA,NA
+"Storchova & Horak 2018","Territoriality",NA,NA
+"Storchova & Horak 2018","Sedentary",NA,NA
+"Storchova & Horak 2018","Facultative migrant",NA,NA
+"Storchova & Horak 2018","Short distance migrant",NA,NA
+"Storchova & Horak 2018","Long distance migrant",NA,NA
+"Storchova & Horak 2018","Habitat (Deciduous forest,Coniferous forest,Woodland,Shrub,Savanna,Tundra,GrasslandMountain meadowsReed,Swamps,Desert,FreshwaterMarine,Rocks,Human settlements)",NA,NA
+"Storchova & Horak 2018","Diet (Folivore_Y,Frugivore_Y,Granivore_Y,Arthropods_Y,Other invertebrates_Y,Fish_Y,Other vertebrates_Y,Carrion_Y,Omnivore_Y,Folivore_B,Frugivore_B)",NA,NA
+"Sutherland 2000","median natal dispersal distance",NA,NA
+"Sutherland 2000","maximum natal dispersal distnce",NA,NA
+"TraitBank","trophic guild",NA,NA
+"TraitBank","diet",NA,NA
+"TraitBank","burrow depth",NA,NA
+"TraitBank","burrow diameter",NA,NA
+"TraitBank","habitat",NA,NA
+"TraitBank","migratory status",NA,NA
+"TraitBank","EcomorphologicalGuild",NA,NA
+"TraitBank","trophic level",NA,NA
+"TraitBank","body shape",NA,NA
+"TraitBank","breedingSeason",NA,NA
+"TraitBank","stageAtFertilization",NA,NA
+"TraitBank","rateOfDevelopment",NA,NA
+"TraitBank","SkeletalReinforcement",NA,NA
+"TraitBank","InterBirthInterval",NA,NA
+"TraitBank","LittersPerYear",NA,NA
+"TraitBank","CaudalFinShape",NA,NA
+"TraitBank","EggMass",NA,NA
+"TraitBank","PrimaryDiet",NA,NA
+"TraitBank","Parental_investment",NA,NA
+"TraitBank","ForagingTime",NA,NA
+"TraitBank","DevelopmentalMode",NA,NA
+"TraitBank","ForagingHabitat",NA,NA
+"TraitBank","NestType",NA,NA
+"TraitBank","BillLength",NA,NA
+"TraitBank","RangeMidpointLatitude",NA,NA
+"TraitBank","VocalizationBehavior",NA,NA
+"TraitBank","body size",NA,NA
+"TraitBank(vertebrates)","trophic guild",NA,NA
+"TraitBank(vertebrates)","diet",NA,NA
+"TraitBank(vertebrates)","burrow depth",NA,NA
+"TraitBank(vertebrates)","burrow diameter",NA,NA
+"TraitBank(vertebrates)","habitat",NA,NA
+"TraitBank(vertebrates)","migratory status",NA,NA
+"TraitBank(vertebrates)","EcomorphologicalGuild",NA,NA
+"TraitBank(vertebrates)","trophic level",NA,NA
+"TraitBank(vertebrates)","body shape",NA,NA
+"TraitBank(vertebrates)","breedingSeason",NA,NA
+"TraitBank(vertebrates)","stageAtFertilization",NA,NA
+"TraitBank(vertebrates)","rateOfDevelopment",NA,NA
+"TraitBank(vertebrates)","SkeletalReinforcement",NA,NA
+"TraitBank(vertebrates)","InterBirthInterval",NA,NA
+"TraitBank(vertebrates)","LittersPerYear",NA,NA
+"TraitBank(vertebrates)","CaudalFinShape",NA,NA
+"TraitBank(vertebrates)","EggMass",NA,NA
+"TraitBank(vertebrates)","PrimaryDiet",NA,NA
+"TraitBank(vertebrates)","Parental_investment",NA,NA
+"TraitBank(vertebrates)","ForagingTime",NA,NA
+"TraitBank(vertebrates)","DevelopmentalMode",NA,NA
+"TraitBank(vertebrates)","ForagingHabitat",NA,NA
+"TraitBank(vertebrates)","NestType",NA,NA
+"TraitBank(vertebrates)","BillLength",NA,NA
+"TraitBank(vertebrates)","RangeMidpointLatitude",NA,NA
+"TraitBank(vertebrates)","VocalizationBehavior",NA,NA
+"TraitBank(vertebrates)","body size",NA,NA
