@@ -1,0 +1,112 @@
+## get list of synonyms for all accepted species names in bioshifts V1 and V2
+library(taxadb)
+library(tidyverse)
+library(foreach) 
+library(doParallel)
+
+## detect cores
+starts <- rep(100, 40)
+fx <- function(nstart) kmeans(Boston, 4, nstart=nstart)
+numCores <- detectCores()
+cl <- makePSOCKcluster(numCores)
+
+registerDoParallel(numCores)
+
+## read in harmonized species list 
+sp_list <- read.csv("data-raw/splist.csv")
+
+## get vector of accepted species names 
+acc_names <- sp_list$species
+
+length(unique(acc_names)) ## some are duplicated - get rid 
+acc_names <- unique(acc_names)
+
+## query taxize for all possible synonyms for each species 
+
+## get tsn
+get_tsn(as.character(acc_names[1]), accepted = FALSE)
+
+synonyms(sci_id = as.character("Lithobates catesbeianus"), db = "itis")
+
+# Lithobates catesbeianus
+
+ids = get_ids(acc_names)
+acc_search = get_names(ids)
+
+filter_name("Anthophora retusa")  %>%
+  mutate(acceptedNameUsage = get_names(acceptedNameUsageID)) %>% 
+  select(scientificName, taxonomicStatus, acceptedNameUsage, acceptedNameUsageID)
+
+test = filter_name() 
+
+
+
+
+## col, itis, gbif, etc.
+test = taxa_tbl("itis") %>%
+  collect() %>%
+  filter(acceptedNameUsageID == get_ids("Anthophora plumipes"))
+  
+
+
+## try getting all synonyms for every species
+getname = filter_name(acc_names, "itis") %>%
+  select(acceptedNameUsageID, input)
+
+itis = taxa_tbl("itis") %>%
+  collect() %>%
+  filter(acceptedNameUsageID %in% unique(getname$acceptedNameUsageID)[which(!is.na(unique(getname$acceptedNameUsageID)))]) %>%
+  select(scientificName, acceptedNameUsageID, phylum, class, order, family, genus) %>% 
+  rename("synonym" = scientificName) %>%
+  left_join(., getname) %>%
+  rename("accepted_name" = "input")
+
+saveRDS(itis, "data-processed/itis-species-synonyms.rds")
+
+getname = filter_name(acc_names, "col") %>%
+  select(acceptedNameUsageID, input)
+
+col = taxa_tbl("col") %>%
+  collect() %>%
+  filter(acceptedNameUsageID %in% unique(getname$acceptedNameUsageID)[which(!is.na(unique(getname$acceptedNameUsageID)))]) %>%
+  select(scientificName, acceptedNameUsageID, phylum, class, order, family, genus) %>% 
+  rename("synonym" = scientificName)%>%
+  left_join(., getname) %>%
+  rename("accepted_name" = "input")
+
+saveRDS(col, "data-processed/col1-species-synonyms.rds")
+
+getname = filter_name(acc_names, "gbif") %>%
+  select(acceptedNameUsageID, input)
+
+gbif = taxa_tbl("gbif") %>%
+  collect() %>%
+  filter(acceptedNameUsageID %in% unique(getname$acceptedNameUsageID)[which(!is.na(unique(getname$acceptedNameUsageID)))]) %>%
+  select(scientificName, acceptedNameUsageID, phylum, class, order, family, genus) %>% 
+  rename("synonym" = scientificName) %>%
+  left_join(., getname) %>%
+  rename("accepted_name" = "input")
+
+saveRDS(gbif, "data-processed/gbif-species-synonyms.rds")
+
+getname = filter_name(acc_names, "ncbi") %>%
+  select(acceptedNameUsageID, input)
+
+ncbi = taxa_tbl("ncbi") %>%
+  collect() %>%
+  filter(acceptedNameUsageID %in% unique(getname$acceptedNameUsageID)[which(!is.na(unique(getname$acceptedNameUsageID)))]) %>%
+  select(scientificName, acceptedNameUsageID, phylum, class, order, family, genus) %>% 
+  rename("synonym" = scientificName) %>%
+  left_join(., getname) %>%
+  rename("accepted_name" = "input")
+
+saveRDS(ncbi, "data-processed/ncbi-species-synonyms.rds")
+
+syn_db <- rbind(itis, ncbi) %>% rbind(., col) %>% rbind(., gbif) %>%
+  unique(.)
+
+saveRDS(syn_db, "data-processed/species-synonyms.rds")
+
+
+
+
