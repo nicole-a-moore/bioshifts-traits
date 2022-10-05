@@ -28,35 +28,6 @@
 "amniota","female_body_mass_at_maturity_g",NA,NA
 "amniota","no_sex_svl_cm",NA,NA
 "amniota","no_sex_maturity_d",NA,NA
-"Amniote_Database 2015","female_maturity_d",NA,NA
-"Amniote_Database 2015","litter_or_clutch_size_n",NA,NA
-"Amniote_Database 2015","litters_or_clutches_per_y",NA,NA
-"Amniote_Database 2015","adult_body_mass_g",NA,NA
-"Amniote_Database 2015","maximum_longevity_y",NA,NA
-"Amniote_Database 2015","gestation_d",NA,NA
-"Amniote_Database 2015","weaning_d",NA,NA
-"Amniote_Database 2015","birth_or_hatching_weight_g",NA,NA
-"Amniote_Database 2015","weaning_weight_g",NA,NA
-"Amniote_Database 2015","egg_mass_g",NA,NA
-"Amniote_Database 2015","incubation_d",NA,NA
-"Amniote_Database 2015","fledging_age_d",NA,NA
-"Amniote_Database 2015","longevity_y",NA,NA
-"Amniote_Database 2015","male_maturity_d",NA,NA
-"Amniote_Database 2015","inter_litter_or_interbirth_interval_y",NA,NA
-"Amniote_Database 2015","female_body_mass_g",NA,NA
-"Amniote_Database 2015","male_body_mass_g",NA,NA
-"Amniote_Database 2015","no_sex_body_mass_g",NA,NA
-"Amniote_Database 2015","egg_width_mm",NA,NA
-"Amniote_Database 2015","egg_length_mm",NA,NA
-"Amniote_Database 2015","fledging_mass_g",NA,NA
-"Amniote_Database 2015","adult_svl_cm",NA,NA
-"Amniote_Database 2015","male_svl_cm",NA,NA
-"Amniote_Database 2015","female_svl_cm",NA,NA
-"Amniote_Database 2015","birth_or_hatching_svl_cm",NA,NA
-"Amniote_Database 2015","female_svl_at_maturity_cm",NA,NA
-"Amniote_Database 2015","female_body_mass_at_maturity_g",NA,NA
-"Amniote_Database 2015","no_sex_svl_cm",NA,NA
-"Amniote_Database 2015","no_sex_maturity_d",NA,NA
 "AnAge","Female maturity (days)",NA,NA
 "AnAge","Male maturity (days)",NA,NA
 "AnAge","Gestation/Incubation (days)",NA,NA
