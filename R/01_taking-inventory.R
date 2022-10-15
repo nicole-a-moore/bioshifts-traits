@@ -50,18 +50,24 @@ harmonize_taxnomy <- function(names) {
   
   ## if not found, search ncbi
   ## ncbi
+  animal_classes <- c("Aves", "Mammalia", "Reptilia", "Insecta",  "Chondrichthyes", "Amphibia",
+                      "Actinopterygii","Teleostei", "Bivalvia", "Elasmobranchii", "Holocephali")
+  
   ncbi = filter_name(not_found, "ncbi") %>%
     filter(taxonomicStatus == "accepted") %>%
     mutate(db = "ncbi") %>%
     rename("db_code" = acceptedNameUsageID) %>%
-    select(input, scientificName, db, db_code, kingdom, order, class, family, genus)
+    select(input, scientificName, db, db_code, kingdom, order, class, family, genus) %>%
+    mutate(kingdom = ifelse(kingdom == "Metazoa" & class %in% animal_classes,
+                            "Animalia",
+                            "Plantae")) ## change kingdom = metazoa to plantae or animalia
   
   not_found <- not_found[which(!not_found %in% ncbi$input)]
   
   names_db <- rbind(itis, ncbi) %>% rbind(., col) %>% rbind(., gbif) %>%
     unique(.) %>%
-    rename("genus_species" = input) %>%
-    select(-scientificName)
+    rename("genus_species" = input,
+           "genus_species_accepted" = scientificName) 
   
   ## return database of names and list of species not found
   
@@ -277,6 +283,7 @@ write.csv(birds, "data-processed/traits-by-group/birds.csv", row.names = FALSE)
 ## length measurement varies - see other column for age/sex of individual
 ## feeding type needs to be harmonized between trophic_level and trophic_niche
 ## is life span categorical? also check life stage 
+## body size and related columns are weird - many are missing, check
 
 ## read in list of bioshifts species 
 splist <- read.csv("data-raw/splist.csv")
@@ -300,7 +307,7 @@ amniota <- read.csv("data-raw/primary-trait-data/amniota/ECOL_96_269/Data_Files/
 
 ## change -999 to NA
 amniota <- data.frame(lapply(amniota, function(x) {gsub("-999", NA, x)})) %>%
-  mutate(genus_species = paste(genus, species, sep = " "))
+  mutate(genus_species = paste(genus, species, sep = " ")) 
 
 ## taxonomic harmonization: change name to accepted name 
 amniota_tax <- harmonize_taxnomy(amniota$genus_species)
@@ -309,12 +316,15 @@ amniota_accsp <- amniota_tax[[1]]
 amniota_notf <- amniota_tax[[2]]
 
 amniota_tax <- filter(amniota, genus_species %in% amniota_notf) %>%
-  mutate(db = NA, db_code = NA, kingdom = "Animalia") %>%
-  select(genus_species, db, db_code, kingdom, order, class, family, genus) %>%
+  mutate(db = NA, db_code = NA, kingdom = "Animalia",
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, kingdom, order, family, class, genus) %>%
   rbind(., amniota_accsp)
 
 ## merge with amniota
-amniota <- left_join(amniota, amniota_tax)
+amniota <- amniota %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., amniota_tax)
 
 ## subset to bioshifts species 
 amniota <- filter(amniota, genus_species %in% splist$species)
@@ -339,12 +349,15 @@ anage_accsp <- anage_tax[[1]]
 anage_notf <- anage_tax[[2]]
 
 anage_tax <- filter(anage, genus_species %in% anage_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, kingdom, order, class, family, genus) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, kingdom, order, class, family, genus) %>%
   rbind(., anage_accsp)
 
 ## merge with anage
-anage <- left_join(anage, anage_tax) 
+anage <- anage %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., anage_tax)
 
 ## subset to bioshifts species 
 anage <- filter(anage, genus_species %in% splist$species)
@@ -370,12 +383,15 @@ avonet_accsp <- avonet_tax[[1]]
 avonet_notf <- avonet_tax[[2]]
 
 avonet_tax <- filter(avonet, genus_species %in% avonet_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, kingdom, order, class, family, genus) %>%
+  mutate(db = NA, db_code = NA, 
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, kingdom, order, class, family, genus) %>%
   rbind(., avonet_accsp)
 
 ## merge with avonet
-avonet <- left_join(avonet, avonet_tax) 
+avonet <- avonet %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., avonet_tax) 
 
 ## subset to bioshifts species 
 avonet <- filter(avonet, genus_species %in% splist$species)
@@ -383,6 +399,38 @@ avonet <- filter(avonet, genus_species %in% splist$species)
 
 ## save subset 
 write.csv(avonet, "data-processed/primary-traits-bioshifts/AVONET.csv", row.names = FALSE)
+
+#############
+## BIOTIME ##
+#############
+biotime <- read_delim("data-raw/primary-trait-data/BIOTIME/bt_names_all_traits.csv") %>%
+  mutate(genus_species = TidyBTName, 
+         genus = str_split_fixed(TidyBTName, " ", 2)[,1])
+
+## taxonomic harmonization: change name to accepted name 
+biotime_tax <- harmonize_taxnomy(biotime$genus_species)
+
+biotime_accsp <- biotime_tax[[1]]
+biotime_notf <- biotime_tax[[2]]
+
+biotime_tax <- filter(biotime, genus_species %in% biotime_notf) %>%
+  mutate(db = NA, db_code = NA, order = NA, class = NA, family = NA, 
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, kingdom, genus,
+         order, class, family) %>%
+  rbind(., biotime_accsp)
+
+## merge with etraits
+biotime <- biotime %>%
+  select(-kingdom) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., biotime_tax) 
+
+## subset to bioshifts species 
+biotime <- filter(biotime, genus_species %in% splist$species)
+## from 27490 species -> 2803 species 
+
+write.csv(biotime, "data-processed/primary-traits-bioshifts/BIOTIME.csv", row.names = FALSE)
+
 
 ###################
 ##  EltonTraits  ##
@@ -400,12 +448,15 @@ etraits_accsp <- etraits_tax[[1]]
 etraits_notf <- etraits_tax[[2]]
 
 etraits_tax <- filter(etraits, genus_species %in% etraits_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, kingdom, order, class, family, genus) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, kingdom, order, class, family, genus) %>%
   rbind(., etraits_accsp)
 
 ## merge with etraits
-etraits <- left_join(etraits, etraits_tax) 
+etraits <- etraits %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., etraits_tax) 
 
 ## subset to bioshifts species 
 etraits <- filter(etraits, genus_species %in% splist$species)
@@ -429,13 +480,15 @@ gardapp1_accsp <- gardapp1_tax[[1]]
 gardapp1_notf <- gardapp1_tax[[2]]
 
 gardapp1_tax <- filter(gardapp1, genus_species %in% gardapp1_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, class, genus, kingdom) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, class, genus, kingdom) %>%
   mutate(order = NA, family = NA) %>%
   rbind(., gardapp1_accsp)
 
 ## merge with gardapp1
-gardapp1 <- left_join(gardapp1, gardapp1_tax) %>%
+gardapp1 <- gardapp1 %>%
+  left_join(., gardapp1_tax) %>%
   unique(.) ## get rid of duplicated species 
 
 ## subset to bioshifts species 
@@ -460,13 +513,15 @@ gardnovo_accsp <- gardnovo_tax[[1]]
 gardnovo_notf <- gardnovo_tax[[2]]
 
 gardnovo_tax <- filter(gardnovo, genus_species %in% gardnovo_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom) %>%
   mutate(order = NA, family = NA, class = NA) %>%
   rbind(., gardnovo_accsp)
 
 ## merge with gardnovo
-gardnovo <- left_join(gardnovo, gardnovo_tax) 
+gardnovo <- gardnovo %>%
+  left_join(., gardnovo_tax)
 
 ## subset to bioshifts species 
 gardnovo <- filter(gardnovo, genus_species %in% splist$species)
@@ -490,12 +545,15 @@ heinen_accsp <- heinen_tax[[1]]
 heinen_notf <- heinen_tax[[2]]
 
 heinen_tax <- filter(heinen, genus_species %in% heinen_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, family, order, class) %>%
+  mutate(db = NA, db_code = NA, 
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, family, order, class) %>%
   rbind(., heinen_accsp)
 
 ## merge with heinen
-heinen <- left_join(heinen, heinen_tax) 
+heinen <- heinen %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., heinen_tax)
 
 ## subset to bioshifts species 
 heinen <- filter(heinen, genus_species %in% splist$species)
@@ -529,13 +587,16 @@ lislevand_accsp <- lislevand_tax[[1]]
 lislevand_notf <- lislevand_tax[[2]]
 
 lislevand_tax <- filter(lislevand, genus_species %in% lislevand_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, family) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, family) %>%
   mutate(order = NA, class = NA) %>%
   rbind(., lislevand_accsp)
 
 ## merge with lislevand
-lislevand <- left_join(lislevand, lislevand_tax) 
+lislevand <- lislevand %>%
+  select(-family) %>%
+  left_join(., lislevand_tax)
 
 ## subset to bioshifts species 
 lislevand <- filter(lislevand, genus_species %in% splist$species)
@@ -557,12 +618,15 @@ mspt_accsp <- mspt_tax[[1]]
 mspt_notf <- mspt_tax[[2]]
 
 mspt_tax <- filter(mspt, genus_species %in% mspt_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, family, order, class) %>%
+  mutate(db = NA, db_code = NA, 
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, family, order, class) %>%
   rbind(., mspt_accsp)
 
 ## merge with mspt
-mspt <- left_join(mspt, mspt_tax) 
+mspt <- mspt %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., mspt_tax)
 
 ## subset to bioshifts species 
 mspt <- filter(mspt, genus_species %in% splist$species)
@@ -596,13 +660,16 @@ pigot_accsp <- pigot_tax[[1]]
 pigot_notf <- pigot_tax[[2]]
 
 pigot_tax <- filter(pigot, genus_species %in% pigot_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, class) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, class) %>%
   mutate(family = NA, order = NA) %>%
   rbind(., pigot_accsp)
 
 ## merge with pigot
-pigot <- left_join(pigot, pigot_tax) 
+pigot <- pigot %>%
+  select(-order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., pigot_tax)
 
 ## subset to bioshifts species 
 pigot <- filter(pigot, genus_species %in% splist$species)
@@ -627,16 +694,32 @@ storchova_accsp <- storchova_tax[[1]]
 storchova_notf <- storchova_tax[[2]]
 
 storchova_tax <- filter(storchova, genus_species %in% storchova_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, class, family, order) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, class, family, order) %>%
   rbind(., storchova_accsp)
 
 ## merge with storchova
-storchova <- left_join(storchova, storchova_tax) 
+storchova <- storchova %>%
+  select(-family, -order, -class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., storchova_tax)
 
 ## subset to bioshifts species 
 storchova <- filter(storchova, genus_species %in% splist$species)
 ## from 499 species -> 319 species 
+
+## make trophic niche into a single column
+diet_cols <- colnames(storchova)[68:85]
+diet_cats <- sapply(1:nrow(storchova), FUN = function(x) {
+  return(paste(diet_cols[which(storchova[x,68:85] == 1)], 
+               collapse = ", "))
+})
+
+storchova$trophic_niche = diet_cats
+
+## convert maturity into days 
+storchova <- storchova %>%
+  mutate(maturity_d = `Age of first breeding`*365) 
 
 ## save subset 
 write.csv(storchova, "data-processed/primary-traits-bioshifts/Storchov_and_Horak_2018.csv", row.names = FALSE)
@@ -658,20 +741,34 @@ sutherland_accsp <- sutherland_tax[[1]]
 sutherland_notf <- sutherland_tax[[2]]
 
 sutherland_tax <- filter(sutherland, genus_species %in% sutherland_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus, kingdom, class) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus, kingdom, class) %>%
   mutate(family = NA, order = NA) %>%
   rbind(., sutherland_accsp)
 
 ## merge with sutherland
-sutherland <- left_join(sutherland, sutherland_tax) 
+sutherland <- sutherland %>%
+  select(-class) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., sutherland_tax)
 
 ## subset to bioshifts species 
 sutherland <- filter(sutherland, genus_species %in% splist$species)
-## from 61 species -> 58 species 
+## from 61 species -> 58 species
+
+## split body mass column into two columns by sex, convert to g:
+sutherland = sutherland %>%
+  mutate(sex = str_split_fixed(`Body mass (kg)`, " ", 2)[,2],
+         mass_kg = str_split_fixed(`Body mass (kg)`, " ", 2)[,1]) %>%
+  mutate(mass_kg = ifelse(sex == "", str_split_fixed(`Body mass (kg)`, "m", 2)[,1], mass_kg),
+         sex = ifelse(sex == "", "m/f", sex)) %>% # fix one with no space
+  mutate(female_body_mass_g = ifelse(sex == "f", as.numeric(as.character(mass_kg))*1000, NA),
+         male_body_mass_g = ifelse(sex == "m", as.numeric(as.character(mass_kg))*1000, NA),
+         unsexed_body_mass_g = ifelse(sex == "m/f", as.numeric(as.character(mass_kg))*1000, NA)) %>%
+  select(-mass_kg, -sex)
 
 ## save subset 
-write.csv(storchova, "data-processed/primary-traits-bioshifts/Sutherland_2000_birds.csv", row.names = FALSE)
+write.csv(sutherland, "data-processed/primary-traits-bioshifts/Sutherland_2000_birds.csv", row.names = FALSE)
 
 #################
 ##  TraitBank  ##
@@ -692,13 +789,16 @@ traitbank_accsp <- traitbank_tax[[1]]
 traitbank_notf <- traitbank_tax[[2]]
 
 traitbank_tax <- filter(traitbank, genus_species %in% traitbank_notf) %>%
-  mutate(db = NA, db_code = NA) %>%
-  select(genus_species, db, db_code, genus) %>%
+  mutate(db = NA, db_code = NA,
+         genus_species_accepted = NA) %>%
+  select(genus_species, genus_species_accepted, db, db_code, genus) %>%
   mutate(family = NA, order = NA, class = NA, kingdom = NA) %>%
   rbind(., traitbank_accsp)
 
 ## merge with traitbank
-traitbank <- left_join(traitbank, traitbank_tax) 
+traitbank <- traitbank %>%
+  select(-order) %>% ## get rid of old taxonomy that might be wrong
+  left_join(., traitbank_tax)
 
 ## subset to bioshifts species 
 traitbank <- filter(traitbank, genus_species %in% splist$species)
