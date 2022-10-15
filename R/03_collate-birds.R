@@ -183,7 +183,18 @@ all_dbs %>%
 
 ## gather all body mass measurements
 ## if there are multiple per species, keep the maximum one
-resolved2 <- all_dbs %>%
+resolved <- all_dbs %>%
+  group_by(genus_species, kingdom, class, order, family) %>%
+  mutate(female_body_mass_g = max(female_body_mass_g, na.rm = TRUE),
+         male_body_mass_g = max(male_body_mass_g, na.rm = TRUE),
+         adult_body_mass_g = max(adult_body_mass_g, na.rm = TRUE),
+         unsexed_body_mass_g = max(unsexed_body_mass_g, na.rm = TRUE),
+         unk_body_mass_g = max(unk_body_mass_g, na.rm = TRUE),
+         female_body_mass_at_maturity_g = max(female_body_mass_at_maturity_g, na.rm = TRUE)) %>%
+  ungroup() %>%
+  unique(.)
+
+resolved2 <- resolved %>%
   gather(key = "measurement_type", value = "body_mass",
          c(female_body_mass_g, male_body_mass_g, adult_body_mass_g,
            unk_body_mass_g, unsexed_body_mass_g, female_body_mass_at_maturity_g)) %>%
@@ -469,10 +480,8 @@ data_final %>%
                         "Not missing")) %>%
   ggplot(aes(y = trait, fill = is_na)) + geom_bar() 
 
+## would be good to also visualize the measurement types for each trait 
 
 
-
-## and look at all of the different values of each trait
-
-
+## and next look at and clean all of the different values of each trait
 
