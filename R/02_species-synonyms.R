@@ -70,6 +70,9 @@ syn_db <- rbind(itis, ncbi) %>% rbind(., col) %>% rbind(., gbif) %>%
 ## save the list
 saveRDS(syn_db, "data-processed/species-synonyms.rds")
 
+syn_db <- readRDS("data-processed/species-synonyms.rds")
+write.csv(syn_db, "data-processed/species-synonyms.csv", row.names = F)
+
 ## clean the data to rid of the ? in some GBIF species synonyms
 ## replace the ? with the contents of the 'genus' column
 

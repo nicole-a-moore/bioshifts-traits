@@ -252,7 +252,6 @@ birds <- gather(birds, key = "old_col", value = "trait", c(1:2091)) %>%
 ## write out and start to decide on common names
 write.csv(birds, "data-processed/traits-by-group/birds.csv", row.names = FALSE)
 
-
 ## Notes 
 
 ## AVONET
@@ -284,6 +283,7 @@ write.csv(birds, "data-processed/traits-by-group/birds.csv", row.names = FALSE)
 ## feeding type needs to be harmonized between trophic_level and trophic_niche
 ## is life span categorical? also check life stage 
 ## body size and related columns are weird - many are missing, check
+
 
 ## read in list of bioshifts species 
 splist <- read.csv("data-raw/splist.csv")

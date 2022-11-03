@@ -20,7 +20,7 @@ sp <- sp %>%
   select(-scientificName, -v1, -v2, -reported_name, -reported_name_fixed) %>%
   unique()
 
-## make a template for search for bodysize 
+## make a template for search for body size 
 colnames(bsize)
 
 sp[,9:20] <- NA
