@@ -3,6 +3,9 @@ library(tidyverse)
 library(readxl)
 library(readr)
 library(taxadb)
+library(parallel)
+library(pbapply)
+library(traitdataform)
 
 ## read in list of all bioshifts species 
 sp <- read_csv("data-raw/splist.csv")
@@ -60,7 +63,7 @@ harmonize <- function(sp_names){
     gbif_names <- gbif_names[-which(duplicated(gbif_names$verbatimScientificName)),]
   }
   
-  any(!gbif_names$original_search %in% splist$species)
+  any(!gbif_names$original_search %in% sp_names)
   
   cat("--- Summary ---\n",
       "N taxa:",nrow(togo),"\n",
@@ -94,7 +97,7 @@ harmonize <- function(sp_names){
     itis_names <- itis_names[-which(duplicated(itis_names$original_search)),]
   }
   
-  any(!itis_names$original_search %in% splist$species)
+  any(!itis_names$original_search %in% sp_names)
   
   itis_names <- itis_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
   names(itis_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
@@ -126,7 +129,7 @@ harmonize <- function(sp_names){
       ncbi_names <- ncbi_names[-which(duplicated(ncbi_names$original_search)),]
     }
     
-    any(!ncbi_names$original_search %in% splist$species)
+    any(!ncbi_names$original_search %in% sp_names)
     
     ncbi_names <- ncbi_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
     names(ncbi_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
@@ -170,7 +173,7 @@ harmonize <- function(sp_names){
       iucn_names <- iucn_names[-which(duplicated(iucn_names$original_search)),]
     }
     
-    any(!iucn_names$original_search %in% splist$species)
+    any(!iucn_names$original_search %in% sp_names)
     
     # select only accepted names
     iucn_names <- iucn_names[which(iucn_names$taxonomicStatus == "accepted"),]
@@ -486,6 +489,29 @@ length(which(unique(jenkins$scientificName) %in% unique(sp$scientificName))) ## 
 jenkins_sp <- unique(jenkins$scientificName)[which(unique(jenkins$scientificName) %in% unique(sp$scientificName))]
 
 
+## flores:
+flores <- read.delim("data-raw/dispersal/Flores_et_al_2013.txt") %>%
+  select(-family, -order)
+colnames(flores) <- str_replace_all(colnames(flores), "\\ ", "_")
+length(unique(flores$Species)) #56 spp
+
+flores_harm <- harmonize(flores$Species)
+
+notfound <- filter(flores_harm, is.na(db_code))
+
+## rename columns 
+flores <- flores %>%
+  rename("reported_name" = Species) %>%
+  mutate(reported_name_fixed = reported_name)
+
+flores <- left_join(flores, flores_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## check how many species in bioshifts 
+length(which(unique(flores$scientificName) %in% unique(sp$scientificName))) ## 37
+flores_sp <- unique(flores$scientificName)[which(unique(flores$scientificName) %in% unique(sp$scientificName))]
+
+
 ## check how many unique species we have data for:
 species_with_dd <- append(co_sp, wo_sp) %>%
   append(., tamme_sp) %>%
@@ -494,9 +520,10 @@ species_with_dd <- append(co_sp, wo_sp) %>%
   append(., suth_mamm_sp) %>%
   append(., suth_bird_sp) %>%
   append(., bowman_sp) %>%
-  append(., jenkins_sp)
+  append(., jenkins_sp) %>%
+  append(., flores_sp)
 
-length(unique(species_with_dd)) # 586 species 
+length(unique(species_with_dd)) # 605 species 
 
 ## now: gather the data
 co_sub = filter(co, scientificName %in% co_sp)
@@ -508,6 +535,7 @@ suth_mamm_sub = filter(suth_mamm, scientificName %in% suth_mamm_sp)
 suth_bird_sub = filter(suth_bird, scientificName %in% suth_bird_sp)
 bowman_sub = filter(bowman, scientificName %in% bowman_sp)
 jenkins_sub = filter(jenkins, scientificName %in% jenkins_sp)
+flores_sub = filter(flores, scientificName %in% flores_sp)
 
 cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "kingdom", "phylum",
                   "class", "order", "family", "db", "db_code")
@@ -676,6 +704,21 @@ jenkins_dd <- jenkins_sub %>%
   filter(!is.na(DispersalDistance))%>%
   unique()
 
+## Flores
+flores_dd <- flores_sub %>%
+  select(all_of(cols_to_keep), Mean.dispersal.distance.m., Maximum.dispersal.distance.m.) %>%
+  gather(key = "Field", value = "DispersalDistance", 
+         c(Mean.dispersal.distance.m., Maximum.dispersal.distance.m.)) %>%
+  mutate(Code = ifelse(Field == "Mean.dispersal.distance.m.", 
+                       "MeanDispersalDistance", 
+                       ifelse(Field == "Maximum.dispersal.distance.m.",
+                              "MaxDispersalDistance", 
+                              NA))) %>%
+  mutate(Sex = NA, ObservationType = NA, Unit = "m", 
+         Database = "Flores") %>%
+  filter(!is.na(DispersalDistance))%>%
+  unique()
+
 
 dd_collated <- rbind(co_dd, wo_dd) %>%
   rbind(., tamme_dd) %>%
@@ -685,7 +728,41 @@ dd_collated <- rbind(co_dd, wo_dd) %>%
   rbind(., suth_bird_dd) %>%
   rbind(., bowman_dd) %>%
   rbind(., jenkins_dd) %>%
+  rbind(., flores_dd) %>%
   unique()
+
+length(unique(dd_collated$scientificName)) # 604
+
+write.csv(dd_collated, "data-processed/dispersal-distance-collated_temp.csv", row.names = FALSE)
+
+## make some plots 
+dd_collated %>%
+  select(scientificName, class, kingdom) %>%
+  unique() %>% 
+  group_by(class) %>%
+  tally() %>%
+  left_join(., select(dd_collated, class, kingdom)) %>%
+  group_by(kingdom) %>%
+  unique() %>%
+  arrange(-n, .by_group=T) %>%
+  ungroup() %>%
+  mutate(class = factor(class, levels = as.character(class), ordered = TRUE)) %>%
+  ggplot(., aes(x = class, y = n, fill = kingdom)) + geom_col() + 
+  coord_flip() +
+  theme_minimal() + 
+  labs(x = "", y = "Species with known dispersal distance")
+
+left_join(sp, dd_collated) %>%
+  mutate(has_dd = ifelse(!is.na(DispersalDistance), 
+                          "Yes", "No")) %>%
+  select(scientificName, class, has_dd) %>%
+  unique() %>%
+  ggplot(aes(x = class, fill = has_dd)) + geom_bar() + 
+  theme_minimal() +
+  coord_flip()
+
+
+
 
 
 ## dispersal traits
