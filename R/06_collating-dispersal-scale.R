@@ -1,4 +1,4 @@
-## quick analysis before meeting
+## bring together empirical dispersal distance data
 library(tidyverse)
 library(readxl)
 library(readr)
@@ -6,6 +6,7 @@ library(taxadb)
 library(parallel)
 library(pbapply)
 library(traitdataform)
+library(data.table)
 
 ## read in list of all bioshifts species 
 sp <- read_csv("data-raw/splist.csv")
@@ -761,28 +762,8 @@ left_join(sp, dd_collated) %>%
   theme_minimal() +
   coord_flip()
 
-
-
-
-
-## dispersal traits
-## D3 = plant dispersal traits 
-## DISPERSE = dispersal traits for European aquatic macroinverts
-
-
-
-
-
-## how many species do we have body size for?
-bsize <- read_csv("data-raw/CompilationBodySizeBioshiftsv1harmonized.csv")
-
-lifespan <- read_csv("data-raw/CompilationLifeSpan_02242022.csv")
-
-plants <- sp %>% filter(kingdom == "Plantae") %>%
-  select(-v1, -v2, -db, -db_code, -reported_name, -reported_name_fixed) %>%
-  unique()
-
-write.csv(plants, "plant_spp.csv", row.names = FALSE)
-
-
+dd_collated %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  ggplot(aes(x = log(DispersalDistance))) + geom_histogram() + 
+  facet_wrap(~Code)
 
