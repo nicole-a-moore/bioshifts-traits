@@ -28,8 +28,7 @@ harmonize <- function(sp_names){
   
   tofind <- data.frame(species = sp_names, tofind)
   
-  tofind <- tofind %>%
-    mutate(across(everything(), as.character))
+  tofind[,1:ncol(tofind)] = lapply(tofind[,1:ncol(tofind)], as.character) 
   
   togo <- tofind[which(is.na(tofind$scientificName)),]
   

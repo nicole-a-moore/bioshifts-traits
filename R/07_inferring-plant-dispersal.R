@@ -1,5 +1,6 @@
 ## using other plant traits to infer dispersal scale
 library(tidyverse)
+library(plyr)
 
 ## dispeRsal
 ## https://figshare.com/collections/Predicting_species_maximum_dispersal_distances_from_simple_plant_traits/3306522
@@ -39,38 +40,56 @@ bien = read.csv("data-processed/BIEN_bioshifts.csv")
 unique(bien$trait_name)
 
 ## GF
-bien_final <- bien %>%
+bien_gf <- bien %>%
   filter(trait_name == "whole plant growth form") %>%
   mutate(trait_value = str_remove_all(trait_value, "\\*")) %>%
   mutate(trait_value = str_remove_all(trait_value, "\\-")) 
 
 ## reconcile species with multiple growth forms 
-bien_multi = bien_final %>%
+bien_multi = bien_gf %>%
   filter(scrubbed_species_binomial %in% 
-           bien_final$scrubbed_species_binomial[which(duplicated(bien_final$scrubbed_species_binomial))]) %>%
+           bien_gf$scrubbed_species_binomial[which(duplicated(bien_gf$scrubbed_species_binomial))]) %>%
   group_by(scrubbed_species_binomial) %>%
   filter(str_detect(method, "Species with multiple growth form classifications")) %>%
   filter(!duplicated(scrubbed_species_binomial)) # remove ones that are still duplicated
 
-bien_final = bien_final %>%
+bien_gf = bien_gf %>%
   filter(!scrubbed_species_binomial %in% 
-           bien_final$scrubbed_species_binomial[which(duplicated(bien_final$scrubbed_species_binomial))]) %>%
+           bien_gf$scrubbed_species_binomial[which(duplicated(bien_gf$scrubbed_species_binomial))]) %>%
   rbind(., bien_multi) %>%
-  mutate(GF = trait_value,
-         GF = ifelse(GF %in% c("tree", "Tree", "Small_Tree", "tree ", "giant tree"), "tree", 
-                     ifelse(GF %in% c("Herb", "herb", "Graminoid", "geophyte", "forb", "Scandent_Herb",
+  mutate(GF = ifelse(trait_value %in% c("tree", "Tree", "Small_Tree", "tree ", "giant tree"), "tree", 
+                     ifelse(trait_value %in% c("Herb", "herb", "Graminoid", "geophyte", "forb", "Scandent_Herb",
                                       "climbing herb", "twining herb", "herbaceous climber",
                                       "Grass", "grass"), "herb", 
-                            ifelse(GF %in% c("Shrub", "subshrub", "shrub", "shrublet"), "shrub", NA)))) %>%
+                            ifelse(trait_value %in% c("Shrub", "subshrub", "shrub", "shrublet"), "shrub", NA)))) %>%
   select(scrubbed_species_binomial, GF) %>%
   filter(!is.na(GF)) %>%
   unique() %>%
   rename("Taxon" = scrubbed_species_binomial)
 
-unique(bien_final$GF)
+unique(bien_gf$GF)
+
+## "seed mass" 
+bien_sm <- bien %>%
+  filter(trait_name == "seed mass") 
+
+## make sure we do not lost data in numeric conversion
+val = bien_sm$trait_value
+new_val = as.numeric(as.character(bien_sm$trait_value))
+val[which(is.na(new_val))]
+
+bien_sm <- bien_sm %>%
+  mutate(SM = as.numeric(as.character(trait_value))) %>%
+  rename("Taxon" = scrubbed_species_binomial) %>%
+  select(Taxon, SM) %>%
+  filter(!is.na(SM)) %>%
+  unique() 
+
+bien_final = full_join(bien_gf, bien_sm)
 
 ## filter to bioshifts species
-bien_sub <- filter(bien_final, Taxon %in% sp$scientificName)
+bien_sub <- filter(bien_final, Taxon %in% sp$scientificName) %>%
+  mutate(source = "BIEN")
 
 
 ## BROT
@@ -78,7 +97,7 @@ brot = read.csv("data-raw/primary-trait-data/BROT/BROT2_dat.csv")
 unique(brot$Trait)
 ## GrowthForm, DispMode
 brot = brot %>%
-  filter(Trait %in% c("GrowthForm", "DispMode"))
+  filter(Trait %in% c("GrowthForm", "DispMode", "SeedMass"))
 
 ## GrowthForm
 gf = brot %>%
@@ -124,14 +143,23 @@ dm = dm %>%
                                           ifelse(Data %in% c("N", "P", "O", "Z"),"animal",
                                                  NA)))))) %>%
   filter(!is.na(DS)) 
+
+sm = brot %>%
+  filter(Trait == "SeedMass") %>%
+  mutate(SM = Data) %>%
+  select(Taxon, SM) %>%
+  unique()
+  
   
 ## make data so that is has 1 row per species per unique trait combination
 brot_final <- dm %>%
   select(Taxon, DS) %>%
-  inner_join(select(gf, c(Taxon, GF)))
+  full_join(select(gf, c(Taxon, GF))) %>%
+  full_join(sm)
 
 ## filter to bioshifts species
-brot_sub <- filter(brot_final, Taxon %in% sp$scientificName)
+brot_sub <- filter(brot_final, Taxon %in% sp$scientificName)%>%
+  mutate(source = "BROT")
 
 ## D3
 d3 = read.delim("data-raw/primary-trait-data/D3/1-s2.0-S1433831913000218-mmc1.txt")
@@ -147,24 +175,181 @@ d3_final <- d3 %>%
                      ifelse(citation_prop_endo > 0, "animal", 
                             ifelse(citation_prop_epi > 0, "animal",
                                    NA)))) %>%
-  mutate(TV = log10(vterm)) %>%
+  mutate(TV = vterm) %>%
+  mutate(SM = dia_mass) %>%
   mutate(Taxon = paste(str_split_fixed(name, " ", 2)[,1], str_split_fixed(name, " ", 3)[,2], sep = " ")) %>%
-  select(Taxon, DS, TV) %>%
-  filter(!is.na(DS) | !is.na(TV))
+  select(Taxon, DS, TV, SM) %>%
+  filter(!is.na(DS) | !is.na(TV) | !is.na(SM))
 
 ## filter to bioshifts species
-d3_sub <- filter(d3_final, Taxon %in% sp$scientificName)
+d3_sub <- filter(d3_final, Taxon %in% sp$scientificName) %>%
+  mutate(source = "D3")
 
 
 ## LEDA
+## Growth form
+ledagf = read.delim("data-raw/primary-trait-data/LEDA/plant_growth_form copy.txt", sep = ";")
 
-## PalmTraits
+# https://hosho.ees.hokudai.ac.jp/tsuyu/top/dct/lf.html
+# plant life form classifications:
+
+# Phanerophytes, epiphyte, sclerophyte - tree
+# Macrophanerophytes - tall tree
+# Mesophanerophytes - short tree or shrub 
+# Nanophanerophytes - shrub
+# Chamaephytes [Ch]  - shrub
+# Hemicryptophytes, Geophytes - perennial herb
+# Helophytes - underwater perennial herb
+# Therophytes - annual herb
+# forb, graminoid, geophyte - herb
+# Liana - classify as tree
+
+unique(ledagf$plant.growth.form)
+## exclude parasites since likely not able to accurately predict dispersal distance
+
+## clean data so everything is tree shrub or herb
+ledagf_final = ledagf %>%
+  mutate(GF = ifelse(plant.growth.form %in% c("Chamaephyte"), "shrub", 
+                     ifelse(plant.growth.form %in% c("Geophyte", "Hemicryptophyte", 
+                                                     "Therophyte"), "herb", 
+                            ifelse(plant.growth.form %in% c("Phanerophyte"), "tree", NA)))) %>%
+  select(SBS.name, GF) %>%
+  rename("Taxon" = SBS.name) %>%
+  filter(!is.na(GF)) %>%
+  unique()
+  
+length(unique(ledagf_final$ledagf_final))
+
+## get rid of ones with two growth form classifications for now
+ledagf_final <- filter(ledagf_final, ! Taxon %in% ledagf_final$Taxon[which(duplicated(ledagf_final$Taxon))])
+
+## filter to bioshifts species
+ledagf_sub <- filter(ledagf_final, Taxon %in% sp$scientificName)
+
+## Terminal velocity
+ledatv = read.delim("data-raw/primary-trait-data/LEDA/TV_2016 copy.txt", sep = ";")
+
+## get rid of mean observations (sample size != 1) 
+ledatv_final = ledatv %>%
+  filter(!general.method == "unknown") %>%
+  filter(sample.size == 1) %>%
+  mutate(TV = single.value..m.s.) %>%
+  rename("Taxon" = SBS.name) %>%
+  select(Taxon, TV) %>%
+  unique() 
+ 
+## filter to bioshifts species
+ledatv_sub <- filter(ledatv_final, Taxon %in% sp$scientificName) 
+
+## Dispersal type
+ledadt = read.delim("data-raw/primary-trait-data/LEDA/dispersal_type copy.txt", sep = ";")
+
+ledadt = filter(ledadt, dispersal.type != "") # get rid of empty data
+
+unique(ledadt$dispersal.type)
+
+# https://d-nb.info/1122297556/34
+# https://d-nb.info/975149946/34
+
+## animal = c("epizoochor","endozoochor", "dysochor", "zoochor")
+## wind.none = 
+## wind.special = 
+## ant = 
+## ballistic = c("autochor", "ballochor", "blastochor", "herpochor")
+
+## wind unknown = "boleochor", "meteorochor"
+
+# "hemerochor" = "speirochor" = "agochor" = human
+# "ombrochor" = "bythisochor" = "nautochor" = water
+# "chamaechor" = tumble on ground in wind
+
+ledadt_final <- ledadt %>% 
+  mutate(DS = ifelse(dispersal.type == "dysochor" & str_detect(.$dispersal.vector, "ant"), 
+                     "ant",
+                     ifelse(dispersal.type %in% c("epizoochor","endozoochor", "dysochor", "zoochor"),
+                            "animal",
+                            ifelse(dispersal.type %in% c("autochor", "ballochor", "blastochor", "herpochor"),
+                                   "ballistic", 
+                                   NA)))) %>%
+  rename("Taxon" = SBS.name) %>%
+  select(Taxon, DS) %>%
+  filter(!is.na(DS)) %>%
+  unique() 
+                            
+length(unique(ledadt_final$Taxon))         
+
+## filter to bioshifts species
+ledadt_sub <- filter(ledadt_final, Taxon %in% sp$scientificName)
+
+## Release height
+ledarh = read.delim("data-raw/primary-trait-data/LEDA/releasing_height copy.txt", sep = ";")
+
+## calculate a mean rh per species 
+## get rid of ones with unknown methodology 
+## single value = max - min for a study
+## weight mean by sample size
+ledarh_final = ledarh %>%
+  filter(!general.method == "unknown") %>%
+  mutate(RHsample.size = ifelse(is.na(sample.size), 1, sample.size)) %>%
+  mutate(RH = single.value..m., sample.size) %>%
+  rename("Taxon" = SBS.name) %>%
+  select(Taxon, RH, RHsample.size) %>%
+  filter(!is.na(RH)) %>%
+  unique() 
+
+## filter to bioshifts species
+ledarh_sub <- filter(ledarh_final, Taxon %in% sp$scientificName)
+
+## seed mass
+ledasm = read.delim("data-raw/primary-trait-data/LEDA/seed_mass copy.txt", sep = ";")
+## leave for now, needs cleaning
+
+
+## combine all leda subsets 
+leda_sub = full_join(ledarh_sub, ledatv_sub) %>%
+  full_join(., ledadt_sub) %>%
+  full_join(., ledagf_sub) %>%
+  mutate(source = "LEDA")
 
 ## TRY
 
+
+
+
 ## Tamme 
+tamme <- read_csv("data-raw/dispersal/Tamme_DispersalDistanceData.csv")
+colnames(tamme) <- str_replace_all(colnames(tamme), "\\ ", "_")
+
+## reorganize
+tamme_final <- tamme %>%
+  rename("Taxon" = Species, "DS" = Dispersal_syndrome,
+         "GF" = Growth_form, "TV" = `Seed_terminal_velocity_(m/s)`,
+         "RH" = `Seed_release_height_(m)`,
+         "SM" = `Seed_weight_(mg)`) %>%
+  select(Taxon, DS, GF, RH, TV, SM) %>%
+  mutate(DS = ifelse(DS == "wind (special)", "wind.special",
+                     ifelse(DS == "wind (none)", "wind.none", 
+                            DS)))
+
+## filter to bioshifts species
+tamme_sub <- filter(tamme_final, Taxon %in% sp$scientificName) %>%
+  mutate(source = "Tamme")
+
+## combine them all!!!!!
+all = rbind.fill(tamme_sub, leda_sub) %>%
+  rbind.fill(., brot_sub) %>%
+  rbind.fill(., d3_sub) %>%
+  rbind.fill(., bien_sub)
+
+## need to resolve multiple values per species 
+all %>%
+  group_by(Taxon) %>%
+  tally()
 
 
+## things to do before going dispersal crazy
+## check if empirical dispersal distances explain cadillac data
+## if yes, check if inferred dispersal distances OR dispersal traits also do
 
 
 
