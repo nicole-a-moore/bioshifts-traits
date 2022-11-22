@@ -239,6 +239,9 @@ suth_mamm <- read_csv("data-raw/dispersal/Sutherland_2000_mammals.csv")
 colnames(suth_mamm) <- str_replace_all(colnames(suth_mamm), "\\ ", "_")
 suth_mamm$Species = ifelse(suth_mamm$Species == "", NA, suth_mamm$Species)
 
+## fill
+suth_mamm = fill(suth_mamm, Species, .direction = "down")
+
 sm_harm <- harmonize(suth_mamm$Species)
 
 notfound <- filter(sm_harm, is.na(db_code))
@@ -546,7 +549,7 @@ co_dd <- co_sub %>%
          `Mean_dispersal_distance_(m)`, 
          `Maximum_dispersal_distance_(m)`, 
          `Median_dispersal_distance_(m)`, 
-         Type) %>%
+         Type, Source) %>%
   gather(key = "Field", value = "DispersalDistance", c(`Mean_dispersal_distance_(m)`, 
                                                        `Maximum_dispersal_distance_(m)`, 
                                                        `Median_dispersal_distance_(m)`)) %>%
@@ -565,7 +568,7 @@ co_dd <- co_sub %>%
 suth_mamm_dd <- suth_mamm_sub %>%
   select(all_of(cols_to_keep), 
          `Natal_dispersal_median_distance_(km)`,
-         `Natal_dispersal_maximum_distance_(km)`, Obs_type) %>%
+         `Natal_dispersal_maximum_distance_(km)`, Obs_type, Source) %>%
   mutate(ObservationType = ifelse(Obs_type == "S", "single observation",
                                   ifelse(Obs_type == "D",  "distance-density distribution", 
                                          NA))) %>%
@@ -586,7 +589,8 @@ suth_mamm_dd <- suth_mamm_sub %>%
 suth_bird_dd <- suth_bird_sub %>%
   select(all_of(cols_to_keep), 
          `Natal_dispersal_median_distance_(km)`,
-         `Natal_dispersal_maximum_distance_(km)`, Obs_type) %>%
+         `Natal_dispersal_maximum_distance_(km)`, Obs_type,
+         Source) %>%
   mutate(ObservationType = ifelse(Obs_type == "S", "single observation",
                                   ifelse(Obs_type == "D",  "distance-density distribution", 
                                          NA))) %>%
@@ -597,7 +601,7 @@ suth_bird_dd <- suth_bird_sub %>%
                        ifelse(Field == "Natal_dispersal_maximum_distance_(km)",
                               "MaxDispersalDistance", 
                               NA))) %>%
-  mutate(Database = "Sutherland (mammals)", Unit = "km") %>%
+  mutate(Database = "Sutherland (birds)", Unit = "km") %>%
   filter(!is.na(DispersalDistance), DispersalDistance != "...") %>%
   mutate(Sex = str_split_fixed(DispersalDistance, " ", 2)[,2], 
          DispersalDistance = str_split_fixed(DispersalDistance, " ", 2)[,1]) %>%
@@ -605,7 +609,7 @@ suth_bird_dd <- suth_bird_sub %>%
 
 ## Whitmee & Orme
 wo_dd <- wo_sub %>%
-  select(all_of(cols_to_keep), Value, Units, Sex, Measure) %>%
+  select(all_of(cols_to_keep), Value, Units, Sex, Measure, Ref_no) %>%
   mutate(Code = ifelse(Measure == "Mean",
                        "MeanDispersalDistance", 
                        ifelse(Measure == "Maximum",
@@ -616,7 +620,7 @@ wo_dd <- wo_sub %>%
   mutate(Unit = ifelse(str_detect(.$Units, "km"), "km",
                         ifelse(str_detect(.$Units, "Metres"), "m", NA))) %>%
   mutate(Database = "Whitmee & Orme", ObservationType = NA, Field = "Value") %>%
-  rename("DispersalDistance" = Value) %>%
+  rename("DispersalDistance" = Value, "Source" = Ref_no) %>%
   filter(!is.na(DispersalDistance)) %>%
   select(-Measure, -Units)
 
@@ -629,7 +633,7 @@ tamme_dd <- tamme_sub %>%
          `Mode_dispersal_distance_(m)`,
          `90th_percentile_dispersal_distance_(m)`,
          `99th_percentile_dispersal_distance_(m)`,
-         Data_type) %>%
+         Data_type, Reference) %>%
   gather(key = "Field", value = "DispersalDistance", c(`Maximum_recorded_dispersal_distance_(m)`,
                                                        `Mean_dispersal_distance_(m)`,
                                                        `Median_dispersal_distance_(m)`, 
@@ -646,15 +650,17 @@ tamme_dd <- tamme_sub %>%
                                             "90thPercentileDispersalDistance", 
                                             ifelse(str_detect(.$Field, "99"),
                                                    "99thPercentileDispersalDistance",
-                                                   NA)))))) %>%
+                                                   ifelse(str_detect(.$Field, "Mode"),
+                                                          "ModeDispersalDistance",
+                                                          NA))))))) %>%
   mutate(Unit = "m", Database = "Tamme", Sex = NA) %>%
   filter(!is.na(DispersalDistance)) %>%
-  rename("ObservationType" = Data_type)
+  rename("ObservationType" = Data_type, "Source" = Reference)
 
 ## Shanks 2009
 shanks9_dd <- shanks9_sub %>%
   select(all_of(cols_to_keep),
-         Dispersal_distance) %>%
+         Dispersal_distance, source) %>%
   mutate(Unit = str_split_fixed(.$Dispersal_distance, " ", 2)[,2],
          DispersalDistance = str_split_fixed(.$Dispersal_distance, " ", 2)[,1]) %>%
   mutate(Unit = ifelse(Unit == "m1", "m", Unit), 
@@ -664,12 +670,13 @@ shanks9_dd <- shanks9_sub %>%
                                   "DispersalDistance")) %>%
   mutate(Database = "Shanks 2009", Sex = NA, Field = "Dispersal_distance", ObservationType = NA) %>%
   select(-Dispersal_distance) %>%
-  filter(!is.na(DispersalDistance))
+  filter(!is.na(DispersalDistance)) %>%
+  rename("Source" = source)
 
 ## Shanks 2003
 shanks3_dd <- shanks3_sub %>%
   select(all_of(cols_to_keep),
-         `Realized_dispersal_distance_(mean)`) %>%
+         `Realized_dispersal_distance_(mean)`, source) %>%
   mutate(Unit = str_split_fixed(.$`Realized_dispersal_distance_(mean)`, " ", 2)[,2],
          DispersalDistance = str_split_fixed(.$`Realized_dispersal_distance_(mean)`, " ", 2)[,1]) %>%
   mutate(DispersalDistance = str_replace_all(DispersalDistance, "\\<", "")) %>%
@@ -680,13 +687,14 @@ shanks3_dd <- shanks3_sub %>%
          ObservationType = NA) %>%
   select(-`Realized_dispersal_distance_(mean)`) %>%
   filter(!is.na(DispersalDistance))%>%
-  unique()
+  rename("Source" = source) %>%
+  unique() 
 
 ## Bowman
 bowman_dd <- bowman_sub %>%
   select(all_of(cols_to_keep),
-         `Distance_(km)`) %>%
-  rename("DispersalDistance" = `Distance_(km)`) %>%
+         `Distance_(km)`, Reference) %>%
+  rename("DispersalDistance" = `Distance_(km)`, "Source" = Reference) %>%
   mutate(Sex = NA, ObservationType = NA, Unit = "km", Field = "Distance_(km)",
          Code = "DispersalDistance", Database = "Bowman")%>%
   filter(!is.na(DispersalDistance))%>%
@@ -700,13 +708,15 @@ jenkins_dd <- jenkins_sub %>%
   rename("DispersalDistance" = `Max._Indiv._Dispersal_Distance_(m)`) %>%
   mutate(Sex = NA, ObservationType = NA, Unit = "m", 
          Field = "Max._Indiv._Dispersal_Distance_(m)",
-         Code = "MaxDispersalDistance", Database = "Jenkins") %>%
+         Code = "MaxDispersalDistance", Database = "Jenkins",
+         Source = NA) %>%
   filter(!is.na(DispersalDistance))%>%
   unique()
 
 ## Flores
 flores_dd <- flores_sub %>%
-  select(all_of(cols_to_keep), Mean.dispersal.distance.m., Maximum.dispersal.distance.m.) %>%
+  select(all_of(cols_to_keep), Mean.dispersal.distance.m., Maximum.dispersal.distance.m.,
+         Reference) %>%
   gather(key = "Field", value = "DispersalDistance", 
          c(Mean.dispersal.distance.m., Maximum.dispersal.distance.m.)) %>%
   mutate(Code = ifelse(Field == "Mean.dispersal.distance.m.", 
@@ -717,6 +727,7 @@ flores_dd <- flores_sub %>%
   mutate(Sex = NA, ObservationType = NA, Unit = "m", 
          Database = "Flores") %>%
   filter(!is.na(DispersalDistance))%>%
+  rename("Source" = Reference) %>%
   unique()
 
 
