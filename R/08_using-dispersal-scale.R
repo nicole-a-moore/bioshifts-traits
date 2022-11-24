@@ -38,6 +38,23 @@ v1 = read.table("data-raw/bioshiftsv1/Shifts2018_checkedtaxo.txt",
                 header = T,
                 encoding="latin1") 
 
+v1 %>% 
+  filter(Type == "LAT")%>%
+  group_by(Param) %>%
+  summarise(plusplus = length(which(SHIFT > 0 & v.lat.mean> 0)),
+            plusminus = length(which(SHIFT > 0 & v.lat.mean < 0)),
+            minusplus = length(which(SHIFT < 0 & v.lat.mean> 0)),
+            minusminus = length(which(SHIFT < 0 & v.lat.mean < 0))) 
+
+v1 %>% 
+  filter(Type == "ELE") %>%
+  group_by(Param) %>%
+  summarise(plusplus = length(which(SHIFT > 0 & v.ele.mean> 0)),
+            plusminus = length(which(SHIFT > 0 & v.ele.mean < 0)),
+            minusplus = length(which(SHIFT < 0 & v.ele.mean> 0)),
+            minusminus = length(which(SHIFT < 0 & v.ele.mean < 0))) 
+
+
 ## clean names to make them match reported names in species list
 v1$reported_name = Clean_Names(gsub("_", " ", v1$Publi_name), return_gen_sps = F)
 
@@ -300,8 +317,9 @@ lat_o <- dat.MaxDispDist.lat[dat.MaxDispDist.lat$Param=="O",]
 lm(shift ~ max_disp_dist, data = lat_le)
 lm(shift ~ max_disp_dist, data = ele_le)
 
-lat_le %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = SHIFT, colour = class)) + geom_point()
+lat_te %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, y = SHIFT, colour = class)) + geom_point() +
+  facet_wrap(~class)
 ## interesting - so birds have larger dispersal distances AND more variable shifts
 
 ## what does relationship between shift and velocity look like?

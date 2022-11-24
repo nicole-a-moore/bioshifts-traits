@@ -161,50 +161,55 @@ harmonize <- function(sp_names){
     ## IUCN
     togo <- tofind[which(is.na(tofind$scientificName)),]
     
-    # retrieve sp names
-    ## PS: Cant filter on iucn method
-    iucn_names<-bdc_query_names_taxadb(togo$species, 
-                                       db = "iucn",
-                                       suggest_names = FALSE) # using exact names
-    iucn_names$scientificName <- paste(iucn_names$genus,iucn_names$specificEpithet) 
-    
-    # remove duplicates
-    if(any(duplicated(iucn_names$original_search))){
-      iucn_names <- iucn_names[-which(duplicated(iucn_names$original_search)),]
+    if(nrow(togo) == 0) {
+      return(tofind)
     }
-    
-    any(!iucn_names$original_search %in% sp_names)
-    
-    # select only accepted names
-    iucn_names <- iucn_names[which(iucn_names$taxonomicStatus == "accepted"),]
-    
-    cat("--- Summary ---\n",
-        "N taxa:",nrow(togo),"\n",
-        "N taxa found:",length(which(iucn_names$taxonomicStatus == "accepted")), "\n",
-        "N taxa not found:", nrow(togo)-length(which(iucn_names$taxonomicStatus == "accepted")))
-    
-    iucn_names <- iucn_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
-    names(iucn_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
-    iucn_names$db <- "iucn"
-    
-    # Feed
-    tofind <- tofind %>% 
-      rows_patch(iucn_names, 
-                 by = "species")
-    
-    gc()
-    
-    ## fix issues with Scientific names 
-    new <- sapply(tofind$scientificName, function(x){
-      tmp <- strsplit(x," ")[[1]]
-      if(any(duplicated(tmp))){
-        paste(tmp[-1], collapse = " ")
-      } else {
-        x
+    else {
+      # retrieve sp names
+      ## PS: Cant filter on iucn method
+      iucn_names<-bdc_query_names_taxadb(togo$species, 
+                                         db = "iucn",
+                                         suggest_names = FALSE) # using exact names
+      iucn_names$scientificName <- paste(iucn_names$genus,iucn_names$specificEpithet) 
+      
+      # remove duplicates
+      if(any(duplicated(iucn_names$original_search))){
+        iucn_names <- iucn_names[-which(duplicated(iucn_names$original_search)),]
       }
-    })
-    
-    tofind$scientificName <- new
+      
+      any(!iucn_names$original_search %in% sp_names)
+      
+      # select only accepted names
+      iucn_names <- iucn_names[which(iucn_names$taxonomicStatus == "accepted"),]
+      
+      cat("--- Summary ---\n",
+          "N taxa:",nrow(togo),"\n",
+          "N taxa found:",length(which(iucn_names$taxonomicStatus == "accepted")), "\n",
+          "N taxa not found:", nrow(togo)-length(which(iucn_names$taxonomicStatus == "accepted")))
+      
+      iucn_names <- iucn_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
+      names(iucn_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
+      iucn_names$db <- "iucn"
+      
+      # Feed
+      tofind <- tofind %>% 
+        rows_patch(iucn_names, 
+                   by = "species")
+      
+      gc()
+      
+      ## fix issues with Scientific names 
+      new <- sapply(tofind$scientificName, function(x){
+        tmp <- strsplit(x," ")[[1]]
+        if(any(duplicated(tmp))){
+          paste(tmp[-1], collapse = " ")
+        } else {
+          x
+        }
+      })
+      
+      tofind$scientificName <- new
+    }
     
     ## return
     return(tofind)
@@ -514,6 +519,32 @@ flores <- left_join(flores, flores_harm, by = c("reported_name_fixed" = "species
 length(which(unique(flores$scientificName) %in% unique(sp$scientificName))) ## 37
 flores_sp <- unique(flores$scientificName)[which(unique(flores$scientificName) %in% unique(sp$scientificName))]
 
+## TRY
+## read in TRY query
+try = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
+unique(try$TraitName)
+
+## get only dispersal data 
+try_dd <- try %>%
+  filter(TraitName == "Dispersal distance")
+length(unique(try_dd$SpeciesName)) #152 spp
+
+try_dd_harm <- harmonize(try_dd$SpeciesName)
+
+notfound <- filter(try_dd_harm, is.na(db_code))
+
+## rename columns 
+try_dd <- try_dd %>%
+  rename("reported_name" = SpeciesName) %>%
+  mutate(reported_name_fixed = reported_name)
+
+try_dd <- left_join(try_dd, try_dd_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## check how many species in bioshifts 
+length(which(unique(try_dd$scientificName) %in% unique(sp$scientificName))) ## 60
+try_dd_sp <- unique(try_dd$scientificName)[which(unique(try_dd$scientificName) %in% unique(sp$scientificName))]
+
 
 ## check how many unique species we have data for:
 species_with_dd <- append(co_sp, wo_sp) %>%
@@ -524,9 +555,10 @@ species_with_dd <- append(co_sp, wo_sp) %>%
   append(., suth_bird_sp) %>%
   append(., bowman_sp) %>%
   append(., jenkins_sp) %>%
-  append(., flores_sp)
+  append(., flores_sp) %>%
+  append(., try_dd_sp)
 
-length(unique(species_with_dd)) # 605 species 
+length(unique(species_with_dd)) # 635 species 
 
 ## now: gather the data
 co_sub = filter(co, scientificName %in% co_sp)
@@ -539,6 +571,7 @@ suth_bird_sub = filter(suth_bird, scientificName %in% suth_bird_sp)
 bowman_sub = filter(bowman, scientificName %in% bowman_sp)
 jenkins_sub = filter(jenkins, scientificName %in% jenkins_sp)
 flores_sub = filter(flores, scientificName %in% flores_sp)
+try_dd_sub = filter(try_dd, scientificName %in% try_dd_sp)
 
 cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "kingdom", "phylum",
                   "class", "order", "family", "db", "db_code")
@@ -730,6 +763,23 @@ flores_dd <- flores_sub %>%
   rename("Source" = Reference) %>%
   unique()
 
+## TRY
+try_dd_dd <- try_dd_sub %>%
+  select(all_of(cols_to_keep), 
+         OrigValueStr,
+         OriglName, OrigUnitStr, Reference) %>%
+  rename("Source" = Reference, "Field" = OriglName, "DispersalDistance" = OrigValueStr, "Unit" = OrigUnitStr) %>%
+  mutate(Code = ifelse(Field == "MeanDispersalDistanceMean", 
+                       "MeanDispersalDistance", 
+                       ifelse(Field %in%c("MaxDispersalDistanceMax", "Max Seed Dispersal Distance"),
+                              "MaxDispersalDistance", 
+                              ifelse(Field %in% c("Effective Seed Dispersal Distance", "Seed Dispersal distance"),
+                                     "DispersalDistance",
+                                     NA)))) %>%
+  mutate(Sex = NA, ObservationType = NA,  
+         Database = "TRY") %>% 
+  filter(!is.na(Unit))
+  
 
 dd_collated <- rbind(co_dd, wo_dd) %>%
   rbind(., tamme_dd) %>%
@@ -740,11 +790,12 @@ dd_collated <- rbind(co_dd, wo_dd) %>%
   rbind(., bowman_dd) %>%
   rbind(., jenkins_dd) %>%
   rbind(., flores_dd) %>%
+  rbind(., try_dd_dd) %>%
   unique()
 
-length(unique(dd_collated$scientificName)) # 604
+length(unique(dd_collated$scientificName)) # 630
 
-write.csv(dd_collated, "data-processed/dispersal-distance-collated_temp.csv", row.names = FALSE)
+write.csv(dd_collated, "data-processed/dispersal-distance-collated.csv", row.names = FALSE)
 
 ## make some plots 
 dd_collated %>%
@@ -755,7 +806,6 @@ dd_collated %>%
   left_join(., select(dd_collated, class, kingdom)) %>%
   group_by(kingdom) %>%
   unique() %>%
-  arrange(-n, .by_group=T) %>%
   ungroup() %>%
   mutate(class = factor(class, levels = as.character(class), ordered = TRUE)) %>%
   ggplot(., aes(x = class, y = n, fill = kingdom)) + geom_col() + 

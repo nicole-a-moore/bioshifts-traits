@@ -312,8 +312,116 @@ leda_sub = full_join(ledarh_sub, ledatv_sub) %>%
   mutate(source = "LEDA")
 
 ## TRY
+## read in TRY query
+try = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
+unique(try$TraitName)
+
+## subset to our bioshift species bc this data is HUGE
+try <- filter(try, SpeciesName %in% sp$scientificName)
+
+## GF
+try_gf <- try %>%
+  filter(TraitName == "Plant growth form")
+
+length(unique(try_gf$SpeciesName)) ## assuming we can trust/clean every data, potential to get GF for 5800 bioshift species
+
+unique(try_gf$OrigValueStr) ## oh god
+unique(try_gf$OriglName) ## oh god x2
+
+## get rid of original names that sound like not what we want 
+try_gf <- try_gf %>%
+  filter(!OriglName %in% c("shoot growth form", "ClimbingMode", "Multistemness/ Growth form ", 
+  "Multistemness", "Succulence", "Succulence of Leaves or Stem", "Funct. group", "Leaf succulence",
+  "Stem succulent", "Plant size", "succulent species", "Succulence index", "CONSENSUS", "Parasite",
+  "carnivory", "aquatic", "climber", "Parasitic", "Transect"))
+
+unique(try_gf$OriglName)
+
+## low-hanging fruit
+try_gf <- try_gf %>%
+  filter(!str_detect(OrigValueStr, "aquatic"), !str_detect(OrigValueStr, "Aquatic")) %>% ## get rid of aquatic
+  filter(!str_detect(OrigValueStr, "moss"), !str_detect(OrigValueStr, "Moss"), !str_detect(OrigValueStr, "MOSS")) %>% ## get rid of moss
+  filter(!str_detect(OrigValueStr, "PARASITE"), !str_detect(OrigValueStr, "parasite"),
+         !str_detect(OrigValueStr, "Parasite"),!str_detect(OrigValueStr, "carniv"),
+         !str_detect(OrigValueStr, "Succulent"),  !str_detect(OrigValueStr, "non-succulent"),
+         !str_detect(OrigValueStr, "Free-standing"), !str_detect(OrigValueStr, "No"),
+         !str_detect(OrigValueStr, "succulent")) %>% ## get rid of parasites, succulent
+  filter(OrigValueStr != "?") %>% ## get rid of ?
+  mutate(GF = OrigValueStr) %>%
+  mutate(GF = ifelse(GF %in% c("shrub", "Shrub", "Shurb", "subshrub", "Shrub, Subshrub",
+                                         "Subshrub, Shrub", "Shrub/Subshrub", "Shrub (S)", 
+                               "Subshurb", "sub-shrub", "Sub-Shrub (Chamaephyte)", "shrubs", "shrub or chamaephyt", 
+                               "S", "SS", "sh"),
+                     "shrub", GF)) %>%
+  mutate(GF = ifelse(GF %in% c("tree", "Tree","Tree (T)", "t", "T", "Tree (deciduous)", "Tree (evergreen)", 
+                               "TREE", "trees", "trees/Tree", "trees/tree/Tree", "trees/tree", "Tree/Treelet", 
+                               "Small_Tree", "small tree", "tree (woody >4m)", "tree/woody", "epiphyte", "epiphytes", 
+                               "Epiphyte", "Epiphyte/Tree", "T  resp.  T"),
+                     "tree", GF)) %>%
+  mutate(GF = ifelse(GF %in% c("herb", "Herb", "herbs", "Herbaceous", "Herbaceous Monocot", "Herbaceous Dicot", 
+                               "Herbaceous Forb", 
+                               "H", "herb.", "herbaceous legume", "h", "herbaceous", "herb/non-woody", 
+                               "herbaceous/Terrestrial Herb", "Trailing_Herb", "Forb/herb", "perennial", "annual",
+                               "Terrestrial Herb", "herbaceous plant", "herbaceous perennial", "herbaceous annual-biennial",
+                               "perennial legume", "herbaceous dicotyl", "herbaceous monocotyl", "perennial herb", 
+                               "forb (herbaceous, with or without woody base)","perennial leguminous herb", 
+                               "herbaceous/?", "geophyte", "Geophyte", "graminoid", "perennial graminoid", 
+                               "graminoid/non-woody", "Perennial graminoid", "Annual graminoid", "Graminoid", "Graminoids",
+                               "therophyte", "forb",  "leguminous forb", "Annual forb", "Perennial forb", "perennial forb", 
+                               "annual forb", "Forb", "Forbs", "Herbaceous dicots", "f", "Annual Herb", "F"),
+                     "herb", GF))
+
+## see how many per species 
+try_gf %>%
+  filter(GF %in% c("tree", "shrub", "herb")) %>%
+  group_by(SpeciesName, GF) %>%
+  tally() %>%
+  arrange(n) %>% View
+  
+## good enough for now - do a better job of cleaning later 
+## let's say if more than 10 records call something a tree/herb/shrub, it's safe to call it that 
+classif = try_gf %>%
+  filter(GF %in% c("tree", "shrub", "herb")) %>%
+  group_by(SpeciesName, GF) %>%
+  tally() %>%
+  filter(n > 10) %>%
+  arrange(n)
+
+length(which(duplicated(classif$SpeciesName))) ## 71 have 2 classifications 
+
+## exclude them for now 
+classif <- filter(classif, !SpeciesName %in% classif$SpeciesName[which(duplicated(classif$SpeciesName))])
+
+length(unique(classif$SpeciesName)) ## growth form for 1897 bioshift species for now 
+
+## for now, leave this alone
+## move on to dispersal syndrome
 
 
+## DS
+try_ds <- try %>%
+  filter(TraitName == "Dispersal syndrome")
+
+length(unique(try_ds$SpeciesName)) ## potential for 2247 bioshifts species 
+
+unique(try_ds$OrigValueStr)
+
+
+## TV
+try_tv <- try %>%
+  filter(TraitName == "Seed terminal velocity")
+
+length(unique(try_tv$SpeciesName)) ## potential for 2247 bioshifts species 
+
+unique(try_tv$OrigValueStr)
+
+## RH
+try_rh <- try %>%
+  filter(TraitName == "Seed releasing height")
+
+length(unique(try_rh$SpeciesName)) ## potential for 2247 bioshifts species 
+
+unique(try_rh$OrigValueStr)
 
 
 ## Tamme 
@@ -347,9 +455,6 @@ all %>%
   tally()
 
 
-## things to do before going dispersal crazy
-## check if empirical dispersal distances explain cadillac data
-## if yes, check if inferred dispersal distances OR dispersal traits also do
 
 
 
