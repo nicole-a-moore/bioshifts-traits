@@ -402,16 +402,15 @@ length(unique(classif$SpeciesName)) ## growth form for 1897 bioshift species for
 try_ds <- try %>%
   filter(TraitName == "Dispersal syndrome")
 
-length(unique(try_ds$SpeciesName)) ## potential for 2247 bioshifts species 
+length(unique(try_ds$SpeciesName)) ## potential for 2256 bioshifts species 
 
 unique(try_ds$OrigValueStr)
-
 
 ## TV
 try_tv <- try %>%
   filter(TraitName == "Seed terminal velocity")
 
-length(unique(try_tv$SpeciesName)) ## potential for 2247 bioshifts species 
+length(unique(try_tv$SpeciesName)) ## potential for 983 bioshifts species 
 
 unique(try_tv$OrigValueStr)
 
@@ -419,9 +418,25 @@ unique(try_tv$OrigValueStr)
 try_rh <- try %>%
   filter(TraitName == "Seed releasing height")
 
-length(unique(try_rh$SpeciesName)) ## potential for 2247 bioshifts species 
+length(unique(try_rh$SpeciesName)) ## potential for 78 bioshifts species 
 
 unique(try_rh$OrigValueStr)
+
+## SM
+try2 = read_delim("data-raw/primary-trait-data/TRY/23659.txt")
+unique(try2$TraitName)
+
+## subset to our bioshift species bc this data is HUGE
+try2 <- filter(try2, SpeciesName %in% sp$scientificName)
+
+## SM
+try_sm <- try2 %>%
+  filter(TraitName == "Seed dry mass")
+
+length(unique(try_sm$SpeciesName)) ## potential for 3175 bioshifts species 
+
+unique(try_sm$OrigValueStr)
+
 
 
 ## Tamme 

@@ -796,6 +796,7 @@ dd_collated <- rbind(co_dd, wo_dd) %>%
 length(unique(dd_collated$scientificName)) # 630
 
 write.csv(dd_collated, "data-processed/dispersal-distance-collated.csv", row.names = FALSE)
+dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
 
 ## make some plots 
 dd_collated %>%
@@ -827,3 +828,137 @@ dd_collated %>%
   ggplot(aes(x = log(DispersalDistance))) + geom_histogram() + 
   facet_wrap(~Code)
 
+
+### collate dispersal frequency/longevity data
+## TRY
+try2 = read_delim("data-raw/primary-trait-data/TRY/23659.txt")
+unique(try2$TraitName)
+
+## subset to our bioshift species bc this data is HUGE
+try2 <- filter(try2, SpeciesName %in% dd_collated$scientificName)
+
+## dispersal frequency
+try_df <- try2 %>%
+  filter(TraitName == "Dispersal frequency") %>%
+  filter(OrigValueStr != "7")
+
+length(unique(try_df$SpeciesName)) ## potential for 40 bioshifts species with dd data 
+
+unique(try_df$OriglName)
+unique(try_df$OrigValueStr)
+# mast = 2 or more years between
+# regular = every year
+# alternate = every second year 
+# irregular = ?
+
+
+## longevity: 
+lifespan <- read.csv("data-raw/CompilationLifeSpan_02242022.csv")
+unique(lifespan$Database)
+
+## filter to species with dispersal distance
+lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
+length(unique(lifespan$SpeciesChecked)) ## 469 of our species 
+
+## how many are animals?
+lifespan = filter(lifespan, phylum == "Chordata")
+length(unique(lifespan$SpeciesChecked)) ## 178 of our species 
+
+## write
+write.csv(lifespan, "data-processed/longevity.csv", row.names = FALSE)
+
+dd_collated %>%
+  select(kingdom, scientificName) %>%
+  unique() %>%
+  summarise(length(which(kingdom == "Animalia"))) # out of the 212 animals - nice!!! 
+
+unique(lifespan$class)
+
+## for plants, want to know age at first maturity 
+## TRY 
+try_am = read_delim("data-raw/primary-trait-data/TRY/23659.txt")
+unique(try_am$TraitName)
+
+## dispersal frequency
+try_am <- try_am %>%
+  filter(TraitName == "Plant ontogeny: age of maturity (first flowering)") 
+
+## harmonize names 
+try_am_harm <- harmonize(try_am$SpeciesName)
+
+notfound <- filter(try_am_harm, is.na(db_code))
+
+## rename columns 
+try_am <- try_am %>%
+  rename("reported_name" = SpeciesName) %>%
+  mutate(reported_name_fixed = reported_name)
+
+try_am <- left_join(try_am, try_am_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## subset to bioshifts species with dispersal distance
+try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
+
+length(unique(try_am_bs$scientificName)) # 270 species 
+
+dd_collated %>%
+  select(kingdom, scientificName) %>%
+  unique() %>%
+  summarise(length(which(kingdom == "Plantae"))) # out of the 416 plants - nice!!! 
+
+## clean the data 
+unique(try_am_bs$OriglName)
+
+try_am_bs = try_am_bs %>%
+  filter(!OriglName %in% c("flowering", "Secondary juvenile period")) %>%
+  mutate(Unit = ifelse(str_detect(OrigValueStr, "yrs") | OrigUnitStr %in% c("years?", "yr", "years"), 
+                        "yrs",
+                       ifelse(str_detect(OrigUnitStr, "day"), 
+                              "days", 
+                              OrigUnitStr)))
+try_am_bs$Unit[which(str_detect(try_am_bs$OrigValueStr, "weeks"))] = "weeks"
+
+unique(try_am_bs$OrigUnitStr)
+unique(try_am_bs$Unit)
+
+try_am_bs$Unit[which(is.na(try_am_bs$Unit))] <- "yrs"
+
+## want minimum age at maturity to give a maximum dispersal estimate 
+try_am_bs = try_am_bs %>%
+  mutate(AgeAtMaturity = str_replace_all(OrigValueStr,"\\<", ""),
+         AgeAtMaturity = str_replace_all(AgeAtMaturity,"\\>", ""),
+         AgeAtMaturity = str_split_fixed(AgeAtMaturity, "\\-", 2)[,1]) %>%
+  mutate(AgeAtMaturity = str_replace_all(AgeAtMaturity, "Over ", "")) %>%
+  mutate(AgeAtMaturity = str_replace_all(AgeAtMaturity, "Within ", "")) %>%
+  mutate(AgeAtMaturity = str_replace_all(AgeAtMaturity, "Between ", "")) %>%
+  mutate(AgeAtMaturity = str_split_fixed(AgeAtMaturity, " ", 2)[,1])
+
+unique(try_am_bs$AgeAtMaturity)
+
+try_am_bs <- try_am_bs %>%
+  select(all_of(cols_to_keep), 
+         Unit, AgeAtMaturity, OriglName, 
+         Reference) %>%
+  mutate(Database = "TRY") %>%
+  filter(!is.na(AgeAtMaturity)) %>%
+  rename("Source" = Reference, "Field" = OriglName)
+
+## save 
+write.csv(try_am_bs, "data-processed/age-at-maturity-TRY.csv", row.names = FALSE)
+
+## maybe we can use 
+## annual, biennial, perennial
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
