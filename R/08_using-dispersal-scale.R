@@ -4,6 +4,7 @@ library(PNWColors)
 library(gridExtra)
 library(grid)
 library(cowplot)
+library(lme4)
 source("R/taxonomic-harmonization/clean_taxa_functions.R")
 
 #----------------------
@@ -29,7 +30,13 @@ dscale <- dscale %>%
 
 ## plot distribution
 dscale %>%
-  ggplot(aes(x = log(DispersalDistanceKm), fill = class)) + geom_histogram() 
+  ggplot(aes(x = log(DispersalDistanceKm), fill = class)) + geom_histogram() +
+  theme_bw()
+
+dscale %>%
+  ggplot(aes(x = Code, fill = class)) + geom_bar() +
+  theme_bw() + coord_flip()
+
 
 #----------------------
 ## read in list of all bioshifts species 
@@ -244,8 +251,16 @@ v1 = read.csv("data-processed/bioshiftsv1_max-dispersal-distance.csv")
 am <- read.csv("data-processed/age-at-maturity-TRY.csv")
 long <- read.csv("data-processed/longevity.csv")
 
+long %>% 
+  ggplot(aes(x = log(LifeSpan), fill = class)) + geom_histogram() +
+  theme_bw()
+
+am %>% 
+  ggplot(aes(x = log(AgeAtMaturity), fill = class)) + geom_histogram() +
+  theme_bw()
+
 ## if multiple estimates of age at maturity per species, keep the lowest 
-am_join <- try_am_bs %>%
+am_join <- am %>%
   group_by(scientificName) %>%
   mutate(AgeAtMaturity = as.numeric(as.character(AgeAtMaturity))) %>%
   mutate(AgeAtMaturityDays = ifelse(Unit == "yrs", 
@@ -259,7 +274,7 @@ am_join <- try_am_bs %>%
   unique() %>%
   mutate(YearOfMaturity = ceiling(AgeAtMaturityDays/365)) ## make new column for a value that's rounded to the nearest year 
 
-long_join = lifespan %>%
+long_join = long %>%
   rename("scientificName" = SpeciesChecked) %>%
   group_by(scientificName) %>%
   mutate(LifeSpanYears = as.numeric(as.character(LifeSpan))) %>%
@@ -274,7 +289,9 @@ v1 <- left_join(v1, long_join) %>%
 
 length(unique(v1$scientificName)) ## still have all the species!
 length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])) 
-## 155 / 561 species do not have longevity/age at maturity data 
+## 143 / 561 species do not have longevity/age at maturity data 
+
+unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])
 
 ## calculate dispersal potential for species with age at maturity/longevity 
 v1 = v1 %>%
@@ -282,9 +299,16 @@ v1 = v1 %>%
                                      MaxDispersalDistanceKm/LifeSpanYears,
                                      ifelse(!is.na(YearOfMaturity),
                                             MaxDispersalDistanceKm/YearOfMaturity,
-                                            NA)))
+                                            NA))) %>%
+  mutate(MaxDispersalPotentialmY = ifelse(!is.na(LifeSpanYears), 
+                                           (MaxDispersalDistanceKm*1000)/LifeSpanYears,
+                                           ifelse(!is.na(YearOfMaturity),
+                                                  (MaxDispersalDistanceKm*1000)/YearOfMaturity,
+                                                  NA))) %>%
+  mutate(MaxDispersalDistancem = MaxDispersalDistanceKm*1000)
 
 ggplot(v1, aes(x = log(MaxDispersalPotentialKmY), fill = class)) + geom_histogram()
+ggplot(v1, aes(x = log(MaxDispersalPotentialmY), fill = class)) + geom_histogram()
 ggplot(v1, aes(x = log(MaxDispersalDistanceKm), fill = class)) + geom_histogram()
 
 #----------------------
@@ -293,6 +317,12 @@ v1$MaxDispersalDistanceKm = log(v1$MaxDispersalDistanceKm)
 hist(v1$MaxDispersalDistanceKm)
 v1$MaxDispersalPotentialKmY = log(v1$MaxDispersalPotentialKmY)
 hist(v1$MaxDispersalPotentialKmY)
+v1$MaxDispersalPotentialmY = log(v1$MaxDispersalPotentialmY)
+v1$MaxDispersalDistancem = log(v1$MaxDispersalDistancem)
+
+v1 %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, y = MaxDispersalPotentialKmY, colour = class)) + geom_point() +
+  theme_bw()
 
 #----------------------
 #prepare a dataset for each gradient
@@ -314,6 +344,33 @@ nrow(ele) + nrow(lat) #3151
 ## how many leading edge shifts for species with maximum dispersal distance in v1? 
 length(which(ele$Param == "LE")) + length(which(lat$Param == "LE")) #973
 
+lat = lat %>%
+  filter(v.lat.mean >= 0) %>%
+  ## get rid of cases where you expect contraction at leading edge (negative velocity)
+  mutate(expect_tracking_dist = ifelse(MaxDispersalDistanceKm > log(v.lat.mean),"Yes", "No")) %>%
+  mutate(expect_tracking_pot = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean),"Yes", "No")) %>%
+  ## get rid of trailing edge 
+  filter(., Param != "TE") %>%
+  filter(!is.na(MaxDispersalPotentialKmY))
+
+ele = ele %>%
+  filter(v.ele.mean >= 0) %>%
+  ## get rid of cases where you expect contraction at leading edge (negative velocity)
+  mutate(expect_tracking_dist = ifelse(MaxDispersalDistancem > log(v.ele.mean),"Yes", "No")) %>%
+  mutate(expect_tracking_pot = ifelse(MaxDispersalPotentialmY > log(v.ele.mean),"Yes", "No"))  %>%
+  ## get rid of trailing edge 
+  filter(., Param != "TE") %>%
+  filter(!is.na(MaxDispersalPotentialKmY))
+
+
+lat %>% rbind(., ele) %>%
+  ggplot(aes(x = Param)) + geom_bar() + theme_bw() +
+  labs(y = "Count", x = "Range shift parameter") + 
+  facet_wrap(~Type)
+
+lat %>% rbind(., ele) %>%
+  group_by(Type, Param) %>%
+  tally()
 
 # Plot:
 #----------------------
@@ -327,37 +384,18 @@ lat_o <- lat[lat$Param=="O",]
 
 pal = pnw_palette("Bay",7)
 
-## filter out classes with fewer than 2 sp that have dispersal potential
-plus2ele = ele %>%
-  group_by(class, Param) %>%
-  filter(length(which(!is.na(MaxDispersalPotentialKmY))) >= 2) %>% 
-  ungroup() %>%
-  filter(!is.na(MaxDispersalPotentialKmY))
-
-plus2lat = lat %>%
-  group_by(class, Param) %>%
-  filter(length(which(!is.na(MaxDispersalPotentialKmY))) >= 2) %>% 
-  ungroup() %>%
-  filter(!is.na(MaxDispersalPotentialKmY))
-
-ele_te <- plus2ele[plus2ele$Param=="TE",]
-ele_le <- plus2ele[plus2ele$Param=="LE",]
-ele_o <- plus2ele[plus2ele$Param=="O",]
-lat_te <- plus2lat[plus2lat$Param=="TE",]
-lat_le <- plus2lat[plus2lat$Param=="LE",]
-lat_o <- plus2lat[plus2lat$Param=="O",]
 
 ## how many species should be able to keep up with climate change across elev and lat?
 pol1 <- data.frame(x = c(-10, 9, 9), y = c(-10, -10, 9))
 pol2 <- data.frame(x = c(-10, -10, 9), y = c(-10, 9, 9))
+pol3 <- data.frame(x = c(-5, 15, 15), y = c(-5, -5, 15))
+pol4 <- data.frame(x = c(-5, -5, 15), y = c(-5, 15, 15))
 
-plot1 = lat_le %>% 
-  filter(!is.na(log(v.lat.mean))) %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.lat.mean),"Yes", "No")) %>%
+plot1 = lat %>% 
   ggplot(aes(y = MaxDispersalDistanceKm, x = log(v.lat.mean))) + 
   geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
-  geom_point(aes(colour = expect_tracking)) +
+  geom_point(aes(colour = expect_tracking_dist)) +
   scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
   scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
   theme_light() + theme(panel.grid = element_blank()) + 
@@ -368,20 +406,18 @@ plot1 = lat_le %>%
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme(legend.position = "none")
 
-plot2 = ele_le %>% 
-  filter(!is.na(log(v.ele.mean))) %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.ele.mean), "Yes", "No")) %>%
-  ggplot(aes(y = MaxDispersalDistanceKm, x = log(v.ele.mean))) +
-  geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
-  geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
-  geom_point(aes(colour = expect_tracking)) +
-  scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
+plot2 = ele %>% 
+  ggplot(aes(y = MaxDispersalDistancem, x = log(v.ele.mean))) +
+  geom_polygon(data = pol3, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
+  geom_polygon(data = pol4, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
+  geom_point(aes(colour = expect_tracking_dist)) +
+  scale_x_continuous(limits = c(-5, 15), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-5, 15), expand = c(0,0)) +
   theme(panel.grid = element_blank())  +
   theme_classic() + 
   labs(colour = "Does dispersal\npotential allow\nspecies to keep up\nwith temp change?",
-       y = "Log maximum dispersal distance (km)", 
-       x = "Log mean velocity of temperature (km/y)", 
+       y = "Log maximum dispersal distance (m)", 
+       x = "Log mean velocity of temperature (m/y)", 
        title = "Elevational shifts")  +
   scale_colour_manual(values = c(pal[6], pal[4]))
 
@@ -392,13 +428,11 @@ ggsave(p, height = 3.5, width = 9, device = "png", path = "figures/dispersal",
        filename = "maxdispersal-versus-lag.png")
 
 ## try with dispersal potential 
-plot3 = lat_le %>% 
-  filter(!is.na(log(v.lat.mean))) %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean),"Yes", "No")) %>%
+plot3 = lat %>% 
   ggplot(aes(y = MaxDispersalPotentialKmY, x = log(v.lat.mean))) + 
   geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
-  geom_point(aes(colour = expect_tracking)) +
+  geom_point(aes(colour = expect_tracking_pot)) +
   scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
   scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
   theme_light() + theme(panel.grid = element_blank()) + 
@@ -409,75 +443,80 @@ plot3 = lat_le %>%
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme(legend.position = "none")
 
-plot4 = ele_le %>% 
-  filter(!is.na(log(v.ele.mean))) %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  ggplot(aes(y = MaxDispersalPotentialKmY, x = log(v.ele.mean))) +
-  geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
-  geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
-  geom_point(aes(colour = expect_tracking)) +
-  scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
+plot4 = ele %>% 
+  ggplot(aes(y = MaxDispersalPotentialmY, x = log(v.ele.mean))) +
+  geom_polygon(data = pol3, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
+  geom_polygon(data = pol4, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
+  geom_point(aes(colour = expect_tracking_pot)) +  
+  scale_x_continuous(limits = c(-5, 15), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-5, 15), expand = c(0,0)) +
   theme(panel.grid = element_blank())  +
   theme_classic() + 
   labs(colour = "Does dispersal\npotential allow\nspecies to keep up\nwith temp change?",
-       y = "Log maximum dispersal potential (km/y)", 
-       x = "Log mean velocity of temperature (km/y)", 
+       y = "Log maximum dispersal potential (m/y)", 
+       x = "Log mean velocity of temperature (m/y)", 
        title = "Elevational shifts")  +
   scale_colour_manual(values = c(pal[6], pal[4]))
 
 p2 = plot_grid(plot3, plot4, nrow = 1, rel_widths = c(4/10, 6/10))
 
 ggsave(p2, height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
-       filename = "maxdispersalpotential-versus-lag.png")
+       filename = "maxpotential-versus-lag.png")
+
+ele %>%
+  group_by(expect_tracking_pot) %>%
+  tally()
+
+lat %>%
+  group_by(expect_tracking_pot) %>%
+  tally()
+
+lat %>%
+  rbind(., ele) %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, fill = class)) + geom_histogram() +
+  theme_bw() + facet_wrap(~Type)
 
 ## take a closer look 
 ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking, shape = Sampling)) +
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist, shape = Sampling)) +
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
        title = "Elevational shifts",
-       x = "Log maximum dispersal distance (km)", 
-       y = "Range shift lag (km/y)") +
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-10, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_points_distance.png")
 
 ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking)) + 
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
        title = "Elevational shifts",
-       x = "Log maximum dispersal distance (km)", 
-       y = "Range shift lag (km/y)") +
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
   facet_wrap(~class, nrow = 1) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-10, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_boxplot_distance.png")
 
 lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking, shape = Sampling)) + 
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
@@ -489,16 +528,14 @@ lat_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25))
+  scale_x_continuous(limits = c(-10, 8))+
+  scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
        filename = "lat-le_points_distance.png")
 
 lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking)) + 
+ ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
@@ -511,15 +548,13 @@ lat_le %>%
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
   scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25))
+  scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
        filename = "lat-le_boxplot_distance.png")
 
 lat_o %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking, shape = Sampling)) + 
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
@@ -538,9 +573,7 @@ ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal",
        filename = "lat-o_points_distance.png")
 
 lat_o %>%
-  mutate(expect_tracking = ifelse(MaxDispersalDistanceKm > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking)) + 
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
@@ -559,54 +592,85 @@ ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal",
        filename = "lat-o_boxplot_distance.png")
 
 
-
-## now with dispersal potential 
-ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking, shape = Sampling)) +
+ele_o %>%
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
        title = "Elevational shifts",
-       x = "Log maximum dispersal potential (km/y)", 
-       y = "Range shift lag (km/y)") +
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele-o_points_distance.png")
+
+ele_o %>%
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
+  facet_grid(~class) +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele_o_boxplot_distance.png")
+
+## now with dispersal potential 
+ele_le %>%
+  ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  facet_grid(~class) +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Elevational shifts",
+       x = "Log maximum dispersal potential (m/y)", 
+       y = "Range shift lag (m/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-10, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_points_potential.png")
 
 ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking)) + 
+  ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
        title = "Elevational shifts",
-       x = "Log maximum dispersal potential (km/y)", 
-       y = "Range shift lag (km/y)") +
+       x = "Log maximum dispersal potential (m/y)", 
+       y = "Range shift lag (m/y)") +
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) + 
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
   facet_wrap(~class, nrow = 1) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-10, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_boxplot_potential.png")
 
 lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking, shape = Sampling)) + 
+  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
@@ -619,15 +683,13 @@ lat_le %>%
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
   scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25))
+  scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
        filename = "lat-le_points_potential.png")
 
 lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking)) + 
+  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking_pot)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
@@ -640,15 +702,13 @@ lat_le %>%
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
   scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25))
+  scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
        filename = "lat-le_boxplot_potential.png")
 
 lat_o %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking, shape = Sampling)) + 
+  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
@@ -667,9 +727,7 @@ ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal",
        filename = "lat-o_points_potential.png")
 
 lat_o %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking)) + 
+  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking_pot)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
@@ -687,91 +745,50 @@ lat_o %>%
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
        filename = "lat-o_boxplot_potential.png")
 
-## so interesting!
-# elevation = no difference in lags between between species that should and shouldn't be able to keep up
-# latitude = species that should be able to keep up have less lags for most classes
-# consistent with dispersal mattering less across 
-
-lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking, shape = Sampling)) + 
+ele_o %>%
+  ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) + 
   geom_hline(yintercept = 0) +
   geom_point() +
   facet_grid(~class) +
   labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
-       title = "Latitudinal shifts",
-       x = "Log maximum dispersal potential (km/y)", 
-       y = "Range shift lag (km/y)") +
-  scale_colour_manual(values = c(pal[6], pal[4])) + 
-  theme_bw() + 
-  guides(colour = "legend", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25)) +
-  geom_smooth(method = "lm", aes(group = expect_tracking))
-
-ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = MaxDispersalPotentialKmY, y = lags, colour = expect_tracking, shape = Sampling)) + 
-  geom_hline(yintercept = 0) +
-  geom_point() +
-  facet_grid(~class) +
-  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
-       title = "Latitudinal shifts",
-       x = "Log maximum dispersal potential (km/y)", 
-       y = "Range shift lag (km/y)") +
-  scale_colour_manual(values = c(pal[6], pal[4])) + 
-  theme_bw() + 
-  guides(colour = "legend", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
-  scale_y_continuous(limits = c(-17, 25)) +
-  geom_smooth(method = "lm", aes(group = expect_tracking))
-
-lat_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = expect_tracking, y = lags, colour = expect_tracking)) + 
-  geom_hline(yintercept = 0) +
-  geom_boxplot() +
-  facet_grid(~class) +
-  labs(x = "Does dispersal potential allow species to keep up with temp change?", 
-       title = "Latitudinal shifts",
-       y = "Range shift lag (km/y)") +
-  scale_colour_manual(values = c(pal[6], pal[4])) + 
-  theme_bw() + 
-  guides(colour = "none", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) 
-
-ele_le %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) %>%
-  ggplot(aes(x = expect_tracking, y = lags, colour = expect_tracking)) + 
-  geom_hline(yintercept = 0) +
-  geom_boxplot() +
-  facet_grid(~class) +
-  labs(x = "Does dispersal potential allow species to keep up with temp change?", 
        title = "Elevational shifts",
-       y = "Range shift lag (km/y)") +
+       x = "Log maximum dispersal potential (m/y)", 
+       y = "Range shift lag (m/y)") +
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
-  guides(colour = "none", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank())+
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele-o_points_potential.png")
+
+ele_o %>%
+  ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Elevational shifts",
+       x = "Log maximum dispersal potential (m/y)", 
+       y = "Range shift lag (m/y)") +
+  facet_grid(~class) +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele_o_boxplot_potential.png")
+
+## so interesting!
 
 
 ## model brainstorm:
 ## first want to ask if range shift lags are larger in species whose dispersal potential is less than the speed of climate change?
 
-## add new variable "expect_tracking":
-ele = ele %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.ele.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) 
-
-lat = lat %>%
-  mutate(expect_tracking = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean), "Yes", "No")) %>%
-  filter(!is.na(expect_tracking)) 
 
 ## see how to avoid singularity 
 # key_lat = lat %>%
@@ -784,12 +801,17 @@ lat = lat %>%
 #   select(-n)
 # 
 # lat = semi_join(lat, key_lat)
+
+lat %>%
+  group_by(Article_ID) %>%
+  tally() %>%
+  arrange(-n)
   
 
 
 ## filter out classes with fewer than 5 sp that have dispersal potential
 ## elevation:
-dat.MaxDispPot.ele <- data.frame(ele[which(is.na(ele$MaxDispersalPotentialKmY)==F),])
+dat.MaxDispPot.ele <- data.frame(ele[which(is.na(ele$MaxDispersalPotentialmY)==F),])
 
 dsp <- unique(dat.MaxDispPot.ele[,c(which(colnames(dat.MaxDispPot.ele) == "class"),
                                      which(colnames(dat.MaxDispPot.ele) == "scientificName"))])
@@ -812,7 +834,7 @@ length(unique(dat.MaxDispPot.lat$class))
 
 #scale variables
 # elevation:
-dat.MaxDispPot.ele$max_disp_pot <- scale(dat.MaxDispPot.ele$MaxDispersalPotentialKmY)
+dat.MaxDispPot.ele$max_disp_pot <- scale(dat.MaxDispPot.ele$MaxDispersalPotentialmY)
 dat.MaxDispPot.ele$n <- scale(dat.MaxDispPot.ele$N)
 dat.MaxDispPot.ele$id.area <- scale(dat.MaxDispPot.ele$ID.area)
 dat.MaxDispPot.ele$start <- scale(dat.MaxDispPot.ele$START)
@@ -840,35 +862,151 @@ lat_te <- dat.MaxDispPot.lat[dat.MaxDispPot.lat$Param=="TE",]
 lat_le <- dat.MaxDispPot.lat[dat.MaxDispPot.lat$Param=="LE",]
 lat_o <- dat.MaxDispPot.lat[dat.MaxDispPot.lat$Param=="O",]
 
+## first, model including only class as a random effect:
 ## latitude leading edge 
-mod_lat_le = lmer(lags ~ expect_tracking + (1|Article_ID) + (1|class) + (1|Sampling), 
+mod_lat_le = lmer(lags ~ expect_tracking_pot + (1|class), 
                   data = lat_le)
 
 summary(mod_lat_le)
+# fe = fixef(mod_lat_le)
+# ci = confint(mod_lat_le, level = 0.95)
+# 
+# df = data.frame(expect_tracking = c("No", "Yes"),
+#                 pred_lag = c(fe[1], (fe[1] + fe[2])), lower_ci = ci[3,1],
+#                 upper_ci = c(ci[3,2], ci[4,2] + fe[1] )
+# ## plot
+# df %>%
+#   ggplot(aes(x = expect_tracking, y = pred_lag)) + geom_point() +
+#   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci))
+
+sjPlot::plot_model(mod_lat_le, type = "pred")
+
 
 ## elevation leading edge
-mod_ele_le = lme(lags ~ expect_tracking + (1|Article_ID) + (1|class) + (1|Sampling), 
+mod_ele_le = lmer(lags ~ expect_tracking_pot + (1|class), 
                   data = ele_le)
 
 summary(mod_ele_le)
+sjPlot::plot_model(mod_ele_le, type = "pred")
 
 ## latitude optimum
-mod_lat_o = lmer(lags ~ expect_tracking + (1|Article_ID) + (1|class) + (1|Sampling),
+mod_lat_o = lmer(lags ~ expect_tracking_pot + (1|class),
                  data = lat_o)
 
 summary(mod_lat_o)
+sjPlot::plot_model(mod_lat_o, type = "pred")
 
 ## elevation optimum
-mod_ele_o = lmer(lags ~ expect_tracking + (1|Article_ID) + (1|class) + (1|Sampling), 
+mod_ele_o = lmer(lags ~ expect_tracking_pot + (1|class), 
                  data = ele_o)
 
 summary(mod_ele_o)
+sjPlot::plot_model(mod_ele_o, type = "pred")
+
+
+
+
+## next, add some important methodological covariates:
+## Sampling = whether study was based on two time points or multiple
+## Article_ID = control for study
+
+## latitude leading edge 
+mod_lat_le = lmer(lags ~ expect_tracking_pot + (1|Article_ID) + (1|class) + (1|Sampling), 
+                  data = lat_le)
+
+summary(mod_lat_le)
+sjPlot::plot_model(mod_lat_le, type = "pred")
+
+
+## elevation leading edge
+mod_ele_le = lmer(lags ~ expect_tracking_pot + (1|Article_ID) + (1|class) + (1|Sampling), 
+                  data = ele_le)
+
+summary(mod_ele_le)
+sjPlot::plot_model(mod_ele_le, type = "pred")
+
+## latitude optimum
+mod_lat_o = lmer(lags ~ expect_tracking_pot + (1|Article_ID) + (1|class) + (1|Sampling),
+                 data = lat_o)
+
+summary(mod_lat_o)
+sjPlot::plot_model(mod_lat_o, type = "pred")
+
+## elevation optimum
+mod_ele_o = lmer(lags ~ expect_tracking_pot + (1|Article_ID) + (1|class) + (1|Sampling), 
+                 data = ele_o)
+
+summary(mod_ele_o)
+sjPlot::plot_model(mod_ele_o, type = "pred")
 
 ## article id and sampling explain a lot of variation
 ## but even after accounting for them, species in which we expect climate tracking have a higher intercept (more positive lags)
 
+## plot model predicted average with confidence intervals to see if confidence intervals overlap
+new_data <- data.frame(expand_grid(expect_tracking_pot = c("Yes", "No"),
+                                   Article_ID = unique(ele_le$Article_ID),
+                                   class = unique(ele_le$class),
+                                   Sampling = unique(ele_le$Sampling)))
+
+pred <- predict(mod_ele_le)
 
 
+
+## feedback:
+## impute lifespan and age at maturity (try in a small subset (birds) and see what makes best imputation)
+## see if v2 has velocity?
+## see whether relationships do not exist at trailing edge
+## add trailing edge + negative velocity shifts
+## ask Sam for dispersal data
+## see if we can add mean/mode other dispersal metrics
+## try using taxonomic group instead of class (group plants together)
+## co linearity between class and max dispersal distance?
+## compare species with both elev and lat shifts to see if dispersal potential keeps up with climate velocity better across elev
+## elev lags are in m/y!!!! convert
+
+
+## modelling options:
+## create model that predicts range shift values for each observation you need after accounting for methodological variables
+## use these as your dependent variable
+## easier to control for methodology when you can use ALL of the points 
+## avoids signularities 
+## OR
+## include the methodological factors in your model 
+
+## look within articles and see if the expected relationship is there 
+
+## jonathon wants to use all dispersal data to look at the evolution of dispersal distance/potential
+
+## Brown methodological affects
+
+## high climate velicity and low range shift = high lag
+## see 
+
+
+
+## does range shift lag increase with dispersal potential in species we expect to have lags?
+## latitude leading edge 
+laggers_lat_le = filter(lat_le, expect_tracking_pot == "No")
+
+mod_laggers_lat_le = lmer(lags_scaled ~ max_disp_pot + (1|class), 
+                         data = laggers_lat_le)
+
+summary(mod_laggers_lat_o)
+
+laggers_lat_o = filter(lat_o, expect_tracking_pot == "No")
+
+mod_laggers_lat_o = lmer(lags_scaled ~ max_disp_pot + (1|Article_ID) + (1|class) + (1|Sampling), 
+                  data = laggers_lat_o)
+
+summary(mod_laggers_lat_o)
+
+laggers_ele_le = filter(ele_le, expect_tracking_pot == "No")
+
+mod_laggers_ele_le = lmer(lags_scaled ~ max_disp_pot + (1|Article_ID) + (1|class) + (1|Sampling), 
+                          data = laggers_ele_le)
+
+summary(mod_laggers_ele_le)
+## no 
 
 
 #----------------------

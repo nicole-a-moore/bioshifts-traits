@@ -469,6 +469,13 @@ all %>%
   group_by(Taxon) %>%
   tally()
 
+all %>% 
+  summarise(length(which(!is.na(DS))), 
+            length(which(!is.na(TV))), 
+            length(which(!is.na(RH))), 
+            length(which(!is.na(SM))),
+            length(which(!is.na(GF))))
+
 
 
 
