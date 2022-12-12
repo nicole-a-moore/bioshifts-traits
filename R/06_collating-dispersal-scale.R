@@ -11,214 +11,49 @@ library(data.table)
 ## read in list of all bioshifts species 
 sp <- read_csv("data-raw/splist.csv")
 
-## function to harmonize taxonomy 
-
-harmonize <- function(sp_names){
-  
-  library(taxadb)
-  library(bdc)
-  source("R/clean_taxa_functions.R")
-  
-  sp_names = Clean_Names(sp_names,
-                         return_gen_sps = TRUE)
-  
-  
-  tofind <- data.frame(matrix(nrow = length(sp_names), ncol = 8))
-  names(tofind) = c("scientificName", "kingdom", "phylum", "class", "order", "family", "db", "db_code")
-  
-  tofind <- data.frame(species = sp_names, tofind)
-  
-  tofind[,1:ncol(tofind)] = lapply(tofind[,1:ncol(tofind)], as.character) 
-  
-  togo <- tofind[which(is.na(tofind$scientificName)),]
-  
-  mycols <- c("speciesKey", "kingdom","phylum","class","order","family", "species")
-  
-  ## GBIF
-  # retrieve sp names
-  cl <- makeCluster(detectCores()-2)
-  clusterExport(cl, c("togo","standardize_taxa"))
-  
-  gbif_names <- pblapply(togo$species, function(x){
-    try(standardize_taxa(data.frame(verbatimScientificName = x), 
-                         fuzzy = FALSE,
-                         silent = TRUE))
-  }, cl = cl)
-  
-  stopCluster(cl)
-  
-  rem <- sapply(gbif_names, class)
-  rem <- which(rem=="try-error")
-  
-  if(length(rem) != 0) {
-    gbif_names <- gbif_names[-rem]
-  }
-  
-  gbif_names <- rbindlist(gbif_names)
-  gbif_names <- gbif_names[-which(is.na(gbif_names$scientificName)),]
-  gbif_names <- gbif_names[which(gbif_names$taxonRank=='species'),]
-  
-  # remove duplicates
-  if(any(duplicated(gbif_names$verbatimScientificName))){
-    gbif_names <- gbif_names[-which(duplicated(gbif_names$verbatimScientificName)),]
-  }
-  
-  any(!gbif_names$original_search %in% sp_names)
-  
-  cat("--- Summary ---\n",
-      "N taxa:",nrow(togo),"\n",
-      "N taxa found:",nrow(gbif_names), "\n",
-      "N taxa not found:", nrow(togo)-nrow(gbif_names))
-  
-  gbif_names <- gbif_names[,c("verbatimScientificName","scientificName","kingdom","phylum","class","order","family","taxonID")]
-  names(gbif_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
-  gbif_names$db <- "gbif"
-  gbif_names$db_code <- gsub("http://www.gbif.org/species/","",gbif_names$db_code)
-  gbif_names$db_code <- paste("GBIF:",gbif_names$db_code,sep = "")
-  
-  # Feed
-  tofind <- tofind %>% 
-    rows_patch(gbif_names, 
-               by = "species")
-  
-  gc()
-  
-  ## ITIS
-  togo <- tofind[which(is.na(tofind$scientificName)),]
-  
-  # retrieve sp names
-  itis_names <- Find_Names(spnames = togo$species,
-                           db = "itis",
-                           suggest_names = FALSE, # using exact names
-                           return_accepted_only = TRUE) 
-  
-  # remove duplicates
-  if(any(duplicated(itis_names$original_search))){
-    itis_names <- itis_names[-which(duplicated(itis_names$original_search)),]
-  }
-  
-  any(!itis_names$original_search %in% sp_names)
-  
-  itis_names <- itis_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
-  names(itis_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
-  itis_names$db <- "itis"
-  
-  # Feed
-  tofind <- tofind %>% 
-    rows_patch(itis_names, 
-               by = "species")
-  
-  gc()
-  
-  
-  ## NCBI
-  togo <- tofind[which(is.na(tofind$scientificName)),]
-  
-  # retrieve sp names
-  if(nrow(togo) == 0) {
-    return(tofind)
-  }
-  else {
-    ncbi_names <- Find_Names(spnames = togo$species,
-                             db = "ncbi",
-                             suggest_names = FALSE, # using exact names
-                             return_accepted_only = TRUE) 
-    
-    # remove duplicates
-    if(any(duplicated(ncbi_names$original_search))){
-      ncbi_names <- ncbi_names[-which(duplicated(ncbi_names$original_search)),]
-    }
-    
-    any(!ncbi_names$original_search %in% sp_names)
-    
-    ncbi_names <- ncbi_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
-    names(ncbi_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
-    ncbi_names$db <- "ncbi"
-    
-    if(nrow(ncbi_names) != 0) {
-      # some names from ncbi come with duplicated genus
-      # remove duplicated names
-      new <- sapply(ncbi_names$scientificName, function(x){
-        tmp <- strsplit(x," ")[[1]]
-        if(any(duplicated(tmp))){
-          paste(tmp[-1], collapse = " ")
-        } else {
-          x
-        }
-      })
-      
-      ncbi_names$scientificName <- new
-    }
-    
-    # Feed
-    tofind <- tofind %>% 
-      rows_patch(ncbi_names, 
-                 by = "species")
-    
-    gc()
-    
-    
-    ## IUCN
-    togo <- tofind[which(is.na(tofind$scientificName)),]
-    
-    if(nrow(togo) == 0) {
-      return(tofind)
-    }
-    else {
-      # retrieve sp names
-      ## PS: Cant filter on iucn method
-      iucn_names<-bdc_query_names_taxadb(togo$species, 
-                                         db = "iucn",
-                                         suggest_names = FALSE) # using exact names
-      iucn_names$scientificName <- paste(iucn_names$genus,iucn_names$specificEpithet) 
-      
-      # remove duplicates
-      if(any(duplicated(iucn_names$original_search))){
-        iucn_names <- iucn_names[-which(duplicated(iucn_names$original_search)),]
-      }
-      
-      any(!iucn_names$original_search %in% sp_names)
-      
-      # select only accepted names
-      iucn_names <- iucn_names[which(iucn_names$taxonomicStatus == "accepted"),]
-      
-      cat("--- Summary ---\n",
-          "N taxa:",nrow(togo),"\n",
-          "N taxa found:",length(which(iucn_names$taxonomicStatus == "accepted")), "\n",
-          "N taxa not found:", nrow(togo)-length(which(iucn_names$taxonomicStatus == "accepted")))
-      
-      iucn_names <- iucn_names[,c("original_search","scientificName","kingdom","phylum","class","order","family","acceptedNameUsageID")]
-      names(iucn_names) <- c("species","scientificName","kingdom","phylum","class","order","family","db_code")
-      iucn_names$db <- "iucn"
-      
-      # Feed
-      tofind <- tofind %>% 
-        rows_patch(iucn_names, 
-                   by = "species")
-      
-      gc()
-      
-      ## fix issues with Scientific names 
-      new <- sapply(tofind$scientificName, function(x){
-        tmp <- strsplit(x," ")[[1]]
-        if(any(duplicated(tmp))){
-          paste(tmp[-1], collapse = " ")
-        } else {
-          x
-        }
-      })
-      
-      tofind$scientificName <- new
-    }
-    
-    ## return
-    return(tofind)
-  }
-}
-
+## read function to harmonize taxonomy 
+source("R/harmonize.R")
 
 cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "kingdom", "phylum",
                   "class", "order", "family", "db", "db_code")
+
+## Paradis et al 2002:
+## read in data
+par = read_csv("data-raw/dispersal/Paradis_et_al_2002.csv") 
+colnames(par) <- str_replace_all(colnames(par), "\\ ", "_")
+length(unique(par$Species)) #75 spp
+
+par_harm <- harmonize(par$Species)
+
+notfound <- filter(par_harm, is.na(db_code))
+
+## rename columns 
+par <- par %>%
+  rename("reported_name" = Species) %>%
+  mutate(reported_name_fixed = reported_name)
+
+par <- left_join(par, par_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## reorganize
+par_dd <- par %>%
+  select(all_of(cols_to_keep), 
+         AM_breeding, AM_natal) %>%
+  gather(key = "Field", value = "DispersalDistance", c(AM_breeding, AM_natal)) %>%
+  mutate(Field = ifelse(Field == "AM_breeding", "ArithmeticMeanBreedingDispersal",
+                        ifelse(Field == "AM_natal", 
+                               "ArithmeticMeanNatalDispersal",
+                               NA))) %>%
+  mutate(Code = "MeanDispersalDistance") %>%
+  filter(!is.na(DispersalDistance)) %>%
+  mutate(Sex = NA, Source = NA, Unit = "km",
+         ObservationType = "ring recoveries",
+         Database = "Paradis et al. 2002") 
+
+## check how many species in bioshifts 
+length(which(unique(par_dd$scientificName) %in% unique(sp$scientificName))) ## 74
+par_sp <- unique(par_dd$scientificName)[which(unique(par_dd$scientificName) %in% unique(sp$scientificName))]
+
 
 ## data on dispersal scale:
 ## comte and olden - fish mean/max dispersal based on mark recapture, telemetry, etc.
@@ -237,10 +72,6 @@ co <- co %>%
 
 co <- left_join(co, co_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
-
-## check how many species in bioshifts 
-length(which(unique(co_dd$scientificName) %in% unique(sp$scientificName))) ## 28
-co_sp <- unique(co$scientificName)[which(unique(co$scientificName) %in% unique(sp$scientificName))]
 
 ## reformat the data
 co_dd <- co %>%
@@ -261,7 +92,16 @@ co_dd <- co %>%
                                      NA)))) %>%
   mutate(Database = "Comte & Olden", Unit = "m", Sex = NA) %>%
   filter(!is.na(DispersalDistance)) %>%
-  rename("ObservationType" = Type)
+  rename("ObservationType" = Type) %>%
+  mutate(ObservationType = ifelse(ObservationType == "Radio-tracking", 
+                                  "radio-tracking", 
+                                  ifelse(ObservationType == "Mark-Recapture", 
+                                  "mark-release-recapture",
+                                  ObservationType)))
+
+## check how many species in bioshifts 
+length(which(unique(co_dd$scientificName) %in% unique(sp$scientificName))) ## 28
+co_sp <- unique(co_dd$scientificName)[which(unique(co_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 ## Sutherland 2000 - birds and mammals natal and breeding dispersal
@@ -284,18 +124,12 @@ suth_mamm <- suth_mamm %>%
 suth_mamm <- left_join(suth_mamm, sm_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(suth_mamm$scientificName) %in% unique(sp$scientificName))) ## 16
-suth_mamm_sp <- unique(suth_mamm$scientificName)[which(unique(suth_mamm$scientificName) %in% unique(sp$scientificName))]
-
 ## Sutherland mammals:
 suth_mamm_dd <- suth_mamm %>%
   select(all_of(cols_to_keep), 
          `Natal_dispersal_median_distance_(km)`,
          `Natal_dispersal_maximum_distance_(km)`, Obs_type, Source) %>%
-  mutate(ObservationType = ifelse(Obs_type == "S", "single observation",
-                                  ifelse(Obs_type == "D",  "distance-density distribution", 
-                                         NA))) %>%
+  mutate(ObservationType = "natal dispersal") %>%
   gather(key = "Field", value = "DispersalDistance", c(`Natal_dispersal_median_distance_(km)`,
                                                        `Natal_dispersal_maximum_distance_(km)`)) %>%
   mutate(Code = ifelse(Field == "Natal_dispersal_median_distance_(km)",
@@ -307,7 +141,12 @@ suth_mamm_dd <- suth_mamm %>%
   filter(!is.na(DispersalDistance), DispersalDistance != "...") %>%
   mutate(Sex = str_split_fixed(DispersalDistance, " ", 2)[,2], 
          DispersalDistance = str_split_fixed(DispersalDistance, " ", 2)[,1]) %>%
-  select(-Obs_type)
+  select(-Obs_type) %>%
+  mutate()
+
+## check how many species in bioshifts 
+length(which(unique(suth_mamm_dd$scientificName) %in% unique(sp$scientificName))) ## 16
+suth_mamm_sp <- unique(suth_mamm_dd$scientificName)[which(unique(suth_mamm_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 suth_bird <- read_csv("data-raw/dispersal/Sutherland_2000_birds.csv")
@@ -343,19 +182,13 @@ suth_bird <- suth_bird %>%
 suth_bird <- left_join(suth_bird, sb_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(suth_bird$scientificName) %in% unique(sp$scientificName))) ## 66
-suth_bird_sp <- unique(suth_bird$scientificName)[which(unique(suth_bird$scientificName) %in% unique(sp$scientificName))]
-
 ## Sutherland birds:
 suth_bird_dd <- suth_bird %>%
   select(all_of(cols_to_keep), 
          `Natal_dispersal_median_distance_(km)`,
          `Natal_dispersal_maximum_distance_(km)`, Obs_type,
          Source) %>%
-  mutate(ObservationType = ifelse(Obs_type == "S", "single observation",
-                                  ifelse(Obs_type == "D",  "distance-density distribution", 
-                                         NA))) %>%
+  mutate(ObservationType = "natal dispersal") %>%
   gather(key = "Field", value = "DispersalDistance", c(`Natal_dispersal_median_distance_(km)`,
                                                        `Natal_dispersal_maximum_distance_(km)`)) %>%
   mutate(Code = ifelse(Field == "Natal_dispersal_median_distance_(km)",
@@ -369,6 +202,9 @@ suth_bird_dd <- suth_bird %>%
          DispersalDistance = str_split_fixed(DispersalDistance, " ", 2)[,1]) %>%
   select(-Obs_type)
 
+## check how many species in bioshifts 
+length(which(unique(suth_bird_dd$scientificName) %in% unique(sp$scientificName))) ## 72
+suth_bird_sp <- unique(suth_bird_dd$scientificName)[which(unique(suth_bird_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 ## Whitmee & Orme 2013 - mammal natal dispersal distances
@@ -400,10 +236,6 @@ wo <- wo %>%
 wo <- left_join(wo, wo_harm, by = c("reported_name" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(wo$scientificName) %in% unique(sp$scientificName))) ## 18
-wo_sp <- unique(wo$scientificName)[which(unique(wo$scientificName) %in% unique(sp$scientificName))]
-
 ## Whitmee & Orme
 wo_dd <- wo %>%
   select(all_of(cols_to_keep), Value, Units, Sex, Measure, Ref_no) %>%
@@ -416,92 +248,21 @@ wo_dd <- wo %>%
                                      NA)))) %>%
   mutate(Unit = ifelse(str_detect(.$Units, "km"), "km",
                        ifelse(str_detect(.$Units, "Metres"), "m", NA))) %>%
-  mutate(Database = "Whitmee & Orme", ObservationType = NA, Field = "Value") %>%
+  mutate(Database = "Whitmee & Orme 2013", ObservationType = "individual movement distances", Field = "Value") %>%
   rename("DispersalDistance" = Value, "Source" = Ref_no) %>%
   filter(!is.na(DispersalDistance)) %>%
-  select(-Measure, -Units)
+  select(-Measure, -Units) 
 
+## get rid of species in Sutherland to avoid duplicating observations
+length(which(unique(wo_dd$scientificName) %in% unique(suth_mamm_dd$scientificName))) ## 49
+length(which(unique(wo_dd$scientificName) %in% unique(suth_bird_dd$scientificName))) ## 0
 
-## Tamme et al 2014
-tamme <- read_csv("data-raw/dispersal/Tamme_DispersalDistanceData.csv")
-colnames(tamme) <- str_replace_all(colnames(tamme), "\\ ", "_")
-length(unique(tamme$Species)) #576 spp
-
-## get rid of subspecies 
-tamme$genus = str_split_fixed(tamme$Species, " ", 3)[,1]
-tamme$species = str_split_fixed(tamme$Species, " ", 3)[,2]
-tamme$subspecies = str_split_fixed(tamme$Species, " ", 3)[,3]
-
-tamme = tamme %>%
-  mutate(genus = ifelse(genus == "", NA, genus)) %>%
-  mutate(species = ifelse(species == "", NA, species)) %>%
-  mutate(subspecies = ifelse(subspecies == "", NA, subspecies)) %>%
-  mutate(genus_species = ifelse(is.na(species), genus,
-                                paste(genus, species, sep = " ")))
-
-## harmonize taxonomy in each 
-tamme_harm <- harmonize(tamme$genus_species)
-
-## fix some taxonomy
-notfound <- filter(tamme_harm, is.na(db_code))
-notfound$species[which(notfound$species == "Picea excelsa")] <- "Picea abies"
-tamme_harm_notfound <- harmonize(notfound$species)
-
-tamme$reported_name_fixed = tamme$genus_species
-tamme$reported_name_fixed[which(tamme$reported_name_fixed == "Picea excelsa")] <- "Picea abies"
-tamme$reported_name_fixed[which(tamme$reported_name_fixed == "Inula conyzae")] <- "Inula conyzae"
-
-## bind:
-tamme_harm <-filter(tamme_harm, !is.na(db_code)) %>%
-  rbind(., tamme_harm_notfound)
-
-tamme$reported_name_fixed[which(tamme$Species == "Picea excelsa")] <- "Picea abies"
-tamme$reported_name_fixed[which(tamme$Species == "Inula conyzae")] <- "Inula conyza"
-
-## rename columns 
-tamme <- tamme %>%
-  rename("reported_name" = Species)
-
-tamme <- left_join(tamme, tamme_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
+wo_dd <- filter(wo_dd, !scientificName %in% c(suth_mamm_dd$scientificName, suth_bird_dd$scientificName))
 
 ## check how many species in bioshifts 
-length(which(unique(tamme$scientificName) %in% unique(sp$scientificName))) ## 349
-tamme_sp <- unique(tamme$scientificName)[which(unique(tamme$scientificName) %in% unique(sp$scientificName))]
+length(which(unique(wo_dd$scientificName) %in% unique(sp$scientificName))) ## 5
+wo_sp <- unique(wo_dd$scientificName)[which(unique(wo_dd$scientificName) %in% unique(sp$scientificName))]
 
-
-## Tamme
-tamme_dd <- tamme %>%
-  select(all_of(cols_to_keep), 
-         `Maximum_recorded_dispersal_distance_(m)`,
-         `Mean_dispersal_distance_(m)`,
-         `Median_dispersal_distance_(m)`, 
-         `Mode_dispersal_distance_(m)`,
-         `90th_percentile_dispersal_distance_(m)`,
-         `99th_percentile_dispersal_distance_(m)`,
-         Data_type, Reference) %>%
-  gather(key = "Field", value = "DispersalDistance", c(`Maximum_recorded_dispersal_distance_(m)`,
-                                                       `Mean_dispersal_distance_(m)`,
-                                                       `Median_dispersal_distance_(m)`, 
-                                                       `Mode_dispersal_distance_(m)`,
-                                                       `90th_percentile_dispersal_distance_(m)`,
-                                                       `99th_percentile_dispersal_distance_(m)`)) %>%
-  mutate(Code = ifelse(str_detect(.$Field, "Mean"),
-                       "MeanDispersalDistance", 
-                       ifelse(str_detect(.$Field, "Maximum"),
-                              "MaxDispersalDistance", 
-                              ifelse(str_detect(.$Field, "Median"),
-                                     "MedianDispersalDistance", 
-                                     ifelse(str_detect(.$Field, "90"),
-                                            "90thPercentileDispersalDistance", 
-                                            ifelse(str_detect(.$Field, "99"),
-                                                   "99thPercentileDispersalDistance",
-                                                   ifelse(str_detect(.$Field, "Mode"),
-                                                          "ModeDispersalDistance",
-                                                          NA))))))) %>%
-  mutate(Unit = "m", Database = "Tamme", Sex = NA) %>%
-  filter(!is.na(DispersalDistance)) %>%
-  rename("ObservationType" = Data_type, "Source" = Reference)
 
 ## Shanks 2009/2003:
 shanks9 <- read_csv("data-raw/dispersal/Shanks_2009.csv")
@@ -521,14 +282,10 @@ shanks9 <- shanks9 %>%
 shanks9 <- left_join(shanks9, s9_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(shanks9$scientificName) %in% unique(sp$scientificName))) ## 8
-shanks9_sp <- unique(shanks9$scientificName)[which(unique(shanks9$scientificName) %in% unique(sp$scientificName))]
-
 ## Shanks 2009
 shanks9_dd <- shanks9 %>%
   select(all_of(cols_to_keep),
-         Dispersal_distance, source) %>%
+         Dispersal_distance, source, References) %>%
   mutate(Unit = str_split_fixed(.$Dispersal_distance, " ", 2)[,2],
          DispersalDistance = str_split_fixed(.$Dispersal_distance, " ", 2)[,1]) %>%
   mutate(Unit = ifelse(Unit == "m1", "m", Unit), 
@@ -536,10 +293,15 @@ shanks9_dd <- shanks9 %>%
   filter(Unit %in% c("km", "m")) %>%
   mutate(Code = ifelse(str_detect(.$DispersalDistance, "\\–"),  "DispersalDistanceRange",
                        "DispersalDistance")) %>%
-  mutate(Database = "Shanks 2009", Sex = NA, Field = "Dispersal_distance", ObservationType = NA) %>%
-  select(-Dispersal_distance) %>%
+  mutate(Database = "Shanks 2009", Sex = NA, Field = "Dispersal_distance", ObservationType = source) %>%
+  select(-Dispersal_distance, -source) %>%
   filter(!is.na(DispersalDistance)) %>%
-  rename("Source" = source)
+  rename("Source" = References)
+
+## check how many species in bioshifts 
+length(which(unique(shanks9_dd$scientificName) %in% unique(sp$scientificName))) ## 7
+shanks9_sp <- unique(shanks9_dd$scientificName)[which(unique(shanks9_dd$scientificName) %in% unique(sp$scientificName))]
+
 
 shanks3 <- read_csv("data-raw/dispersal/Shanks_et_al_2003.csv")
 colnames(shanks3) <- str_replace_all(colnames(shanks3), "\\ ", "_")
@@ -557,191 +319,30 @@ shanks3 <- shanks3 %>%
 shanks3 <- left_join(shanks3, s3_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(shanks3$scientificName) %in% unique(sp$scientificName))) ## 4
-shanks3_sp <- unique(shanks3$scientificName)[which(unique(shanks3$scientificName) %in% unique(sp$scientificName))]
-
 ## Shanks 2003
 shanks3_dd <- shanks3 %>%
   select(all_of(cols_to_keep),
-         `Realized_dispersal_distance_(mean)`, source) %>%
+         `Realized_dispersal_distance_(mean)`, source, References) %>%
   mutate(Unit = str_split_fixed(.$`Realized_dispersal_distance_(mean)`, " ", 2)[,2],
          DispersalDistance = str_split_fixed(.$`Realized_dispersal_distance_(mean)`, " ", 2)[,1]) %>%
   mutate(DispersalDistance = str_replace_all(DispersalDistance, "\\<", "")) %>%
   mutate(Code = ifelse(str_detect(.$DispersalDistance, "\\-"),  
                        "DispersalDistanceRange",
                        "DispersalDistance")) %>%
-  mutate(Database = "Shanks 2003", Sex = NA, Field = "Realized_dispersal_distance_(mean)",
-         ObservationType = NA) %>%
-  select(-`Realized_dispersal_distance_(mean)`) %>%
+  mutate(Database = "Shanks et al. 2003", Sex = NA, Field = "Realized_dispersal_distance_(mean)",
+         ObservationType = source) %>%
+  select(-`Realized_dispersal_distance_(mean)`, -source) %>%
   filter(!is.na(DispersalDistance))%>%
-  rename("Source" = source) %>%
+  rename("Source" = References) %>%
   unique() 
 
-
-## Bowman et al  2002
-bowman <- read_csv("data-raw/dispersal/Bowman_et_al_2002.csv")
-colnames(bowman) <- str_replace_all(colnames(bowman), "\\ ", "_")
-length(unique(bowman$Genus_species)) #21 spp
-
-bowman_harm <- harmonize(bowman$Genus_species)
-
-notfound <- filter(bowman_harm, is.na(db_code))
-
-## rename columns 
-bowman <- bowman %>%
-  rename("reported_name" = Genus_species) %>%
-  mutate(reported_name_fixed = reported_name)
-
-bowman <- left_join(bowman, bowman_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
 ## check how many species in bioshifts 
-length(which(unique(bowman$scientificName) %in% unique(sp$scientificName))) ## 6
-bowman_sp <- unique(bowman$scientificName)[which(unique(bowman$scientificName) %in% unique(sp$scientificName))]
-
-## Bowman
-bowman_dd <- bowman %>%
-  select(all_of(cols_to_keep),
-         `Distance_(km)`, Reference) %>%
-  rename("DispersalDistance" = `Distance_(km)`, "Source" = Reference) %>%
-  mutate(Sex = NA, ObservationType = NA, Unit = "km", Field = "Distance_(km)",
-         Code = "DispersalDistance", Database = "Bowman")%>%
-  filter(!is.na(DispersalDistance))%>%
-  unique()
-
-
-## Jenkins et al. 2007
-jenkins <- read_csv("data-raw/dispersal/Jenkins_et_al_2007.csv")
-colnames(jenkins) <- str_replace_all(colnames(jenkins), "\\ ", "_")
-length(unique(jenkins$Scientific_Name)) #793 spp
-
-## get rid of subspecies 
-jenkins$genus = str_split_fixed(jenkins$Scientific_Name, " ", 2)[,1]
-jenkins$species = str_split_fixed(jenkins$Scientific_Name, " ", 3)[,2]
-jenkins$subspecies = str_split_fixed(jenkins$Scientific_Name, " ", 3)[,3]
-
-jenkins = jenkins %>%
-  mutate(genus = ifelse(genus == "", NA, genus)) %>%
-  mutate(species = ifelse(species == "", NA, species)) %>%
-  mutate(subspecies = ifelse(subspecies == "", NA, subspecies)) %>%
-  mutate(genus_species = ifelse(is.na(species), genus,
-                                paste(genus, species, sep = " ")))
-
-## harmonize taxonomy in each 
-jenkins_harm <- harmonize(jenkins$genus_species)
-
-## fix some taxonomy
-notfound <- filter(jenkins_harm, is.na(db_code))
-
-## rename columns 
-jenkins <- jenkins %>%
-  rename("reported_name_fixed" = genus_species,
-         "reported_name" = Scientific_Name)
-
-jenkins <- left_join(jenkins, jenkins_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## check how many species in bioshifts 
-length(which(unique(jenkins$scientificName) %in% unique(sp$scientificName))) ## 319
-jenkins_sp <- unique(jenkins$scientificName)[which(unique(jenkins$scientificName) %in% unique(sp$scientificName))]
-
-## Jenkins
-jenkins_dd <- jenkins %>%
-  select(all_of(cols_to_keep), 
-         `Max._Indiv._Dispersal_Distance_(m)`) %>%
-  rename("DispersalDistance" = `Max._Indiv._Dispersal_Distance_(m)`) %>%
-  mutate(Sex = NA, ObservationType = NA, Unit = "m", 
-         Field = "Max._Indiv._Dispersal_Distance_(m)",
-         Code = "MaxDispersalDistance", Database = "Jenkins",
-         Source = NA) %>%
-  filter(!is.na(DispersalDistance))%>%
-  unique()
-
-## flores:
-flores <- read.delim("data-raw/dispersal/Flores_et_al_2013.txt") %>%
-  select(-family, -order)
-colnames(flores) <- str_replace_all(colnames(flores), "\\ ", "_")
-length(unique(flores$Species)) #56 spp
-
-flores_harm <- harmonize(flores$Species)
-
-notfound <- filter(flores_harm, is.na(db_code))
-
-## rename columns 
-flores <- flores %>%
-  rename("reported_name" = Species) %>%
-  mutate(reported_name_fixed = reported_name)
-
-flores <- left_join(flores, flores_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## check how many species in bioshifts 
-length(which(unique(flores$scientificName) %in% unique(sp$scientificName))) ## 37
-flores_sp <- unique(flores$scientificName)[which(unique(flores$scientificName) %in% unique(sp$scientificName))]
-
-## Flores
-flores_dd <- flores %>%
-  select(all_of(cols_to_keep), Mean.dispersal.distance.m., Maximum.dispersal.distance.m.,
-         Reference) %>%
-  gather(key = "Field", value = "DispersalDistance", 
-         c(Mean.dispersal.distance.m., Maximum.dispersal.distance.m.)) %>%
-  mutate(Code = ifelse(Field == "Mean.dispersal.distance.m.", 
-                       "MeanDispersalDistance", 
-                       ifelse(Field == "Maximum.dispersal.distance.m.",
-                              "MaxDispersalDistance", 
-                              NA))) %>%
-  mutate(Sex = NA, ObservationType = NA, Unit = "m", 
-         Database = "Flores") %>%
-  filter(!is.na(DispersalDistance))%>%
-  rename("Source" = Reference) %>%
-  unique()
-
-## TRY
-## read in TRY query
-try = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
-unique(try$TraitName)
-
-## get only dispersal data 
-try_dd <- try %>%
-  filter(TraitName == "Dispersal distance")
-length(unique(try_dd$SpeciesName)) #152 spp
-
-try_dd_harm <- harmonize(try_dd$SpeciesName)
-
-notfound <- filter(try_dd_harm, is.na(db_code))
-
-## rename columns 
-try_dd <- try_dd %>%
-  rename("reported_name" = SpeciesName) %>%
-  mutate(reported_name_fixed = reported_name)
-
-try_dd <- left_join(try_dd, try_dd_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## check how many species in bioshifts 
-length(which(unique(try_dd$scientificName) %in% unique(sp$scientificName))) ## 60
-try_dd_sp <- unique(try_dd$scientificName)[which(unique(try_dd$scientificName) %in% unique(sp$scientificName))]
-
-## TRY
-try_dd_dd <- try_dd %>%
-  select(all_of(cols_to_keep), 
-         OrigValueStr,
-         OriglName, OrigUnitStr, Reference) %>%
-  rename("Source" = Reference, "Field" = OriglName, "DispersalDistance" = OrigValueStr, "Unit" = OrigUnitStr) %>%
-  mutate(Code = ifelse(Field == "MeanDispersalDistanceMean", 
-                       "MeanDispersalDistance", 
-                       ifelse(Field %in%c("MaxDispersalDistanceMax", "Max Seed Dispersal Distance"),
-                              "MaxDispersalDistance", 
-                              ifelse(Field %in% c("Effective Seed Dispersal Distance", "Seed Dispersal distance"),
-                                     "DispersalDistance",
-                                     NA)))) %>%
-  mutate(Sex = NA, ObservationType = NA,  
-         Database = "TRY") %>% 
-  filter(!is.na(Unit))
+length(which(unique(shanks3_dd$scientificName) %in% unique(sp$scientificName))) ## 4
+shanks3_sp <- unique(shanks3_dd$scientificName)[which(unique(shanks3_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 ## Santini et al. 2013:
+## trapping, radio tracking and parent son distance identified through genetics
 ## read in data
 sant = read_csv("data-raw/dispersal/Santini_et_al_2013.csv")
 colnames(sant) <- str_replace_all(colnames(sant), "\\ ", "_")
@@ -758,10 +359,6 @@ sant <- sant %>%
 
 sant <- left_join(sant, sant_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
-
-## check how many species in bioshifts 
-length(which(unique(sant$scientificName) %in% unique(sp$scientificName))) ## 26
-sant_sp <- unique(sant$scientificName)[which(unique(sant$scientificName) %in% unique(sp$scientificName))]
 
 ## Santini
 ## must clean out sex from dispersal value
@@ -839,15 +436,424 @@ sant_dd = sant_dd %>%
                               ifelse(Field == "Median",
                                      "MedianDispersalDistance", 
                                      NA)))) %>%
-  mutate(Unit = "Km", 
+  mutate(Unit = "km", 
          Database = "Santini et al. 2013") %>%
   filter(!is.na(DispersalDistance))%>%
   rename("ObservationType" = Type) %>%
   mutate(Sex = str_split_fixed(DispersalDistance, " ", 2)[,2], 
          DispersalDistance = str_split_fixed(DispersalDistance, " ", 2)[,1]) %>%
   select(-n) %>%
+  unique() %>%
+  mutate(ObservationType = ifelse(ObservationType == "H", 
+                                  "homing study",
+                                  ifelse(ObservationType == "D",
+                                         "natural dispersal", 
+                                         ifelse(ObservationType == "P",
+                                                "post release dispersal",
+                                                ifelse(ObservationType == "A",
+                                                       "unknown",
+                                                       NA)))))
+
+## Santini took from Sutherland 
+## exclude observations from Sutherland with same Code and DispersalDistance as Santini since has more info
+key = suth_mamm_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, Code, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+sant_dd <- sant_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, Code, DispersalDistance, sep = "_") %in% key$data_id)
+
+## check how many species in bioshifts 
+length(which(unique(sant_dd$scientificName) %in% unique(sp$scientificName))) ## 26
+sant_sp <- unique(sant_dd$scientificName)[which(unique(sant_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## Bowman et al  2002
+bowman <- read_csv("data-raw/dispersal/Bowman_et_al_2002.csv")
+colnames(bowman) <- str_replace_all(colnames(bowman), "\\ ", "_")
+length(unique(bowman$Genus_species)) #21 spp
+
+bowman_harm <- harmonize(bowman$Genus_species)
+
+notfound <- filter(bowman_harm, is.na(db_code))
+
+## rename columns 
+bowman <- bowman %>%
+  rename("reported_name" = Genus_species) %>%
+  mutate(reported_name_fixed = reported_name)
+
+bowman <- left_join(bowman, bowman_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
+## Bowman
+bowman_dd <- bowman %>%
+  select(all_of(cols_to_keep),
+         `Distance_(km)`, Reference) %>%
+  rename("DispersalDistance" = `Distance_(km)`, "Source" = Reference) %>%
+  mutate(Sex = NA, ObservationType = "natal dispersal", Unit = "km", Field = "Distance_(km)",
+         Code = "DispersalDistance", Database = "Bowman et al. 2002")%>%
+  filter(!is.na(DispersalDistance))%>%
+  unique()
+
+## get rid of species from Sutherland 
+bowman_dd <- filter(bowman_dd, !scientificName %in% suth_mamm_dd$scientificName)
+
+## duplicates between Bowman and Santini
+## exclude observations from Bowman with same DispersalDistance as Santini since has more info
+## (not Code because it was inferred for Bowman)
+key = sant_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+bowman_dd <- bowman_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, DispersalDistance, sep = "_") %in% key$data_id)
+
+## check how many species in bioshifts 
+length(which(unique(bowman_dd$scientificName) %in% unique(sp$scientificName))) ## 0
+bowman_sp <- unique(bowman_dd$scientificName)[which(unique(bowman_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## Smith and Green 2005:
+## read in data
+sg = read_csv("data-raw/dispersal/Smith_and_Green_2005.csv") 
+colnames(sg) <- str_replace_all(colnames(sg), "\\ ", "_")
+length(unique(sg$Species)) #94 spp
+
+sg_harm <- harmonize(sg$Species)
+
+notfound <- filter(sg_harm, is.na(db_code))
+
+## rename columns 
+sg <- sg %>%
+  rename("reported_name" = Species) %>%
+  mutate(reported_name_fixed = reported_name)
+
+## join with bioshifts 
+sg <- left_join(sg, sg_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## reformat:
+sg_dd <- sg %>%
+  select(all_of(cols_to_keep), Reference, 
+         `Max_distance_recorded_(m)`, Method) %>%
+  rename("DispersalDistance" = `Max_distance_recorded_(m)`,
+         "Source" = Reference, "ObservationType" = Method) %>%
+  mutate(Sex = NA, Unit = "m", Field = "Max_distance_recorded_(m)",
+         Database = "Smith & Green 2005", Code = "MaxDispersalDistance") %>%
+  filter(!is.na(DispersalDistance)) %>%
+  mutate(ObservationType = ifelse(str_detect(ObservationType, "MRR"),
+                                  "mark-release-recapture",
+                                  ifelse(str_detect(ObservationType, "RATE"),
+                                         "yearly rate of movement from introduction",
+                                         ifelse(str_detect(ObservationType, "UN"),
+                                                "unknown",
+                                                ifelse(str_detect(ObservationType, "WETLAND"),
+                                                       "distance to nearest wetland",
+                                                       ifelse(str_detect(ObservationType, "RAD"),
+                                                              "radio-tracking",
+                                                              ifelse(str_detect(ObservationType, "MARK"),
+                                                                     "mark-recapture",
+                                                                     NA))))))) 
+
+## check how many species in bioshifts 
+length(which(unique(sg_dd$scientificName) %in% unique(sp$scientificName))) ## 11
+sg_sp <- unique(sg_dd$scientificName)[which(unique(sg_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## Jenkins et al. 2007
+jenkins <- read_csv("data-raw/dispersal/Jenkins_et_al_2007.csv")
+colnames(jenkins) <- str_replace_all(colnames(jenkins), "\\ ", "_")
+length(unique(jenkins$Scientific_Name)) #792 spp
+
+## get rid of subspecies 
+jenkins$genus = str_split_fixed(jenkins$Scientific_Name, " ", 2)[,1]
+jenkins$species = str_split_fixed(jenkins$Scientific_Name, " ", 3)[,2]
+jenkins$subspecies = str_split_fixed(jenkins$Scientific_Name, " ", 3)[,3]
+
+jenkins = jenkins %>%
+  mutate(genus = ifelse(genus == "", NA, genus)) %>%
+  mutate(species = ifelse(species == "", NA, species)) %>%
+  mutate(subspecies = ifelse(subspecies == "", NA, subspecies)) %>%
+  mutate(genus_species = ifelse(is.na(species), genus,
+                                paste(genus, species, sep = " ")))
+
+## harmonize taxonomy in each 
+jenkins_harm <- harmonize(jenkins$genus_species)
+
+## fix some taxonomy
+notfound <- filter(jenkins_harm, is.na(db_code))
+
+## rename columns 
+jenkins <- jenkins %>%
+  rename("reported_name_fixed" = genus_species,
+         "reported_name" = Scientific_Name)
+
+jenkins <- left_join(jenkins, jenkins_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## Jenkins
+jenkins_dd <- jenkins %>%
+  select(all_of(cols_to_keep), 
+         `Max._Indiv._Dispersal_Distance_(m)`) %>%
+  rename("DispersalDistance" = `Max._Indiv._Dispersal_Distance_(m)`) %>%
+  mutate(Sex = NA, ObservationType = "individual dispersal distance", Unit = "m", 
+         Field = "Max._Indiv._Dispersal_Distance_(m)",
+         Code = "MaxDispersalDistance", Database = "Jenkins et al. 2007",
+         Source = NA) %>%
+  filter(!is.na(DispersalDistance))%>%
+  unique()
+
+## Jenkins took from Smith and Green, but not everything
+## exclude observations from Jenkins with same Code and DispersalDistance as those from Smith and Green
+key = sg_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, Code, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+jenkins_dd <- jenkins_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, Code, DispersalDistance, sep = "_") %in% key$data_id)
+
+## check how many species in bioshifts 
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 310
+jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## Flores et al. 2013:
+## seed traps, tracked individual seeds, marked and recaptured seeds and estimated dispersal distances based on tracking vectors and calculating gut or fur retention times
+flores <- read.delim("data-raw/dispersal/Flores_et_al_2013.txt") %>%
+  select(-family, -order)
+colnames(flores) <- str_replace_all(colnames(flores), "\\ ", "_")
+length(unique(flores$Species)) #56 spp
+
+flores_harm <- harmonize(flores$Species)
+
+notfound <- filter(flores_harm, is.na(db_code))
+
+## rename columns 
+flores <- flores %>%
+  rename("reported_name" = Species) %>%
+  mutate(reported_name_fixed = reported_name)
+
+flores <- left_join(flores, flores_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## Flores
+flores_dd <- flores %>%
+  select(all_of(cols_to_keep), Mean.dispersal.distance.m., Maximum.dispersal.distance.m.,
+         Reference) %>%
+  gather(key = "Field", value = "DispersalDistance", 
+         c(Mean.dispersal.distance.m., Maximum.dispersal.distance.m.)) %>%
+  mutate(Code = ifelse(Field == "Mean.dispersal.distance.m.", 
+                       "MeanDispersalDistance", 
+                       ifelse(Field == "Maximum.dispersal.distance.m.",
+                              "MaxDispersalDistance", 
+                              NA))) %>%
+  mutate(Sex = NA, ObservationType = "seed/plant dispersal (field)", Unit = "m", 
+         Database = "Flores et al. 2013") %>%
+  filter(!is.na(DispersalDistance)) %>%
+  rename("Source" = Reference) %>%
+  mutate(Source = ifelse(str_detect(Source, "Bossard CC. The Role of Habitat Disturbance"),
+                         "Bossard CC. The Role of Habitat Disturbance, Seed Predation and Ant Dispersal on Establishment of the Exotic Shrub Cytisus scoparius in California. American Midland Naturalist. 1991;126(1):1",
+                         Source)) %>%
+  distinct()
+
+## some duplicates from Flores in Jenkins
+## exclude observations from Jenkins with same Code and DispersalDistance as those from Flores since has more info
+key = flores_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, Code, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+jenkins_dd <- jenkins_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, Code, DispersalDistance, sep = "_") %in% key$data_id)
+
+## check how many species in bioshifts 
+length(which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))) ## 37
+flores_sp <- unique(flores_dd$scientificName)[which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))]
+
+## check how many species in bioshifts 
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 308
+jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## Tamme et al 2014
+tamme <- read_csv("data-raw/dispersal/Tamme_DispersalDistanceData.csv")
+colnames(tamme) <- str_replace_all(colnames(tamme), "\\ ", "_")
+length(unique(tamme$Species)) #576 spp
+
+## get rid of subspecies 
+tamme$genus = str_split_fixed(tamme$Species, " ", 3)[,1]
+tamme$species = str_split_fixed(tamme$Species, " ", 3)[,2]
+tamme$subspecies = str_split_fixed(tamme$Species, " ", 3)[,3]
+
+tamme = tamme %>%
+  mutate(genus = ifelse(genus == "", NA, genus)) %>%
+  mutate(species = ifelse(species == "", NA, species)) %>%
+  mutate(subspecies = ifelse(subspecies == "", NA, subspecies)) %>%
+  mutate(genus_species = ifelse(is.na(species), genus,
+                                paste(genus, species, sep = " ")))
+
+## harmonize taxonomy in each 
+tamme_harm <- harmonize(tamme$genus_species)
+
+## fix some taxonomy
+notfound <- filter(tamme_harm, is.na(db_code))
+notfound$species[which(notfound$species == "Picea excelsa")] <- "Picea abies"
+tamme_harm_notfound <- harmonize(notfound$species)
+
+tamme$reported_name_fixed = tamme$genus_species
+tamme$reported_name_fixed[which(tamme$reported_name_fixed == "Picea excelsa")] <- "Picea abies"
+tamme$reported_name_fixed[which(tamme$reported_name_fixed == "Inula conyzae")] <- "Inula conyzae"
+
+## bind:
+tamme_harm <-filter(tamme_harm, !is.na(db_code)) %>%
+  rbind(., tamme_harm_notfound)
+
+tamme$reported_name_fixed[which(tamme$Species == "Picea excelsa")] <- "Picea abies"
+tamme$reported_name_fixed[which(tamme$Species == "Inula conyzae")] <- "Inula conyza"
+
+## rename columns 
+tamme <- tamme %>%
+  rename("reported_name" = Species)
+
+tamme <- left_join(tamme, tamme_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+
+## Tamme
+tamme_dd <- tamme %>%
+  select(all_of(cols_to_keep), 
+         `Maximum_recorded_dispersal_distance_(m)`,
+         `Mean_dispersal_distance_(m)`,
+         `Median_dispersal_distance_(m)`, 
+         `Mode_dispersal_distance_(m)`,
+         `90th_percentile_dispersal_distance_(m)`,
+         `99th_percentile_dispersal_distance_(m)`,
+         Data_type, Reference) %>%
+  gather(key = "Field", value = "DispersalDistance", c(`Maximum_recorded_dispersal_distance_(m)`,
+                                                       `Mean_dispersal_distance_(m)`,
+                                                       `Median_dispersal_distance_(m)`, 
+                                                       `Mode_dispersal_distance_(m)`,
+                                                       `90th_percentile_dispersal_distance_(m)`,
+                                                       `99th_percentile_dispersal_distance_(m)`)) %>%
+  mutate(Code = ifelse(str_detect(.$Field, "Mean"),
+                       "MeanDispersalDistance", 
+                       ifelse(str_detect(.$Field, "Maximum"),
+                              "MaxDispersalDistance", 
+                              ifelse(str_detect(.$Field, "Median"),
+                                     "MedianDispersalDistance", 
+                                     ifelse(str_detect(.$Field, "90"),
+                                            "90thPercentileDispersalDistance", 
+                                            ifelse(str_detect(.$Field, "99"),
+                                                   "99thPercentileDispersalDistance",
+                                                   ifelse(str_detect(.$Field, "Mode"),
+                                                          "ModeDispersalDistance",
+                                                          NA))))))) %>%
+  mutate(Unit = "m", Database = "Tamme et al. 2014", Sex = NA) %>%
+  filter(!is.na(DispersalDistance)) %>%
+  rename("ObservationType" = Data_type, "Source" = Reference) %>%
+  mutate(ObservationType = ifelse(ObservationType == "field", 
+                                  "seed dispersal (field)", 
+                                  ifelse(ObservationType == "model", 
+                                         "seed dispersal (model)",
+                                         NA)))
+
+## Tamme took from Jenkins
+## exclude observations from Jenkins with same Code and DispersalDistance as Tamme since has more info
+key = tamme_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, Code, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+jenkins_dd <- jenkins_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, Code, DispersalDistance, sep = "_") %in% key$data_id)
+
+## also exclude ones with different Code from source Augspurger 1986
+key = tamme_dd %>%
+  filter(Source == "Augspurger 1986") %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, DispersalDistance, sep = "_")) %>%
+  select(data_id)
+
+jenkins_dd <- jenkins_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!paste(scientificName, DispersalDistance, sep = "_") %in% key$data_id)
+
+## check how many species in bioshifts 
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 224
+jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## looks like Tamme and Flores have some overlapping data but rounded differently 
+## if duplicated after rounding and source is from Stamp 1989 or Yumoto 1999, get rid of it in Tamme
+key = flores_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(data_id = paste(scientificName, Code, round(DispersalDistance, 2), sep = "_")) %>%
+  select(data_id)
+
+tamme_dd <- tamme_dd %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  filter(!(paste(scientificName, Code, round(DispersalDistance, 2), sep = "_") %in% 
+           key$data_id & Source %in% c("Stamp 1989", "Yumoto 1999")))
+
+## check how many species in bioshifts 
+length(which(unique(tamme_dd$scientificName) %in% unique(sp$scientificName))) ## 346
+tamme_sp <- unique(tamme_dd$scientificName)[which(unique(tamme_dd$scientificName) %in% unique(sp$scientificName))]
+
+
+## TRY
+## read in TRY query
+try = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
+unique(try$TraitName)
+
+## get only dispersal data 
+try_dd <- try %>%
+  filter(TraitName == "Dispersal distance")
+length(unique(try_dd$SpeciesName)) #152 spp
+
+try_dd_harm <- harmonize(try_dd$SpeciesName)
+
+notfound <- filter(try_dd_harm, is.na(db_code))
+
+## rename columns 
+try_dd <- try_dd %>%
+  rename("reported_name" = SpeciesName) %>%
+  mutate(reported_name_fixed = reported_name)
+
+try_dd <- left_join(try_dd, try_dd_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## TRY
+try_dd_dd <- try_dd %>%
+  select(all_of(cols_to_keep), 
+         OrigValueStr,
+         OriglName, OrigUnitStr, Reference) %>%
+  rename("Source" = Reference, "Field" = OriglName, "DispersalDistance" = OrigValueStr, "Unit" = OrigUnitStr) %>%
+  mutate(Code = ifelse(Field %in% c("MeanDispersalDistanceMean", "MeanDispersalDistanceMax", 
+                                    "MeanDispersalDistanceMin"), 
+                       "MeanDispersalDistance", 
+                       ifelse(Field %in%c("MaxDispersalDistanceMax", "Max Seed Dispersal Distance",
+                                          "MaxDispersalDistanceMin", "MaxDispersalDistanceMean",
+                                          "Seed_dispersal_distance_95",
+                                          "Seed_dispersal_distance_5", "Max Seed Dispersal Distance"),
+                              "MaxDispersalDistance", 
+                              ifelse(Field %in% c("Effective Seed Dispersal Distance", "Seed Dispersal distance"),
+                                     "DispersalDistance",
+                                     NA)))) %>%
+  mutate(Sex = NA, ObservationType = "unknown",  
+         Database = "TRY database") %>% 
+  filter(!is.na(Unit)) 
+
+## check how many species in bioshifts 
+length(which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))) ## 55
+try_dd_sp <- unique(try_dd_dd$scientificName)[which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 ## Trochet_et_al_2014:
@@ -868,59 +874,29 @@ troc <- troc %>%
 troc <- left_join(troc, troc_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
 
-## check how many species in bioshifts 
-length(which(unique(troc$scientificName) %in% unique(sp$scientificName))) ## 24
-troc_sp <- unique(troc$scientificName)[which(unique(troc$scientificName) %in% unique(sp$scientificName))]
-
-
-## Paradis et al 2002:
-## read in data
-par = read_csv("data-raw/dispersal/Paradis_et_al_2002.csv") 
-colnames(par) <- str_replace_all(colnames(par), "\\ ", "_")
-length(unique(par$Species)) #75 spp
-
-par_harm <- harmonize(par$Species)
-
-notfound <- filter(par_harm, is.na(db_code))
-
-## rename columns 
-par <- par %>%
-  rename("reported_name" = Species) %>%
-  mutate(reported_name_fixed = reported_name)
-
-par <- left_join(par, par_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
+## reorganize
+troc_dd <- troc %>%
+  select(all_of(cols_to_keep), 
+         Mean_dispersal_distance, Maximum_dispersal_distance, Minimal_dispersal_distance, 
+         Mean_migration_distance, Maximum_migration_distance, Minimal_migration_distance) %>%
+  gather(key = "Field", value = "DispersalDistance", 
+         c(Mean_dispersal_distance, Maximum_dispersal_distance, Minimal_dispersal_distance, 
+         Mean_migration_distance, Maximum_migration_distance, Minimal_migration_distance)) %>%
+  filter(DispersalDistance != "DD") %>%
+  mutate(Code = ifelse(Field %in% c("Mean_dispersal_distance", "Mean_migration_distance"), 
+                       "MeanDispersalDistance", 
+                       ifelse(Field %in%c("Maximum_dispersal_distance", "Maximum_migration_distance"),
+                              "MaxDispersalDistance", 
+                              ifelse(Field %in% c("Minimal_dispersal_distance", "Minimal_migration_distance"),
+                                     "MinDispersalDistance",
+                                     NA)))) %>%
+  mutate(Sex = NA, Source = NA, Unit = "m",
+         ObservationType = "mark-release-recapture and/or radio-tracking studies",
+         Database = "Trochet et al. 2014") 
 
 ## check how many species in bioshifts 
-length(which(unique(par$scientificName) %in% unique(sp$scientificName))) ## 65
-par_sp <- unique(troc$scientificName)[which(unique(par$scientificName) %in% unique(sp$scientificName))]
-
-
-## Smith and Green:
-## read in data
-sg = read_csv("data-raw/dispersal/Smith_and_Green_2005.csv") 
-colnames(sg) <- str_replace_all(colnames(sg), "\\ ", "_")
-length(unique(sg$Species)) #94 spp
-
-sg_harm <- harmonize(sg$Species)
-
-notfound <- filter(sg_harm, is.na(db_code))
-
-## rename columns 
-sg <- sg %>%
-  rename("reported_name" = Species) %>%
-  mutate(reported_name_fixed = reported_name)
-
-## reformat the data:
-
-## join with bioshifts 
-
-sg <- left_join(sg, sg_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## check how many species in bioshifts 
-length(which(unique(sg$scientificName) %in% unique(sp$scientificName))) ## 11
-sg_sp <- unique(sg$scientificName)[which(unique(sg$scientificName) %in% unique(sp$scientificName))]
+length(which(unique(troc_dd$scientificName) %in% unique(sp$scientificName))) ## 17
+troc_sp <- unique(troc_dd$scientificName)[which(unique(troc_dd$scientificName) %in% unique(sp$scientificName))]
 
 
 ## Stevens:
@@ -931,14 +907,11 @@ sg_sp <- unique(sg$scientificName)[which(unique(sg$scientificName) %in% unique(s
 ## Beetles - Turin 1999 - Turin, H. (1999) De Nederlandse Loopkevers. Uitgeverij KNNV & EIS, Nederland, 666p.- not looked into yet
 ## Butterflies - Stevens et al. 2010b - A meta-analysis of dispersal in butterflies. - not available in paper 
 
-
-
 ## to do: 
-## write code to reformat Paradis, Smith & Green 
-## clean trochet data 
-## check to make sure no data is replicated (eg. some data is the same between sg and jenkins, tamme and jenkins)
 ## go through not found species and see why they were not found (clean names more)
-## make type column more cohesive and informative - need to know what data types 
+## check to make sure no data is replicated (eg. some data is the same between sg and jenkins, tamme and jenkins)
+## clean reference column (remove brackets, standardize)
+
 
 ## check how many unique species we have data for:
 species_with_dd <- append(co_sp, wo_sp) %>%
@@ -956,7 +929,7 @@ species_with_dd <- append(co_sp, wo_sp) %>%
   append(., par_sp) %>%
   append(., sg_sp)
 
-length(unique(species_with_dd)) # 707 species 
+length(unique(species_with_dd)) # 651 species 
 
 ## now: make subsets of each database with only bioshifts species 
 co_sub = filter(co_dd, scientificName %in% co_sp)
@@ -971,6 +944,9 @@ jenkins_sub = filter(jenkins_dd, scientificName %in% jenkins_sp)
 flores_sub = filter(flores_dd, scientificName %in% flores_sp)
 try_dd_sub = filter(try_dd_dd, scientificName %in% try_dd_sp)
 sant_sub = filter(sant_dd, scientificName %in% sant_sp)
+troc_sub = filter(troc_dd, scientificName %in% troc_sp)
+par_sub = filter(par_dd, scientificName %in% par_sp)
+sg_sub = filter(sg_dd, scientificName %in% sg_sp)
 
 ## collate all bioshifts data
 dd_collated <- rbind(co_sub, wo_sub) %>%
@@ -984,9 +960,29 @@ dd_collated <- rbind(co_sub, wo_sub) %>%
   rbind(., flores_sub) %>%
   rbind(., try_dd_sub) %>%
   rbind(., sant_sub) %>%
+  rbind(., troc_sub) %>%
+  rbind(., par_sub) %>%
+  rbind(., sg_sub) %>%
   unique()
 
-length(unique(dd_collated$scientificName)) # 637
+length(unique(dd_collated$scientificName)) # 651
+
+
+## fix classes 
+sp <- read_csv("data-raw/splist.csv")
+missing_class <- dd_collated %>%
+  filter(is.na(class)) 
+
+missing_class_sp <- filter(sp, scientificName %in% missing_class$scientificName) %>%
+  select(-v1, -v2, -species)
+
+missing_class <- select(missing_class, -class) %>%
+  left_join(., missing_class_sp)
+
+dd_collated <- filter(dd_collated, !scientificName %in% missing_class$scientificName) %>%
+  rbind(., missing_class)
+
+dd_collated$class[which(is.na(dd_collated$class))] <- "Thecostraca"
 
 write.csv(dd_collated, "data-processed/dispersal-distance-collated.csv", row.names = FALSE)
 dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
@@ -1002,12 +998,17 @@ dd_collated_ALL <- rbind(co_dd, wo_dd) %>%
   rbind(., jenkins_dd) %>%
   rbind(., flores_dd) %>%
   rbind(., try_dd_dd) %>%
+  rbind(., sant_dd) %>%
+  rbind(., troc_dd) %>%
+  rbind(., par_dd) %>%
+  rbind(., sg_dd) %>%
   unique()
 
-length(unique(dd_collated_ALL$scientificName)) # 1363
+length(unique(dd_collated_ALL$scientificName)) # 1444
 
 write.csv(dd_collated_ALL, "data-processed/dispersal-distance-collated_ALL.csv", row.names = FALSE)
 dd_collated_ALL <- read.csv("data-processed/dispersal-distance-collated_ALL.csv")
+
 
 ## make some plots 
 dd_collated %>%
@@ -1041,44 +1042,22 @@ dd_collated %>%
 
 
 ### collate dispersal frequency/longevity data
-## TRY
-try2 = read_delim("data-raw/primary-trait-data/TRY/23659.txt")
-unique(try2$TraitName)
-
-## subset to our bioshift species bc this data is HUGE
-try2 <- filter(try2, SpeciesName %in% dd_collated$scientificName)
-
-## dispersal frequency
-try_df <- try2 %>%
-  filter(TraitName == "Dispersal frequency") %>%
-  filter(OrigValueStr != "7")
-
-length(unique(try_df$SpeciesName)) ## potential for 40 bioshifts species with dd data 
-
-unique(try_df$OriglName)
-unique(try_df$OrigValueStr)
-# mast = 2 or more years between
-# regular = every year
-# alternate = every second year 
-# irregular = ?
-
-
 ## longevity: 
 lifespan <- read.csv("data-raw/CompilationLifeSpan_02242022.csv")
 unique(lifespan$Database)
 
 ## filter to species with dispersal distance
 lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
-length(unique(lifespan$SpeciesChecked)) ## 469 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 490 of our species 
 
 ## how many are animals?
 lifespan = filter(lifespan, phylum == "Chordata")
-length(unique(lifespan$SpeciesChecked)) ## 178 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 199 of our species 
 
 dd_collated %>%
   select(kingdom, scientificName) %>%
   unique() %>%
-  summarise(length(which(kingdom == "Animalia"))) # out of the 212 animals - nice!!! 
+  summarise(length(which(kingdom == "Animalia"))) # out of the 234 animals - nice!!! 
 
 unique(lifespan$class)
 
@@ -1139,7 +1118,7 @@ missing_long = dd_collated %>%
 try_am = read_delim("data-raw/primary-trait-data/TRY/23659.txt")
 unique(try_am$TraitName)
 
-## dispersal frequency
+## age at maturity 
 try_am <- try_am %>%
   filter(TraitName == "Plant ontogeny: age of maturity (first flowering)") 
 
@@ -1159,12 +1138,12 @@ try_am <- left_join(try_am, try_am_harm, by = c("reported_name_fixed" = "species
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
 
-length(unique(try_am_bs$scientificName)) # 270 species 
+length(unique(try_am_bs$scientificName)) # 269 species 
 
 dd_collated %>%
   select(kingdom, scientificName) %>%
   unique() %>%
-  summarise(length(which(kingdom == "Plantae"))) # out of the 416 plants - nice!!! 
+  summarise(length(which(kingdom == "Plantae"))) # out of the 415 plants - nice!!! 
 
 ## clean the data 
 unique(try_am_bs$OriglName)
@@ -1206,20 +1185,222 @@ try_am_bs <- try_am_bs %>%
 ## save 
 write.csv(try_am_bs, "data-processed/age-at-maturity-TRY.csv", row.names = FALSE)
 
-## maybe we can use 
-## annual, biennial, perennial
 
-
-dd_collated_ALL %>%
-  filter(is.na(kingdom)) %>%
-  View
-
-
-  
+## fill in the gaps:
 missing_am = dd_collated %>%
   filter(kingdom == "Plantae" & !scientificName %in% try_am_bs$scientificName) %>%
   select(scientificName, family, order, class, phylum, kingdom) %>%
   unique()
 
+
+## using lifespan/growth form to infer age at maturity for annual plants
+## for species that live 1 year, age at maturity = 1 year 
+## longevity: 
+lifespan <- read.csv("data-raw/CompilationLifeSpan_02242022.csv")
+unique(lifespan$Database)
+
+## filter to species with dispersal distance
+lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
+length(unique(lifespan$SpeciesChecked)) ## 490 of our species 
+
+## how many are plants?
+lifespan = filter(lifespan, phylum %in% c("Streptophyta", "Tracheophyta"))
+length(unique(lifespan$SpeciesChecked)) ## 291 of our species 
+
+## harmonize names 
+lifespan_harm <- harmonize(lifespan$SpeciesChecked)
+
+notfound <- filter(lifespan_harm, is.na(db_code))
+
+## rename columns 
+lifespan <- lifespan %>%
+  rename("reported_name" = SpeciesChecked) %>%
+  mutate(reported_name_fixed = reported_name) %>%
+  select(-family, -genus, -phylum, -class, -order)
+
+lifespan <- left_join(lifespan, lifespan_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## clean lifespan
+unique(lifespan$LifeSpan)
+unique(lifespan$LifeSpan)[str_detect(unique(lifespan$LifeSpan), "1\\-")]
+unique(lifespan$LifeSpan)[str_detect(unique(lifespan$LifeSpan), "1\\,")]
+
+lifespan_am <- lifespan %>%
+  mutate(Unit = ifelse(LifeSpan %in% c("annuals", "summer annuals",
+                                       "winter annuals"),
+                       "years",
+                       Unit)) %>%
+  mutate(AgeAtMaturity = ifelse(LifeSpan %in% c("annuals", "summer annuals",
+                                                "winter annuals"),
+                                1,
+                                ifelse(str_detect(LifeSpan, "1\\-"), 
+                                       1,
+                                       ifelse(str_detect(LifeSpan, "1\\,"), 
+                                              1,
+                                              ifelse(str_detect(LifeSpan, "\\<1"), 
+                                                     1,
+                                                     ifelse(LifeSpan == 1,
+                                                            1, 
+                                                            NA)))))) %>%
+  filter(AgeAtMaturity == 1) %>% 
+  select(all_of(cols_to_keep), -X, -Taxonomic.Group, -Ecosystem.Type, -Group, -ecotype,
+         AgeAtMaturity, Unit, Database, Field) %>%
+  unique() %>%
+  filter(scientificName %in% missing_am$scientificName) %>%
+  mutate(Source = "Lifespan compilation")
+
+length(unique(lifespan_am$scientificName)) #8 more species 
   
-  
+## BROT
+brot = read.csv("data-raw/primary-trait-data/BROT/BROT2_dat.csv")
+unique(brot$Trait)
+## GrowthForm, DispMode
+brot = brot %>%
+  filter(Trait %in% c("GrowthForm"))
+
+## harmonize names 
+brot_harm <- harmonize(brot$Taxon)
+
+notfound <- filter(brot_harm, is.na(db_code))
+
+## rename columns 
+brot <- brot %>%
+  rename("reported_name" = Taxon) %>%
+  mutate(reported_name_fixed = reported_name)
+
+brot <- left_join(brot, brot_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## subset to bioshifts plant species missing data on age at maturity 
+brot_sub <- filter(brot, scientificName %in% missing_am$scientificName) %>%
+  filter(!scientificName %in% lifespan_am$scientificName)
+
+## use information on whether each species is annual or perennial 
+unique(brot_sub$Data)
+
+brot_am <- brot_sub %>%
+  select(all_of(cols_to_keep), Data, SourceID) %>%
+  mutate(AgeAtMaturity = ifelse(str_detect(Data, "annual"),
+                                "1", 
+                                NA)) %>%
+    rename("Source" = SourceID) %>%
+  mutate(Field = "Growth form",
+         Unit = "yrs", Database = "TRY") %>%
+  filter(!is.na(AgeAtMaturity)) %>%
+  select(-Data)
+
+length(unique(brot_am$scientificName))# 1 more
+
+## LEDA
+## Growth form
+leda = read.delim("data-raw/primary-trait-data/LEDA/plant_growth_form copy.txt", sep = ";")
+unique(leda$plant.growth.form)
+
+# https://hosho.ees.hokudai.ac.jp/tsuyu/top/dct/lf.html
+# plant life form classifications:
+# Therophytes - annual herb
+
+## harmonize names 
+leda_harm <- harmonize(leda$SBS.name)
+
+notfound <- filter(leda_harm, is.na(db_code))
+
+## rename columns 
+leda <- leda %>%
+  rename("reported_name" = SBS.name) %>%
+  mutate(reported_name_fixed = reported_name)
+
+leda <- left_join(leda, leda_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## subset to bioshifts plant species missing data on age at maturity 
+leda_sub <- filter(leda, scientificName %in% missing_am$scientificName) %>%
+  filter(!scientificName %in% brot_am$scientificName) %>%
+  filter(!scientificName %in% lifespan_am$scientificName)
+
+## use information on whether each species is annual or perennial 
+unique(leda_sub$plant.growth.form)
+
+leda_am <- leda_sub %>%
+  select(all_of(cols_to_keep), plant.growth.form, original.reference) %>%
+  mutate(AgeAtMaturity = ifelse(str_detect(plant.growth.form, "Therophyte"),
+                                "1", 
+                                NA)) %>%
+  rename("Source" = original.reference) %>%
+  mutate(Field = "plant.growth.form",
+         Unit = "yrs", Database = "BROT") %>%
+  filter(!is.na(AgeAtMaturity)) %>%
+  select(-plant.growth.form) 
+
+length(unique(leda_am$scientificName)) # 0 more 
+
+
+## TRY
+## Growth form 
+## read in TRY query
+try_gf_full = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
+unique(try_gf_full$TraitName)
+
+try_gf_full <- try_gf_full %>%
+  filter(TraitName == "Plant growth form")
+
+## do a quick filter of data we don't want 
+## otherwise there are too many species to harmonize 
+unique(try_gf_full$OrigValueStr)
+unique(try_gf_full$OriglName)
+
+try_gf <- try_gf_full %>%
+  filter(str_detect(OrigValueStr, "annual") | str_detect(OrigValueStr, "Annual") | 
+           str_detect(OrigValueStr, "therophyte"))
+
+## harmonize names 
+try_gf_harm <- harmonize(try_gf$SpeciesName)
+
+notfound <- filter(try_gf_harm, is.na(db_code))
+
+## rename columns 
+try_gf <- try_gf %>%
+  rename("reported_name" = SpeciesName) %>%
+  mutate(reported_name_fixed = reported_name)
+
+try_gf <- left_join(try_gf, try_gf_harm, by = c("reported_name_fixed" = "species")) %>%
+  unique()
+
+## subset to bioshifts plant species missing data on age at maturity 
+try_gf_sub <- filter(try_gf, scientificName %in% missing_am$scientificName) %>%
+  filter(!scientificName %in% brot_am$scientificName) %>%
+  filter(!scientificName %in% leda_am$scientificName) %>%
+  filter(!scientificName %in% lifespan_am$scientificName)
+
+## use information on whether each species is annual or perennial 
+unique(try_gf_sub$OrigValueStr)
+unique(try_gf_sub$OriglName)
+
+try_gf_am <- try_gf_sub %>%
+  select(all_of(cols_to_keep), 
+         OrigValueStr, OriglName, 
+         Reference) %>%
+  mutate(Database = "TRY", Unit = "yrs") %>%
+  mutate(AgeAtMaturity = ifelse(str_detect(OrigValueStr, "Annual"),
+                                "1", 
+                                NA)) %>%
+  filter(!is.na(AgeAtMaturity)) %>%
+  rename("Source" = Reference, "Field" = OriglName) %>%
+  select(-OrigValueStr) %>%
+  unique()
+
+length(unique(try_gf_am$scientificName))# 0 species
+
+## combine
+all_am <- rbind(try_am_bs, lifespan_am) %>%
+  rbind(., brot_am) %>%
+  rbind(., leda_am) %>%
+  rbind(., try_gf_am)
+
+length(unique(all_am$scientificName)) ## 276 spp
+
+## write 
+write.csv(all_am, "data-processed/age-at-maturity.csv", row.names = FALSE)
+
+

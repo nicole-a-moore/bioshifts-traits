@@ -9,8 +9,7 @@ source("R/taxonomic-harmonization/clean_taxa_functions.R")
 
 #----------------------
 ## read in dispersal scale data 
-dscale = read.csv("data-processed/dispersal-distance-collated_temp.csv") %>%
-  filter(!is.na(class)) ## get rid of species without class
+dscale = read.csv("data-processed/dispersal-distance-collated.csv") 
 
 unique(dscale$Unit)
 
@@ -18,10 +17,11 @@ val = dscale$DispersalDistance
 new_val = as.numeric(as.character(dscale$DispersalDistance))
 val[which(is.na(new_val))]
 ## only one that isn't a number is a range 
-## get rid of it for now 
+## select max for now
 
 ## convert all to Km
 dscale <- dscale %>%
+  mutate(DispersalDistance = ifelse(DispersalDistance == "10-40", "40", DispersalDistance)) %>%
   mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
   mutate(DispersalDistanceKm = ifelse(Unit == "m",
                                      DispersalDistance/1000, 
@@ -81,7 +81,7 @@ v1 = left_join(v1, spv1)
 
 ## subset to species with dispersal scale 
 v1 <- filter(v1, scientificName %in% dscale$scientificName)
-length(unique(v1$scientificName)) #582 species 
+length(unique(v1$scientificName)) #620 species 
 
 
 ## read in bioshifts v2
@@ -93,6 +93,7 @@ spv2 <- filter(sp, v2 == 1) %>%
   select(reported_name, scientificName)
 
 ## yay! all are there
+## except Coprosma 3sp
 which(!v2$reported_name %in% spv2$reported_name)
 
 ## join to add scientific name column
@@ -100,11 +101,11 @@ v2 = left_join(v2, spv2)
 
 ## subset to species with dispersal scale 
 v2 <- filter(v2, scientificName %in% dscale$scientificName)
-length(unique(v2$scientificName)) #541 species 
+length(unique(v2$scientificName)) #587 species 
 
 ## make sure all the species are there:
-length(unique(c(v2$scientificName, v1$scientificName))) # 604 unique species 
-length(unique(dscale$scientificName)) # 604 unique species 
+length(unique(c(v2$scientificName, v1$scientificName))) # 651 unique species 
+length(unique(dscale$scientificName)) # 651 unique species 
 
 #----------------------
 ### relate velocity of shift to dispersal scale ###
@@ -148,8 +149,8 @@ v1 <- select(v1, -c("Kingdom", "Phylum", "Class", "Order", "Family"))
 v1_saved = v1
 
 ## after everything, there should be:
-length(which(v1$Type == "ELE")) ## 1337 elevation shifts
-length(which(v1$Type == "LAT")) ## 1902 latitude shifts
+length(which(v1$Type == "ELE")) ## 1401 elevation shifts
+length(which(v1$Type == "LAT")) ## 1996 latitude shifts
 
 ## get rid of columns that will cause duplication in dispersal scale database 
 dscale <- select(dscale, -c("reported_name", "reported_name_fixed", "db", "db_code")) %>%
@@ -159,7 +160,7 @@ v1 = left_join(v1, dscale)
 
 ## check on merge
 length(which(is.na(v1$DispersalDistanceKm))) #0 missing dispersal scale
-length(unique(v1$scientificName)) #still 582 species
+length(unique(v1$scientificName)) #still 620 species
 
 
 #----------------------
@@ -184,7 +185,8 @@ v1 = v1 %>%
   ungroup() %>%
   group_by(scientificName) %>%
   mutate(DispersalDistanceKm_max = max(DispersalDistanceKm)) %>%
-  select(Code, scientificName, DispersalDistanceKm, DispersalDistanceKm_unique, DispersalDistanceKm_max, everything()) %>%
+  select(Code, scientificName, DispersalDistanceKm, DispersalDistanceKm_unique, DispersalDistanceKm_max, 
+         everything()) %>%
   ungroup()
 
 ## look at the metrics that were larger than max 
@@ -196,7 +198,7 @@ max = v1 %>%
   filter(matches == "N")
 
 length(unique(max$scientificName))
-## 8 species have other dispersal distance metrics that are larger than their so-called maximum 
+## 13 species have other dispersal distance metrics that are larger than their so-called maximum 
 
 v1 %>%
   filter(scientificName %in% max$scientificName) %>%
@@ -226,7 +228,7 @@ v1 %>%
 maxsp = unique(v1$scientificName[which(v1$Code == "MaxDispersalDistance")])
 nomaxsp <- unique(v1$scientificName[which(!v1$scientificName %in% maxsp)])
 
-## 561 species have max dispersal distance
+## 590 species have max dispersal distance
 ## start with max!
 v1 <- v1 %>%
   filter(Code == "MaxDispersalDistance") %>%
@@ -248,7 +250,7 @@ v1 <- rename(v1, "MaxDispersalDistanceKm" = DispersalDistanceKm_unique)
 v1 = read.csv("data-processed/bioshiftsv1_max-dispersal-distance.csv")
 
 ### join age at maturity and longevity data with dispersal data 
-am <- read.csv("data-processed/age-at-maturity-TRY.csv")
+am <- read.csv("data-processed/age-at-maturity.csv")
 long <- read.csv("data-processed/longevity.csv")
 
 long %>% 
@@ -289,7 +291,7 @@ v1 <- left_join(v1, long_join) %>%
 
 length(unique(v1$scientificName)) ## still have all the species!
 length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])) 
-## 143 / 561 species do not have longevity/age at maturity data 
+## 140 / 590 species do not have longevity/age at maturity data 
 
 unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])
 
@@ -339,10 +341,10 @@ lat$lags <- lat$SHIFT - lat$v.lat.mean
 hist(lat$lags)
 
 ## how many shifts for species with maximum dispersal distance in v1? 
-nrow(ele) + nrow(lat) #3151
+nrow(ele) + nrow(lat) #3256
 
 ## how many leading edge shifts for species with maximum dispersal distance in v1? 
-length(which(ele$Param == "LE")) + length(which(lat$Param == "LE")) #973
+length(which(ele$Param == "LE")) + length(which(lat$Param == "LE")) #1018
 
 lat = lat %>%
   filter(v.lat.mean >= 0) %>%
@@ -386,18 +388,18 @@ pal = pnw_palette("Bay",7)
 
 
 ## how many species should be able to keep up with climate change across elev and lat?
-pol1 <- data.frame(x = c(-10, 9, 9), y = c(-10, -10, 9))
-pol2 <- data.frame(x = c(-10, -10, 9), y = c(-10, 9, 9))
-pol3 <- data.frame(x = c(-5, 15, 15), y = c(-5, -5, 15))
-pol4 <- data.frame(x = c(-5, -5, 15), y = c(-5, 15, 15))
+pol1 <- data.frame(x = c(-10, 10, 10), y = c(-10, -10, 10))
+pol2 <- data.frame(x = c(-10, -10, 10), y = c(-10, 10, 10))
+pol3 <- data.frame(x = c(-4, 15, 15), y = c(-4, -4, 15))
+pol4 <- data.frame(x = c(-4, -4, 15), y = c(-4, 15, 15))
 
 plot1 = lat %>% 
   ggplot(aes(y = MaxDispersalDistanceKm, x = log(v.lat.mean))) + 
   geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
   geom_point(aes(colour = expect_tracking_dist)) +
-  scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
+  scale_x_continuous(limits = c(-10, 10), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-10, 10), expand = c(0,0)) +
   theme_light() + theme(panel.grid = element_blank()) + 
   labs(y = "Log maximum dispersal distance (km)", 
        x = "Log mean velocity of temperature (km/y)", 
@@ -411,8 +413,8 @@ plot2 = ele %>%
   geom_polygon(data = pol3, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol4, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
   geom_point(aes(colour = expect_tracking_dist)) +
-  scale_x_continuous(limits = c(-5, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-5, 15), expand = c(0,0)) +
+  scale_x_continuous(limits = c(-4, 15), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-4, 15), expand = c(0,0)) +
   theme(panel.grid = element_blank())  +
   theme_classic() + 
   labs(colour = "Does dispersal\npotential allow\nspecies to keep up\nwith temp change?",
@@ -433,8 +435,8 @@ plot3 = lat %>%
   geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
   geom_point(aes(colour = expect_tracking_pot)) +
-  scale_x_continuous(limits = c(-10, 9), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-10, 9), expand = c(0,0)) +
+  scale_x_continuous(limits = c(-10, 10), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-10, 10), expand = c(0,0)) +
   theme_light() + theme(panel.grid = element_blank()) + 
   labs(y = "Log maximum dispersal potential (km/y)", 
        x = "Log mean velocity of temperature (km/y)", 
@@ -448,8 +450,8 @@ plot4 = ele %>%
   geom_polygon(data = pol3, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
   geom_polygon(data = pol4, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
   geom_point(aes(colour = expect_tracking_pot)) +  
-  scale_x_continuous(limits = c(-5, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(-5, 15), expand = c(0,0)) +
+  scale_x_continuous(limits = c(-4, 15), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-4, 15), expand = c(0,0)) +
   theme(panel.grid = element_blank())  +
   theme_classic() + 
   labs(colour = "Does dispersal\npotential allow\nspecies to keep up\nwith temp change?",
@@ -478,6 +480,7 @@ lat %>%
 
 ## take a closer look 
 ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
   ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist, shape = Sampling)) +
   geom_hline(yintercept = 0) +
   geom_point() +
@@ -490,13 +493,14 @@ ele_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 14)) +
+  scale_x_continuous(limits = c(-3, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_points_distance.png")
 
 ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
   ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
@@ -509,7 +513,7 @@ ele_le %>%
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
   facet_wrap(~class, nrow = 1) +
-  scale_x_continuous(limits = c(-10, 14)) +
+  scale_x_continuous(limits = c(-3, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
@@ -528,7 +532,7 @@ lat_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8))+
+  scale_x_continuous(limits = c(-10, 9.5)) +
   scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
@@ -547,7 +551,7 @@ lat_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-10, 9.5)) +
   scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
@@ -632,6 +636,7 @@ ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal",
 
 ## now with dispersal potential 
 ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
   ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) +
   geom_hline(yintercept = 0) +
   geom_point() +
@@ -643,14 +648,15 @@ ele_le %>%
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 14)) +
+  theme(legend.position = "bottom", panel.grid = element_blank())  +
+  scale_x_continuous(limits = c(-3, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
        filename = "ele-le_points_potential.png")
 
 ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
   ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot)) + 
   geom_hline(yintercept = 0) +
   geom_boxplot() +
@@ -662,8 +668,8 @@ ele_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  facet_wrap(~class, nrow = 1) +
-  scale_x_continuous(limits = c(-10, 14)) +
+  facet_wrap(~class, nrow = 1)  +
+  scale_x_continuous(limits = c(-3, 14)) +
   scale_y_continuous(limits = c(-24, 30))
 
 ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
@@ -682,7 +688,7 @@ lat_le %>%
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
   theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  scale_x_continuous(limits = c(-10, 9.5)) +
   scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
@@ -700,8 +706,8 @@ lat_le %>%
   scale_colour_manual(values = c(pal[6], pal[4])) + 
   theme_bw() + 
   guides(colour = "legend", shape = "none") +
-  theme(legend.position = "bottom", panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(-10, 8)) +
+  theme(legend.position = "bottom", panel.grid = element_blank())+
+  scale_x_continuous(limits = c(-10, 9.5)) +
   scale_y_continuous(limits = c(-17, 34))
 
 ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
