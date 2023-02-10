@@ -1,4 +1,4 @@
-## seeing whether empirical dispersal scale explains variation in range shifts
+## seeing whether empirical dispersal scale explains variation in corrected range shifts
 library(tidyverse)
 library(PNWColors)
 library(gridExtra)
@@ -6,25 +6,6 @@ library(grid)
 library(cowplot)
 library(lme4)
 source("R/taxonomic-harmonization/clean_taxa_functions.R")
-
-
-rs_data = read.table("data-raw/bioshifts-download/Lenoir_et_al/Analysis/Table_S1.csv",sep=";",h=T,dec=".",
-                     stringsAsFactors = FALSE) 
-
-## do some name fixes 
-# rs_data$Species[which(!rs_data$Species %in% spv1$species)]
-
-rs_data$Species = Clean_Names(rs_data$Species, return_gen_sps = F)
-
-rs_data$Species[which(rs_data$Species == "Quercus x")] = "Quercus" 
-rs_data$Species[which(rs_data$Species == "Mentha x")] = "Mentha" 
-rs_data$Species[which(rs_data$Species == "Circaea x intermedia")] = "Circaea intermedia" 
-
-rs_data$Species = Clean_Names(rs_data$Species, return_gen_sps = F)
-
-#rs_data$Species[which(!rs_data$Species %in% spv1$species)]
-
-
 
 #----------------------
 ## read in dispersal scale data 
@@ -63,26 +44,9 @@ sp <- read_csv("data-raw/splist.csv")
 
 #----------------------
 #### get shift data for species with dispersal scale ####
-## read in bioshifts v1
-v1 = read.table("data-raw/bioshiftsv1/Shifts2018_checkedtaxo.txt",
-                header = T,
-                encoding="latin1") 
+## read in corrected bioshifts v1
+v1 = read.csv("data-processed/corrected-range-shifts.csv") 
 
-v1 %>% 
-  filter(Type == "LAT")%>%
-  group_by(Param) %>%
-  summarise(plusplus = length(which(SHIFT > 0 & v.lat.mean> 0)),
-            plusminus = length(which(SHIFT > 0 & v.lat.mean < 0)),
-            minusplus = length(which(SHIFT < 0 & v.lat.mean> 0)),
-            minusminus = length(which(SHIFT < 0 & v.lat.mean < 0))) 
-
-v1 %>% 
-  filter(Type == "ELE") %>%
-  group_by(Param) %>%
-  summarise(plusplus = length(which(SHIFT > 0 & v.ele.mean> 0)),
-            plusminus = length(which(SHIFT > 0 & v.ele.mean < 0)),
-            minusplus = length(which(SHIFT < 0 & v.ele.mean> 0)),
-            minusminus = length(which(SHIFT < 0 & v.ele.mean < 0))) 
 
 
 ## clean names to make them match reported names in species list
@@ -100,7 +64,7 @@ v1 = left_join(v1, spv1)
 
 ## subset to species with dispersal scale 
 v1 <- filter(v1, scientificName %in% dscale$scientificName)
-length(unique(v1$scientificName)) #693 species 
+length(unique(v1$scientificName)) #620 species 
 
 
 ## read in bioshifts v2
@@ -120,11 +84,11 @@ v2 = left_join(v2, spv2)
 
 ## subset to species with dispersal scale 
 v2 <- filter(v2, scientificName %in% dscale$scientificName)
-length(unique(v2$scientificName)) #652 species 
+length(unique(v2$scientificName)) #587 species 
 
 ## make sure all the species are there:
-length(unique(c(v2$scientificName, v1$scientificName))) # 725 unique species 
-length(unique(dscale$scientificName)) # 725 unique species 
+length(unique(c(v2$scientificName, v1$scientificName))) # 651 unique species 
+length(unique(dscale$scientificName)) # 651 unique species 
 
 #----------------------
 ### relate velocity of shift to dispersal scale ###
@@ -145,8 +109,10 @@ v1$Data[v1$Data=="occurence-based"] <- "occurrence-based"
 v1$Sampling <- ifelse(v1$Sampling == "TWO","TWO","MULTIPLE")
 v1$Grain_size <- ifelse(v1$Grain_size %in% c("large","very_large"),"large",v1$Grain_size)
 v1$Uncertainty_Distribution <- ifelse(v1$Uncertainty_Distribution %in% c("RESAMPLING","RESAMPLING(same)"),"RESAMPLING",
-                                         ifelse(v1$Uncertainty_Distribution %in% c("MODEL","MODEL+RESAMPLING(same)","RESAMPLING+MODEL"),"MODEL",
-                                                ifelse(v1$Uncertainty_Distribution %in% c("DETECTABILITY","RESAMPLING(same)+DETECTABILITY"),"DETECTABILITY",
+                                         ifelse(v1$Uncertainty_Distribution %in% c("MODEL","MODEL+RESAMPLING(same)",
+                                                                                   "RESAMPLING+MODEL"),"MODEL",
+                                                ifelse(v1$Uncertainty_Distribution %in% c("DETECTABILITY",
+                                                                                          "RESAMPLING(sam)+DETECTABILITY"), "DETECTABILITY",
                                                        v1$Uncertainty_Distribution)))
 v1$Uncertainty_Distribution <- ifelse(v1$Uncertainty_Distribution == "RAW","OPPORTUNISTIC","PROCESSED")  
 
@@ -161,6 +127,20 @@ v1$ID.area <- log(v1$ID.area)
 #remove marine birds
 #v1 <- v1[-which(v1$Class == "Aves" & v1$ECO=="M"),]
 
+colnames(cv1)
+colnames(v1)
+
+cv1 %>%
+  mutate(Type = ifelse(Type == "Leading edge", "LE", 
+                       ifelse(Type == "Trailing edge", "TE",
+                              ifelse(Type == "Centroid", "O",
+                                     NA)))) %>%
+  mutate(PrAb = ifelse(PrAb == "OCCUR", "occurrence-based",
+                       ifelse(PrAb == "ABUND", "abundance-based", 
+                              NA))) %>%
+  rename("SHIFT" = ShiftR, "Param" = Type, "N" = Ntaxa, "PrAb" = Data)
+
+
 #----------------------
 ## add dispersal scale 
 ## get rid of old taxonomy columns from v1 (they aren't right)
@@ -168,8 +148,8 @@ v1 <- select(v1, -c("Kingdom", "Phylum", "Class", "Order", "Family"))
 v1_saved = v1
 
 ## after everything, there should be:
-length(which(v1$Type == "ELE")) ## 1490 elevation shifts
-length(which(v1$Type == "LAT")) ## 2312 latitude shifts
+length(which(v1$Type == "ELE")) ## 1401 elevation shifts
+length(which(v1$Type == "LAT")) ## 1996 latitude shifts
 
 ## get rid of columns that will cause duplication in dispersal scale database 
 dscale <- select(dscale, -c("reported_name", "reported_name_fixed", "db", "db_code")) %>%
@@ -179,7 +159,7 @@ v1 = left_join(v1, dscale)
 
 ## check on merge
 length(which(is.na(v1$DispersalDistanceKm))) #0 missing dispersal scale
-length(unique(v1$scientificName)) #still 693 species
+length(unique(v1$scientificName)) #still 620 species
 
 
 #----------------------
@@ -217,7 +197,7 @@ max = v1 %>%
   filter(matches == "N")
 
 length(unique(max$scientificName))
-## 19 species have other dispersal distance metrics that are larger than their so-called maximum 
+## 13 species have other dispersal distance metrics that are larger than their so-called maximum 
 
 v1 %>%
   filter(scientificName %in% max$scientificName) %>%
@@ -247,12 +227,11 @@ v1 %>%
 maxsp = unique(v1$scientificName[which(v1$Code == "MaxDispersalDistance")])
 nomaxsp <- unique(v1$scientificName[which(!v1$scientificName %in% maxsp)])
 
-## 589 species have max dispersal distance
+## 590 species have max dispersal distance
 ## start with max!
 v1 <- v1 %>%
   filter(Code == "MaxDispersalDistance") %>%
-  select(-DispersalDistanceKm, -DispersalDistance, -Unit, -Field, -Source, -Database, 
-         -Sex) %>%
+  select(-DispersalDistanceKm, -DispersalDistance, -Unit, -Field, -Source, -Database, -ObservationType, -Sex) %>%
   unique()
 
 which(nomaxsp %in% v1$scientificName)
@@ -269,76 +248,69 @@ v1 <- rename(v1, "MaxDispersalDistanceKm" = DispersalDistanceKm_unique)
 #write.csv(v1, "data-processed/bioshiftsv1_max-dispersal-distance.csv", row.names = FALSE)
 v1 = read.csv("data-processed/bioshiftsv1_max-dispersal-distance.csv")
 
-### join age at maturity data 
+### join age at maturity and longevity data with dispersal data 
 am <- read.csv("data-processed/age-at-maturity.csv")
+long <- read.csv("data-processed/longevity.csv")
 
-am %>% 
-  ggplot(aes(x = AgeAtMaturity, fill = class)) + geom_histogram() +
+long %>% 
+  ggplot(aes(x = log(LifeSpan), fill = class)) + geom_histogram() +
   theme_bw()
 
-## convert units 
-unique(am$Unit)
-
-am <- am %>%
-  mutate(AgeAtMaturityDays = ifelse(Unit %in% c("yrs", "y", "years", "year"), 
-                                    365*AgeAtMaturity,
-                                    ifelse(Unit == "weeks", 
-                                           7*AgeAtMaturity,
-                                           ifelse(Unit == "months",
-                                                  30*AgeAtMaturity, 
-                                                  AgeAtMaturity)))) %>%
-  mutate(GenerationLengthDays = ifelse(Unit %in% c("yrs", "y", "years", "year"), 
-                                  365*GenerationLength,
-                                  ifelse(Unit == "weeks", 
-                                         7*GenerationLength,
-                                         ifelse(Unit == "months",
-                                                30*GenerationLength, 
-                                                GenerationLength))))
-
 am %>% 
-  filter(!is.na(AgeAtMaturityDays)) %>%
-  ggplot(aes(x = log(AgeAtMaturityDays), fill = class)) + geom_histogram() +
+  ggplot(aes(x = log(AgeAtMaturity), fill = class)) + geom_histogram() +
   theme_bw()
-
 
 ## if multiple estimates of age at maturity per species, keep the lowest 
 am_join <- am %>%
   group_by(scientificName) %>%
+  mutate(AgeAtMaturity = as.numeric(as.character(AgeAtMaturity))) %>%
+  mutate(AgeAtMaturityDays = ifelse(Unit == "yrs", 
+                                    AgeAtMaturity*365,
+                                    ifelse(Unit == "weeks",
+                                           AgeAtMaturity*7,
+                                           AgeAtMaturity))) %>% # convert all to days 
   mutate(AgeAtMaturityDays = min(AgeAtMaturityDays)) %>% # select minimum per species 
   ungroup() %>%
   select(scientificName, AgeAtMaturityDays) %>%
   unique() %>%
   mutate(YearOfMaturity = ceiling(AgeAtMaturityDays/365)) ## make new column for a value that's rounded to the nearest year 
 
+long_join = long %>%
+  rename("scientificName" = SpeciesChecked) %>%
+  group_by(scientificName) %>%
+  mutate(LifeSpanYears = as.numeric(as.character(LifeSpan))) %>%
+  mutate(LifeSpanYears = max(LifeSpanYears)) %>% # select maximum per species 
+  ungroup() %>%
+  select(scientificName, LifeSpanYears) %>%
+  unique() 
+
 ## join to dispersal data:
-v1 <- left_join(v1, am_join)
+v1 <- left_join(v1, long_join) %>%
+  left_join(., am_join)
 
 length(unique(v1$scientificName)) ## still have all the species!
-length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])) 
-## 288 / 589 species do not have age at maturity data 
+length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])) 
+## 140 / 590 species do not have longevity/age at maturity data 
 
-unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])
+unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays) & is.na(v1$LifeSpanYears))])
 
 ## calculate dispersal potential for species with age at maturity/longevity 
 v1 = v1 %>%
-  mutate(MaxDispersalPotentialKmY = ifelse(!is.na(YearOfMaturity), 
-                                     MaxDispersalDistanceKm/YearOfMaturity,
-                                     NA)) %>%
-  mutate(MaxDispersalPotentialmY = ifelse(!is.na(YearOfMaturity), 
-                                           (MaxDispersalDistanceKm*1000)/YearOfMaturity,
-                                           NA)) %>%
+  mutate(MaxDispersalPotentialKmY = ifelse(!is.na(LifeSpanYears), 
+                                     MaxDispersalDistanceKm/LifeSpanYears,
+                                     ifelse(!is.na(YearOfMaturity),
+                                            MaxDispersalDistanceKm/YearOfMaturity,
+                                            NA))) %>%
+  mutate(MaxDispersalPotentialmY = ifelse(!is.na(LifeSpanYears), 
+                                           (MaxDispersalDistanceKm*1000)/LifeSpanYears,
+                                           ifelse(!is.na(YearOfMaturity),
+                                                  (MaxDispersalDistanceKm*1000)/YearOfMaturity,
+                                                  NA))) %>%
   mutate(MaxDispersalDistancem = MaxDispersalDistanceKm*1000)
 
 ggplot(v1, aes(x = log(MaxDispersalPotentialKmY), fill = class)) + geom_histogram()
 ggplot(v1, aes(x = log(MaxDispersalPotentialmY), fill = class)) + geom_histogram()
 ggplot(v1, aes(x = log(MaxDispersalDistanceKm), fill = class)) + geom_histogram()
-
-## which taxa are missing age at maturity data?
-v1 %>%
-  filter(is.na(YearOfMaturity)) %>%
-  ggplot(., aes(x = log(MaxDispersalDistanceKm), fill = class)) + geom_histogram()
-## mostly birds and mammals - will likely change when pantheria/amniota/anage is added 
-
 
 #----------------------
 #take log of dispersal scale and dispersal potential 
@@ -351,7 +323,7 @@ v1$MaxDispersalDistancem = log(v1$MaxDispersalDistancem)
 
 v1 %>%
   ggplot(aes(x = MaxDispersalDistanceKm, y = MaxDispersalPotentialKmY, colour = class)) + geom_point() +
-  theme_bw() 
+  theme_bw()
 
 #----------------------
 #prepare a dataset for each gradient
@@ -368,10 +340,10 @@ lat$lags <- lat$SHIFT - lat$v.lat.mean
 hist(lat$lags)
 
 ## how many shifts for species with maximum dispersal distance in v1? 
-nrow(ele) + nrow(lat) #4400
+nrow(ele) + nrow(lat) #3256
 
 ## how many leading edge shifts for species with maximum dispersal distance in v1? 
-length(which(ele$Param == "LE")) + length(which(lat$Param == "LE")) #1367
+length(which(ele$Param == "LE")) + length(which(lat$Param == "LE")) #1018
 
 lat = lat %>%
   filter(v.lat.mean >= 0) %>%
@@ -379,7 +351,7 @@ lat = lat %>%
   mutate(expect_tracking_dist = ifelse(MaxDispersalDistanceKm > log(v.lat.mean),"Yes", "No")) %>%
   mutate(expect_tracking_pot = ifelse(MaxDispersalPotentialKmY > log(v.lat.mean),"Yes", "No")) %>%
   ## get rid of trailing edge 
-  filter(., Param != "TE") %>% 
+  filter(., Param != "TE") %>%
   filter(!is.na(MaxDispersalPotentialKmY))
 
 ele = ele %>%
@@ -419,6 +391,42 @@ pol1 <- data.frame(x = c(-10, 10, 10), y = c(-10, -10, 10))
 pol2 <- data.frame(x = c(-10, -10, 10), y = c(-10, 10, 10))
 pol3 <- data.frame(x = c(-4, 15, 15), y = c(-4, -4, 15))
 pol4 <- data.frame(x = c(-4, -4, 15), y = c(-4, 15, 15))
+
+plot1 = lat %>% 
+  ggplot(aes(y = MaxDispersalDistanceKm, x = log(v.lat.mean))) + 
+  geom_polygon(data = pol1, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
+  geom_polygon(data = pol2, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
+  geom_point(aes(colour = expect_tracking_dist)) +
+  scale_x_continuous(limits = c(-10, 10), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-10, 10), expand = c(0,0)) +
+  theme_light() + theme(panel.grid = element_blank()) + 
+  labs(y = "Log maximum dispersal distance (km)", 
+       x = "Log mean velocity of temperature (km/y)", 
+       title = "Latitudinal shifts")+
+  theme_classic() +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme(legend.position = "none")
+
+plot2 = ele %>% 
+  ggplot(aes(y = MaxDispersalDistancem, x = log(v.ele.mean))) +
+  geom_polygon(data = pol3, aes(x = x, y = y), fill = pal[6], alpha = 0.5) +
+  geom_polygon(data = pol4, aes(x = x, y = y), fill = pal[4], alpha = 0.5) +
+  geom_point(aes(colour = expect_tracking_dist)) +
+  scale_x_continuous(limits = c(-4, 15), expand = c(0,0)) +
+  scale_y_continuous(limits = c(-4, 15), expand = c(0,0)) +
+  theme(panel.grid = element_blank())  +
+  theme_classic() + 
+  labs(colour = "Does dispersal\npotential allow\nspecies to keep up\nwith temp change?",
+       y = "Log maximum dispersal distance (m)", 
+       x = "Log mean velocity of temperature (m/y)", 
+       title = "Elevational shifts")  +
+  scale_colour_manual(values = c(pal[6], pal[4]))
+
+p = plot_grid(plot1, plot2, nrow = 1, rel_widths = c(4/10, 6/10))
+## more species should be able to keep up climate change across elevation 
+
+ggsave(p, height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
+       filename = "maxdispersal-versus-lag.png")
 
 ## try with dispersal potential 
 plot3 = lat %>% 
@@ -470,6 +478,162 @@ lat %>%
   theme_bw() + facet_wrap(~Type)
 
 ## take a closer look 
+ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist, shape = Sampling)) +
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  facet_grid(~class) +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Elevational shifts",
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-3, 14)) +
+  scale_y_continuous(limits = c(-24, 30))
+
+ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
+       filename = "ele-le_points_distance.png")
+
+ele_le %>%
+  filter(abs(lags) < 30) %>% ## get rid of outliers
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Elevational shifts",
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  facet_wrap(~class, nrow = 1) +
+  scale_x_continuous(limits = c(-3, 14)) +
+  scale_y_continuous(limits = c(-24, 30))
+
+ggsave(height = 3.5, width = 9, device = "png", path = "figures/dispersal", 
+       filename = "ele-le_boxplot_distance.png")
+
+lat_le %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  facet_grid(~class) +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (km)", 
+       y = "Range shift lag (km/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-10, 9.5)) +
+  scale_y_continuous(limits = c(-17, 34))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "lat-le_points_distance.png")
+
+lat_le %>%
+ ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (km)", 
+       y = "Range shift lag (km/y)") +
+  facet_grid(~class) +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-10, 9.5)) +
+  scale_y_continuous(limits = c(-17, 34))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "lat-le_boxplot_distance.png")
+
+lat_o %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  facet_grid(~class) +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (km)", 
+       y = "Range shift lag (km/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-10, 10)) +
+  scale_y_continuous(limits = c(-20, 40))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "lat-o_points_distance.png")
+
+lat_o %>%
+  ggplot(aes(x = MaxDispersalDistanceKm, y = lags, colour = expect_tracking_dist)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (km)", 
+       y = "Range shift lag (km/y)") +
+  facet_grid(~class) +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-10, 10)) +
+  scale_y_continuous(limits = c(-20, 40))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "lat-o_boxplot_distance.png")
+
+
+ele_o %>%
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist, shape = Sampling)) + 
+  geom_hline(yintercept = 0) +
+  geom_point() +
+  facet_grid(~class) +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Elevational shifts",
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele-o_points_distance.png")
+
+ele_o %>%
+  ggplot(aes(x = MaxDispersalDistancem, y = lags, colour = expect_tracking_dist)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(colour = "Does dispersal potential allow species to keep up with temp change?", 
+       title = "Latitudinal shifts",
+       x = "Log maximum dispersal distance (m)", 
+       y = "Range shift lag (m/y)") +
+  facet_grid(~class) +
+  scale_colour_manual(values = c(pal[6], pal[4])) + 
+  theme_bw() + 
+  guides(colour = "legend", shape = "none") +
+  theme(legend.position = "bottom", panel.grid = element_blank()) +
+  scale_x_continuous(limits = c(-4, 14.5)) +
+  scale_y_continuous(limits = c(-30, 20))
+
+ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal", 
+       filename = "ele_o_boxplot_distance.png")
+
+## now with dispersal potential 
 ele_le %>%
   filter(abs(lags) < 30) %>% ## get rid of outliers
   ggplot(aes(x = MaxDispersalPotentialmY, y = lags, colour = expect_tracking_pot, shape = Sampling)) +
@@ -625,14 +789,6 @@ ggsave(height = 3.5, width = 11, device = "png", path = "figures/dispersal",
        filename = "ele_o_boxplot_potential.png")
 
 ## so interesting!
-
-
-
-
-### here is where things get messy
-
-
-
 
 
 ## model brainstorm:

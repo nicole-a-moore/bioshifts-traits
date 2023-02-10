@@ -3,7 +3,7 @@ harmonize <- function(sp_names){
   
   library(taxadb)
   library(bdc)
-  source("R/clean_taxa_functions.R")
+  source("R/taxonomic-harmonization/clean_taxa_functions.R")
   
   sp_names = Clean_Names(sp_names,
                          return_gen_sps = TRUE)
