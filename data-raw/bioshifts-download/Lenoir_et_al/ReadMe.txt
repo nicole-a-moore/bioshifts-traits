@@ -1,0 +1,3 @@
+The Lenoir_et_al.zip provides the scripts and data used to conduct the analyses in Lenoir et al. Species better track the shifting isotherms in the oceans than on lands (2020). 
+"It notably provides (1) the data table (Table_S1.csv) and (2) R scripts used to conduct the taxonomic harmonization (/Analysis/0_Script_taxonomy), the estimates per taxonomic class (/Analysis/1_InferRangeShiftByClass.R) and the coupling with the velocity of climate change at the species level (/Analysis/2_SpRangeShiftExplanation.R). Be aware that some computations take a long time. The geodatabase is provided in BioShifts.zip."
+Please cite our work when using our material.
