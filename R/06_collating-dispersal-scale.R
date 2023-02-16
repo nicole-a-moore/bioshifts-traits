@@ -1503,7 +1503,7 @@ unique(lifespan$Database)
 
 ## filter to species with dispersal distance
 lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
-length(unique(lifespan$SpeciesChecked)) ## 490 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 530 of our species 
 
 ## how many are plants?
 lifespan = filter(lifespan, phylum %in% c("Streptophyta", "Tracheophyta"))
@@ -1600,47 +1600,47 @@ length(unique(brot_am$scientificName))# 1 more
 #---------------------
 # LEDA
 #---------------------
-## Growth form
-leda = read.delim("data-raw/primary-trait-data/LEDA/plant_growth_form copy.txt", sep = ";")
-unique(leda$plant.growth.form)
-
-# https://hosho.ees.hokudai.ac.jp/tsuyu/top/dct/lf.html
-# plant life form classifications:
-# Therophytes - annual herb
-
-## harmonize names 
-leda_harm <- harmonize(leda$SBS.name)
-
-notfound <- filter(leda_harm, is.na(db_code))
-
-## rename columns 
-leda <- leda %>%
-  rename("reported_name" = SBS.name) %>%
-  mutate(reported_name_fixed = reported_name)
-
-leda <- left_join(leda, leda_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## subset to bioshifts plant species missing data on age at maturity 
-leda_sub <- filter(leda, scientificName %in% missing_am$scientificName) %>%
-  filter(!scientificName %in% brot_am$scientificName) %>%
-  filter(!scientificName %in% lifespan_am$scientificName)
-
-## use information on whether each species is annual or perennial 
-unique(leda_sub$plant.growth.form)
-
-leda_am <- leda_sub %>%
-  select(all_of(cols_to_keep), plant.growth.form, original.reference) %>%
-  mutate(AgeAtMaturity = ifelse(str_detect(plant.growth.form, "Therophyte"),
-                                "1", 
-                                NA)) %>%
-  rename("Source" = original.reference) %>%
-  mutate(Field = "plant.growth.form",
-         Unit = "yrs", Database = "BROT", Code = "MaturityFromGrowthForm") %>%
-  filter(!is.na(AgeAtMaturity)) %>%
-  select(-plant.growth.form) 
-
-length(unique(leda_am$scientificName)) # 0 more 
+# ## Growth form
+# leda = read.delim("data-raw/primary-trait-data/LEDA/plant_growth_form copy.txt", sep = ";")
+# unique(leda$plant.growth.form)
+# 
+# # https://hosho.ees.hokudai.ac.jp/tsuyu/top/dct/lf.html
+# # plant life form classifications:
+# # Therophytes - annual herb
+# 
+# ## harmonize names 
+# leda_harm <- harmonize(leda$SBS.name)
+# 
+# notfound <- filter(leda_harm, is.na(db_code))
+# 
+# ## rename columns 
+# leda <- leda %>%
+#   rename("reported_name" = SBS.name) %>%
+#   mutate(reported_name_fixed = reported_name)
+# 
+# leda <- left_join(leda, leda_harm, by = c("reported_name_fixed" = "species")) %>%
+#   unique()
+# 
+# ## subset to bioshifts plant species missing data on age at maturity 
+# leda_sub <- filter(leda, scientificName %in% missing_am$scientificName) %>%
+#   filter(!scientificName %in% brot_am$scientificName) %>%
+#   filter(!scientificName %in% lifespan_am$scientificName)
+# 
+# ## use information on whether each species is annual or perennial 
+# unique(leda_sub$plant.growth.form)
+# 
+# leda_am <- leda_sub %>%
+#   select(all_of(cols_to_keep), plant.growth.form, original.reference) %>%
+#   mutate(AgeAtMaturity = ifelse(str_detect(plant.growth.form, "Therophyte"),
+#                                 "1", 
+#                                 NA)) %>%
+#   rename("Source" = original.reference) %>%
+#   mutate(Field = "plant.growth.form",
+#          Unit = "yrs", Database = "BROT", Code = "MaturityFromGrowthForm") %>%
+#   filter(!is.na(AgeAtMaturity)) %>%
+#   select(-plant.growth.form) 
+# 
+# length(unique(leda_am$scientificName)) # 0 more 
 
 
 #---------------------
@@ -1648,58 +1648,58 @@ length(unique(leda_am$scientificName)) # 0 more
 #---------------------
 ## Growth form 
 ## read in TRY query
-try_gf_full = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
-unique(try_gf_full$TraitName)
-
-try_gf_full <- try_gf_full %>%
-  filter(TraitName == "Plant growth form")
-
-## do a quick filter of data we don't want 
-## otherwise there are too many species to harmonize 
-unique(try_gf_full$OrigValueStr)
-unique(try_gf_full$OriglName)
-
-try_gf <- try_gf_full %>%
-  filter(str_detect(OrigValueStr, "annual") | str_detect(OrigValueStr, "Annual") | 
-           str_detect(OrigValueStr, "therophyte"))
-
-## harmonize names 
-try_gf_harm <- harmonize(try_gf$SpeciesName)
-
-notfound <- filter(try_gf_harm, is.na(db_code))
-
-## rename columns 
-try_gf <- try_gf %>%
-  rename("reported_name" = SpeciesName) %>%
-  mutate(reported_name_fixed = reported_name)
-
-try_gf <- left_join(try_gf, try_gf_harm, by = c("reported_name_fixed" = "species")) %>%
-  unique()
-
-## subset to bioshifts plant species missing data on age at maturity 
-try_gf_sub <- filter(try_gf, scientificName %in% missing_am$scientificName) %>%
-  filter(!scientificName %in% brot_am$scientificName) %>%
-  filter(!scientificName %in% leda_am$scientificName) %>%
-  filter(!scientificName %in% lifespan_am$scientificName)
-
-## use information on whether each species is annual or perennial 
-unique(try_gf_sub$OrigValueStr)
-unique(try_gf_sub$OriglName)
-
-try_gf_am <- try_gf_sub %>%
-  select(all_of(cols_to_keep), 
-         OrigValueStr, OriglName, 
-         Reference) %>%
-  mutate(Database = "TRY", Unit = "yrs", Code = "MaturityFromGrowthForm") %>%
-  mutate(AgeAtMaturity = ifelse(str_detect(OrigValueStr, "Annual"),
-                                "1", 
-                                NA)) %>%
-  filter(!is.na(AgeAtMaturity)) %>%
-  rename("Source" = Reference, "Field" = OriglName) %>%
-  select(-OrigValueStr) %>%
-  unique()
-
-length(unique(try_gf_am$scientificName))# 0 species
+# try_gf_full = read_delim("data-raw/primary-trait-data/TRY/23454.txt")
+# unique(try_gf_full$TraitName)
+# 
+# try_gf_full <- try_gf_full %>%
+#   filter(TraitName == "Plant growth form")
+# 
+# ## do a quick filter of data we don't want 
+# ## otherwise there are too many species to harmonize 
+# unique(try_gf_full$OrigValueStr)
+# unique(try_gf_full$OriglName)
+# 
+# try_gf <- try_gf_full %>%
+#   filter(str_detect(OrigValueStr, "annual") | str_detect(OrigValueStr, "Annual") | 
+#            str_detect(OrigValueStr, "therophyte"))
+# 
+# ## harmonize names 
+# try_gf_harm <- harmonize(try_gf$SpeciesName)
+# 
+# notfound <- filter(try_gf_harm, is.na(db_code))
+# 
+# ## rename columns 
+# try_gf <- try_gf %>%
+#   rename("reported_name" = SpeciesName) %>%
+#   mutate(reported_name_fixed = reported_name)
+# 
+# try_gf <- left_join(try_gf, try_gf_harm, by = c("reported_name_fixed" = "species")) %>%
+#   unique()
+# 
+# ## subset to bioshifts plant species missing data on age at maturity 
+# try_gf_sub <- filter(try_gf, scientificName %in% missing_am$scientificName) %>%
+#   filter(!scientificName %in% brot_am$scientificName) %>%
+#   filter(!scientificName %in% leda_am$scientificName) %>%
+#   filter(!scientificName %in% lifespan_am$scientificName)
+# 
+# ## use information on whether each species is annual or perennial 
+# unique(try_gf_sub$OrigValueStr)
+# unique(try_gf_sub$OriglName)
+# 
+# try_gf_am <- try_gf_sub %>%
+#   select(all_of(cols_to_keep), 
+#          OrigValueStr, OriglName, 
+#          Reference) %>%
+#   mutate(Database = "TRY", Unit = "yrs", Code = "MaturityFromGrowthForm") %>%
+#   mutate(AgeAtMaturity = ifelse(str_detect(OrigValueStr, "Annual"),
+#                                 "1", 
+#                                 NA)) %>%
+#   filter(!is.na(AgeAtMaturity)) %>%
+#   rename("Source" = Reference, "Field" = OriglName) %>%
+#   select(-OrigValueStr) %>%
+#   unique()
+# 
+# length(unique(try_gf_am$scientificName))# 0 species
 
 
 ## animal species 
@@ -1774,7 +1774,7 @@ fishb_am <- fishb %>%
   rename("AgeAtMaturity" = AgeAtMaturityMin) %>%
   distinct()
   
-length(unique(fishb_am$scientificName)) # 28 spp
+length(unique(fishb_am$scientificName)) # 27 spp
 
 ## polytraits
 ## skip - only polychaetes 
@@ -1783,10 +1783,6 @@ length(unique(fishb_am$scientificName)) # 28 spp
 # Meiri
 #------------------
 meiri <- read.csv("data-raw/primary-trait-data/Meiri/Appendix S1 - Lizard data version 1.0.csv")
-colnames(meiri)
-unique(meiri$youngest.age.at.first.breeding..months.)
-unique(meiri$oldest.age.at.first.breeding..months.)
-
 meiri <- filter(meiri, Binomial != "")
 
 ## harmonize names 
@@ -1950,7 +1946,8 @@ length(unique(anage_am$scientificName)) # 226 spp
 #-----------------
 # Amniota
 #------------------
-amniota <- read.csv("data-raw/primary-trait-data/amniota/ECOL_96_269/Data_Files/Amniote_Database_Aug_2015.csv")
+amniota <- read.csv("data-raw/primary-trait-data/amniota/ECOL_96_269/Data_Files/Amniote_Database_Aug_2015.csv") %>%
+  select(-class, -order, -family)
 amniota$genus_species <- paste(amniota$genus, amniota$species, sep = " ")
 
 ## harmonize names 
@@ -1968,17 +1965,22 @@ amniota <- left_join(amniota, amni_harm, by = c("reported_name_fixed" = "species
 
 ## subset to bioshifts species with dispersal distance
 amniota_bs <- filter(amniota, scientificName %in% dd_collated$scientificName)
-length(unique(amniota_bs$scientificName)) # ? spp
+length(unique(amniota_bs$scientificName)) # 213 spp
 
 amniota_am = amniota_bs %>%
-  select(all_of(cols_to_keep), female_maturity_d, male_maturity_d, References) %>%
+  select(all_of(cols_to_keep), female_maturity_d, male_maturity_d) %>%
   gather(key = "Field", value = "AgeAtMaturity", 
          c(female_maturity_d, male_maturity_d)) %>%
-  rename("Source" = References) %>%
   mutate(Database = "Amniota", 
          Unit = "days", 
-         Code = "AgeAtMaturity")%>%
-  filter(!is.na(AgeAtMaturity))
+         Code = "AgeAtMaturity",
+         Source = NA,
+         Sex = ifelse(Field == "female_maturity_d", "f", 
+                      ifelse(Field == "male_maturity_d", "m", NA)))%>%
+  filter(!is.na(AgeAtMaturity)) %>%
+  filter(AgeAtMaturity != -999)
+
+length(unique(amniota_am$scientificName)) # 207 spp
 
 
 #---------------------
@@ -2034,17 +2036,20 @@ all_am <- rbind(try_am_bs, lifespan_am) %>%
   rbind(., fishb_am) %>%
   rbind(., meiri_am) %>%
   rbind(., panth1_am) %>%
-  rbind(., anage_am) %>%
-  rbind(., amniota_am) %>%
+  rbind(., anage_am)
+all_am$Sex = NA
+
+all_am <- rbind(all_am, amniota_am) %>%
   rbind(., troc_am)
 
 all_am$GenerationLength = NA
 
 all_am <- pac_gen %>%
   mutate(AgeAtMaturity = NA) %>%
+  mutate(Sex = NA) %>%
   rbind(all_am, .)
 
-length(unique(all_am$scientificName)) ## 357 spp
+length(unique(all_am$scientificName)) ## 583 spp
 
 ## write 
 write.csv(all_am, "data-processed/age-at-maturity.csv", row.names = FALSE)

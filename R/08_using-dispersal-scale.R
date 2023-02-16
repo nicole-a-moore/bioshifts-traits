@@ -315,7 +315,7 @@ v1 <- left_join(v1, am_join)
 
 length(unique(v1$scientificName)) ## still have all the species!
 length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])) 
-## 288 / 589 species do not have age at maturity data 
+## 162 / 589 species do not have age at maturity data 
 
 unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])
 
@@ -337,7 +337,7 @@ ggplot(v1, aes(x = log(MaxDispersalDistanceKm), fill = class)) + geom_histogram(
 v1 %>%
   filter(is.na(YearOfMaturity)) %>%
   ggplot(., aes(x = log(MaxDispersalDistanceKm), fill = class)) + geom_histogram()
-## mostly birds and mammals - will likely change when pantheria/amniota/anage is added 
+## mostly magnoliopsida and mammals
 
 
 #----------------------
