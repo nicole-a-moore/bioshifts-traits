@@ -14,6 +14,7 @@ library(pbapply)
 library(traitdataform)
 library(data.table)
 library(lme4)
+library(MuMIn)
 source("R/taxonomic-harmonization/clean_taxa_functions.R")
 
 ## read function to harmonize taxonomy 
@@ -145,115 +146,22 @@ length(unique(v1$Species)) #still 696 species
 v1 <- filter(v1, scientificName != "Salix alba")
 length(unique(v1$Species)) ## now have 695
 
+
+## see which taxa have movement studies 
+v1 %>%
+  filter(ObservationTypeGeneral == "movement study") %>%
+  ggplot(aes(x = DispersalDistanceKm, fill = class)) + geom_histogram() + scale_x_log10()
+## and which do not
+v1 %>%
+  filter(ObservationTypeGeneral != "movement study") %>%
+  ggplot(aes(x = DispersalDistanceKm, fill = class)) + geom_histogram() + scale_x_log10()
+
 ## get rid of movement studies for now:
 v1 <- filter(v1, ObservationTypeGeneral != "movement study")
 length(unique(v1$Species)) ## now have 609
 
-# ## calculate one dispersal distance value per species per metric
-# 
-# 
-# v1 = v1 %>% 
-#   group_by(Species, Code) %>%
-#   mutate(Code = ifelse(Code %in% c("99thPercentileDispersalDistance",
-#                                    "90thPercentileDispersalDistance"),
-#                        "MaxDispersalDistance", 
-#                        Code)) %>% ## recode 99th and 90th percentile to be "max"
-#   mutate(DispersalDistanceKm_unique = ifelse(Code == "MaxDispersalDistance",
-#                                              max(DispersalDistanceKm),
-#                                              ifelse(Code == "MedianDispersalDistance",
-#                                                     median(DispersalDistanceKm), 
-#                                                     ifelse(Code %in% c("MeanDispersalDistance", "DispersalDistance"),
-#                                                            mean(DispersalDistanceKm),
-#                                                            NA)))) %>%
-#   ungroup() %>%
-#   group_by(Species) %>%
-#   mutate(DispersalDistanceKm_max = max(DispersalDistanceKm)) %>%
-#   select(Code, Species, DispersalDistanceKm, DispersalDistanceKm_unique, DispersalDistanceKm_max, 
-#          everything()) %>%
-#   ungroup()
-# 
-# ## look at the metrics that were larger than max 
-# max = v1 %>%
-#   filter(Code == "MaxDispersalDistance") %>%
-#   mutate(matches = ifelse(DispersalDistanceKm_unique == DispersalDistanceKm_max, "Y", "N")) %>%
-#   select(matches, Species) %>%
-#   unique() %>%
-#   filter(matches == "N")
-# 
-# length(unique(max$Species))
-# ## 19 species have other dispersal distance metrics that are larger than their so-called maximum 
-# 
-# v1 %>%
-#   filter(Species %in% max$Species) %>%
-#   filter(DispersalDistanceKm == DispersalDistanceKm_max) %>% 
-#   select(Species, Code) %>% 
-#   unique() 
-# ## most are mean values, some median
-# ## mostly fish, 1 plant, 1 tree, some small mammals
-# 
-# ## correct max dispersal distance for these species
-# v1 = v1 %>%
-#   group_by(Species, Code) %>% 
-#   mutate(DispersalDistanceKm_unique = ifelse(DispersalDistanceKm_unique != DispersalDistanceKm_max &
-#                                                Code == "MaxDispersalDistance", 
-#                                              DispersalDistanceKm_max,
-#                                              DispersalDistanceKm_unique)) %>%
-#   ungroup() %>%
-#   select(-DispersalDistanceKm_max)
-# 
-# v1 %>%
-#   select(Code, Species) %>%
-#   unique() %>%
-#   group_by(Code) %>%
-#   tally()
-# 
-# ## make sure we don't drop any data
-# maxsp = unique(v1$Species[which(v1$Code == "MaxDispersalDistance")])
-# nomaxsp <- unique(v1$Species[which(!v1$Species %in% maxsp)])
-# 
-# ## 594 species have max dispersal distance
-# ## start with max!
-# v1 <- v1 %>%
-#   filter(Code == "MaxDispersalDistance") %>%
-#   select(-DispersalDistanceKm, -DispersalDistance, -DispersalUnit, -Field, 
-#          -DispersalSource, -ObservationTypeSpecific, -Sex) %>%
-#   unique()
-# 
-# which(nomaxsp %in% v1$Species)
-# which(maxsp %in% v1$Species)
-# 
-# v1 <- rename(v1, "MaxDispersalDistanceKm" = DispersalDistanceKm_unique)
-# 
-# ## classify species in taxonomic groups 
-# v1 = v1 %>%
-#   mutate(Group = ifelse(class %in% c("Pinopsida", "Magnoliopsida", "Liliopsida"),
-#                            "Plants",
-#                         ifelse(class == "Aves", 
-#                                "Birds", 
-#                                ifelse(class == "Insecta", 
-#                                       "Insects",
-#                                       ifelse(class == "Squamata", 
-#                                              "Squamates", 
-#                                              ifelse(class == "Amphibia", 
-#                                                     "Amphibians",
-#                                                     ifelse(class %in% c("Actinopterygii", "Elasmobranchii"),
-#                                                            "Fish",
-#                                                            ifelse(class == "Mammalia",
-#                                                                   "Mammals", NA))))))))
-# 
-# ## plot 
-# v1 %>%
-#   ggplot(aes(x = Group)) + geom_bar()
-# 
-# 
-# 
-# ## get rid of duplicates
-# v1 <- v1 %>%
-#   select(-Database) %>%
-#   distinct()
-# 
-# ## save dataset 
-# #write.csv(v1, "data-processed/bioshiftsv1_max-dispersal-distance.csv", row.names = FALSE)
+## save dataset
+#write.csv(v1, "data-processed/bioshiftsv1_max-dispersal-distance.csv", row.names = FALSE)
 
 ###################################################
 ####   calculating annual dispersal potential  ####
@@ -292,6 +200,9 @@ length(unique(v1$Species[which(is.na(v1$AgeAtMaturityDays))]))
 ## 160 / 609 species do not have age at maturity data 
 
 unique(v1$Species[which(is.na(v1$AgeAtMaturityDays))])
+
+## filter to only species with age at maturity 
+v1 <- filter(v1, !is.na(AgeAtMaturityDays))
 
 ## calculate dispersal potential for species with age at maturity 
 v1 = v1 %>%
@@ -359,7 +270,6 @@ v1 = v1 %>%
 ## plot
 v1 %>%
   ggplot(aes(x = Group)) + geom_bar()
-## NA ones are Phaeophyceae, Gastropoda, Malacostraca
 
 
 ############################################
@@ -382,10 +292,16 @@ lags <- v1 %>%
                       ifelse(Gradient == "Latitudinal",
                              ShiftR - LatVeloT, 
                              NA))) %>%
+  ## calculate percentage tracking 
+  mutate(percent_lag = ifelse(Gradient == "Elevation",
+                          (ShiftR/EleVeloT),
+                          ifelse(Gradient == "Latitudinal",
+                                 (ShiftR/LatVeloT), 
+                                 NA))) %>%
   ## filter out observations where climate velocity is negative at leading edge/optimum (expect contraction)
   filter(LatVeloT >= 0 | EleVeloT >= 0) %>%
   ## get rid of negative shifts 
-  filter(ShiftR < 0) %>%
+  filter(ShiftR > 0) %>%
   ## get rid of trailing edge 
   filter(., Position != "Trailing edge") %>%
   ## make sure none have empty dispersal potential 
@@ -411,10 +327,10 @@ lags <- v1 %>%
                                               dispersal_potential_kmY,
                                               NA))) %>%
   mutate(climate_velocity = ifelse(Gradient == "Elevation",
-                                       EleVeloT,
-                                       ifelse(Gradient == "Latitudinal",
-                                              LatVeloT,
-                                              NA)))
+                                   EleVeloT,
+                                   ifelse(Gradient == "Latitudinal",
+                                          LatVeloT,
+                                          NA)))
  
 ## view how many observations we have 
 lags %>%
@@ -445,7 +361,7 @@ hist_gradient <- lags %>%
   geom_histogram() +
   theme_classic() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
-  facet_grid(~Gradient) +
+  facet_grid(Group~Gradient) +
   scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000), 
                 labels = c("0.0001","0.001", "0.01", "0.1", "1", "10", "100", "1000")) +
   labs(x = "Annual dispersal potential (km/y)",
@@ -453,24 +369,24 @@ hist_gradient <- lags %>%
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?")
 
 ggsave(hist_gradient, height = 3.5, width = 8, device = "png", path = "figures/dispersal", 
-       filename = "histogram_dispersal-potential-across-gradients.png")
+       filename = "histogram_dispersal-potential-across-gradients-and-taxa.png")
 
-hist_taxa <- lags %>%
-  ggplot(aes(x = dispersal_potential_kmY, fill = expect_tracking)) + 
-  geom_histogram() +
-  theme_bw() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  facet_grid(Gradient~Group) +
-  labs(x = "Annual dispersal potential (km/y)",
-       y = "Number of range shift observations", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000), 
-                labels = c("1e-4    ","1e-3", " 0.01", "0.1", "1", "10", "100", "1000"))  +
-  theme(panel.grid = element_blank(), strip.background = element_rect(colour="black", fill="white"),
-        legend.position = "none")
-
-ggsave(hist_taxa, height = 3.5, width = 11.5, device = "png", path = "figures/dispersal", 
-       filename = "histogram_dispersal-potential-across-groups.png")
+# hist_taxa <- lags %>%
+#   ggplot(aes(x = dispersal_potential_kmY, fill = expect_tracking)) + 
+#   geom_histogram() +
+#   theme_bw() +
+#   scale_fill_manual(values = c(pal[4], pal[6])) + 
+#   facet_grid(Gradient~Group) +
+#   labs(x = "Annual dispersal potential (km/y)",
+#        y = "Number of range shift observations", 
+#        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
+#   scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000), 
+#                 labels = c("1e-4    ","1e-3", " 0.01", "0.1", "1", "10", "100", "1000"))  +
+#   theme(panel.grid = element_blank(), strip.background = element_rect(colour="black", fill="white"),
+#         legend.position = "none")
+# 
+# ggsave(hist_taxa, height = 3.5, width = 11.5, device = "png", path = "figures/dispersal", 
+#        filename = "histogram_dispersal-potential-across-groups.png")
 
 bars = lags %>%
   ggplot(aes(x = Group, fill = expect_tracking)) + 
@@ -496,7 +412,7 @@ ele_box_all <- lags %>%
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Position~Gradient) +
@@ -513,7 +429,7 @@ lat_box_all <- lags %>%
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
+       y = "Raw range shift lag (km/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Position~Gradient) +
@@ -534,7 +450,7 @@ ele_box_all <- lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Position~Gradient) +
@@ -551,7 +467,7 @@ lat_box_all <- lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
+       y = "Raw range shift lag (km/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Position~Gradient) +
@@ -575,7 +491,7 @@ points_lat = lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
+       y = "Raw range shift lag (km/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Gradient~Group) +
@@ -591,7 +507,7 @@ points_ele <- lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
        title = "Leading edge") +
   geom_abline(intercept = 0, slope = 0) +
@@ -613,7 +529,7 @@ box_lat = lags %>%
   theme_bw() +
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
+  labs(x = "Raw dispersal potential (km/y)", 
        y = "Inferred range shift lag (km/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
@@ -630,7 +546,7 @@ box_ele <- lags %>%
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
        title = "Leading edge") +
   geom_abline(intercept = 0, slope = 0) +
@@ -655,7 +571,7 @@ points_lat = lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
+       y = "Raw range shift lag (km/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Gradient~Group) +
@@ -671,7 +587,7 @@ points_ele <- lags %>%
   scale_x_log10() +
   scale_colour_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
        title = "Centroid") +
   geom_abline(intercept = 0, slope = 0) +
@@ -694,7 +610,7 @@ box_lat = lags %>%
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
+       y = "Raw range shift lag (km/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
   geom_abline(intercept = 0, slope = 0) +
   facet_grid(Gradient~Group) +
@@ -710,7 +626,7 @@ box_ele <- lags %>%
   scale_x_log10() +
   scale_fill_manual(values = c(pal[4], pal[6])) + 
   labs(x = "Annual dispersal potential (m/y)", 
-       y = "Inferred range shift lag (m/y)", 
+       y = "Raw range shift lag (m/y)", 
        fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
        title = "Centroid") +
   geom_abline(intercept = 0, slope = 0) +
@@ -725,19 +641,571 @@ ggsave(pts_all, height = 5, width = 11, device = "png", path = "figures/dispersa
        filename = "dp-vs-raw-shift_boxes_by-group_cent.png")
 
 
+## make plot of dispersal potential vs. climate velocity coloured by lag within studies
+lags %>%
+  filter(Gradient == "Latitudinal") %>%
+  filter(Source %in% unique(.$Source)[9]) %>%
+  ggplot(aes(x = annual_dispersal_pot, y = raw_lag, colour = climate_velocity)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm") +
+  #geom_abline(slope = 1, intercept = 0) + 
+  facet_wrap(Source~Group)
+
+lags %>%
+  filter(Gradient == "Latitudinal") %>%
+  filter(Group == "Plants") %>%
+  ggplot(aes(x = annual_dispersal_pot, y = ShiftR, colour = climate_velocity,
+             group = Source)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = F) + 
+  facet_wrap(~Position)
+
+lags %>%
+  filter(Gradient == "Latitudinal") %>%
+  filter(Group == "Birds") %>%
+  ggplot(aes(x = annual_dispersal_pot, y = ShiftR, colour = climate_velocity,
+             group = Source)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = F)  + 
+  facet_wrap(~Position)
+
+lags %>%
+  filter(Gradient == "Elevation") %>%
+  filter(Group == "Plants") %>%
+  ggplot(aes(x = annual_dispersal_pot, y = ShiftR, colour = climate_velocity,
+             group = Source)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = F) + 
+  facet_wrap(~Position)
+
+lags %>%
+  filter(Gradient == "Elevation") %>%
+  filter(Group == "Birds") %>%
+  ggplot(aes(x = annual_dispersal_pot, y = ShiftR, colour = climate_velocity,
+             group = Source)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = F) + 
+  facet_wrap(~Position)
+
+
+lags %>%
+  filter(Gradient == "Latitudinal") %>%
+  filter(Group == "Birds") %>%
+  ggplot(aes(x = annual_dispersal_pot, y = ShiftR, colour = climate_velocity,
+             group = Source)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  #scale_y_log10() +
+  geom_smooth(method = "lm", se = F) +
+  geom_abline(intercept = 0, slope = 1)
+
+
+## take dispersal distance x range shift lag across Group x study
+lags %>%
+  filter(Gradient == "Latitudinal") %>%
+  group_by(Group, Source) %>% 
+  mutate(mean_lag = mean(raw_lag),
+         mean_shift = mean(ShiftR),
+         mean_disp = mean(annual_dispersal_pot)) %>%
+  ungroup() %>%
+  select(-raw_lag, -annual_dispersal_pot, -ShiftR) %>%
+  distinct() %>%
+  ggplot(aes(x = mean_disp, y = mean_lag, colour = climate_velocity,
+             group = Group)) + 
+  geom_point() +
+  theme_bw() +
+  scale_x_log10() +
+  geom_smooth(method = "lm") 
+
+
+
+
 ######################
 ####   modelling  ####
 ######################
 ## get rid of groups that have only species who can or only species who can't keep up with climate change 
-groups_keep <- lags %>% filter(Gradient == "Latitudinal") %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
-lat_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
-groups_keep <- lags %>% filter(Gradient == "Elevation")  %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
-ele_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
+# groups_keep <- lags %>% filter(Gradient == "Latitudinal") %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
+# lat_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
+# groups_keep <- lags %>% filter(Gradient == "Elevation")  %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
+# ele_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
+# 
+# lat <- filter(lags, Group %in% lat_keep & Gradient == "Latitudinal")%>%
+#   mutate(Group = factor(Group, ordered = F))
+# ele <-  filter(lags, Group %in% ele_keep & Gradient == "Elevation") %>%
+#   mutate(Group = factor(Group, ordered = F))
 
-lat <- filter(lags, Group %in% lat_keep & Gradient == "Latitudinal")%>%
+lat <- filter(lags,Gradient == "Latitudinal")%>%
   mutate(Group = factor(Group, ordered = F))
-ele <-  filter(lags, Group %in% ele_keep & Gradient == "Elevation") %>%
+ele <-  filter(lags,Gradient == "Elevation") %>%
   mutate(Group = factor(Group, ordered = F))
+
+## try modelling shift ~ dispersal potential*Group, while controlling for study ID
+library(nlme)
+
+## start with only lat x birds 
+lat_birds <- filter(lat, Group == "Birds")
+mod_lat = lme(data = lat_birds, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
+summary(mod_lat)
+
+## plot predictions
+lat_pred <- expand.grid(Position = unique(lat_birds$Position), 
+                        annual_dispersal_pot = seq(min(lat_birds$annual_dispersal_pot), max(lat_birds$annual_dispersal_pot),
+                                                   by = 1), 
+                        Source = unique(lat_birds$Source))
+pred <- predict(mod_lat, lat_pred, se.fit = T, re.form = NA)
+lat_pred$predicted_val = pred
+
+mod_data <- lat_pred %>%
+  group_by(annual_dispersal_pot, Position) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  select(-Source) %>%
+  distinct() 
+
+mod_data %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot), y = predicted_val, 
+                       colour = Position) +
+  geom_line() +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Latitude") +
+  geom_point(data = filter(lat, Group == "Birds"), aes(y = ShiftR, x = annual_dispersal_pot)) +
+  scale_x_log10()
+
+
+## now elev x birds
+ele_birds <- filter(ele, Group == "Birds")
+mod_ele = lme(data = ele_birds, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
+summary(mod_ele)
+
+## plot predictions
+ele_pred <- expand.grid(Position = unique(ele_birds$Position), 
+                        annual_dispersal_pot = seq(min(ele_birds$annual_dispersal_pot), max(ele_birds$annual_dispersal_pot),
+                                                   by = 5), 
+                        Source = unique(ele_birds$Source))
+pred <- predict(mod_ele, ele_pred, se.fit = T, re.form = NA)
+ele_pred$predicted_val = pred
+
+mod_data <- ele_pred %>%
+  group_by(annual_dispersal_pot, Position) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  select(-Source) %>%
+  distinct() 
+
+mod_data %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Position)) +
+  geom_line() +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (m/y)",
+       y = "Predicted range shift (m/y)",
+       title = "Elevation") +
+  geom_point(data = filter(ele, Group == "Birds"), aes(y = ShiftR, x = annual_dispersal_pot)) +
+  scale_x_log10()
+
+
+##now with lat x plants 
+lat_plants <- filter(lat, Group == "Plants")
+mod_lat = lme(data = lat_plants, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
+summary(mod_lat)
+
+## plot predictions
+lat_pred <- expand.grid(Position = unique(lat_plants$Position), 
+                        annual_dispersal_pot = seq(min(lat_plants$annual_dispersal_pot), max(lat_plants$annual_dispersal_pot),
+                                                   by = 1), 
+                        Source = unique(lat_plants$Source))
+pred <- predict(mod_lat, lat_pred, se.fit = T, re.form = NA)
+lat_pred$predicted_val = pred
+
+mod_data <- lat_pred %>%
+  group_by(annual_dispersal_pot, Position) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  select(-Source) %>%
+  distinct() 
+
+mod_data %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+         colour = Position)) +
+  geom_line() +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Latitude") +
+  geom_point(data = filter(lat, Group == "Plants"), aes(y = ShiftR, x = annual_dispersal_pot)) +
+  scale_x_log10()
+
+
+## now elev x plants
+ele_plants <- filter(ele, Group == "Plants")
+mod_ele = lme(data = ele_plants, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
+summary(mod_ele)
+
+## plot predictions
+ele_pred <- expand.grid(Position = unique(ele_plants$Position), 
+                        annual_dispersal_pot = seq(min(ele_plants$annual_dispersal_pot), max(ele_plants$annual_dispersal_pot),
+                                                   by = 5), 
+                        Source = unique(ele_plants$Source))
+pred <- predict(mod_ele, ele_pred, se.fit = T, re.form = NA)
+ele_pred$predicted_val = pred
+
+mod_data <- ele_pred %>%
+  group_by(annual_dispersal_pot, Position) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  select(-Source) %>%
+  distinct() 
+
+mod_data %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Position)) +
+  geom_line() +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (m/y)",
+       y = "Predicted range shift (m/y)",
+       title = "Elevation") +
+  geom_point(data = filter(ele, Group == "Plants"), aes(y = ShiftR, x = annual_dispersal_pot)) +
+  scale_x_log10()
+
+
+### try one model for everything
+#######################
+###### Latitude ######
+#######################
+mod_lat = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source))
+mod_lat_tax = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source) + (1|family/Genus))
+
+summary(mod_lat)
+summary(mod_lat_tax)
+
+R2m = r.squaredGLMM(mod_lat)[[1]] # marginal R2, ie part of variation explain by fixed effect 
+R2c = r.squaredGLMM(mod_lat)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
+R2m_tax = r.squaredGLMM(mod_lat_tax)[[1]] 
+R2c_tax = r.squaredGLMM(mod_lat_tax)[[2]]
+
+## plot predictions
+lat_pred <- expand.grid(Group = unique(lat$Group),
+                        Position = unique(lat$Position), 
+                        annual_dispersal_pot = seq(min(lat$annual_dispersal_pot), max(lat$annual_dispersal_pot),
+                                                   by = 1))
+pred <- predict(mod_lat_tax, lat_pred, se.fit = T, re.form = NA)
+lat_pred$predicted_val = pred
+
+mod_data <- lat_pred %>%
+  group_by(annual_dispersal_pot, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- lat %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(annual_dispersal_pot), 
+            min = min(annual_dispersal_pot))
+
+lat_plots <- mod_data %>%
+  left_join(., minmax) %>%
+  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Group))  +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Latitude") +
+  geom_point(data = lat, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
+             alpha = 0.1) +
+  scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+#######################
+###### Elevation ######
+#######################
+mod_ele = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source))
+mod_ele_tax = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source) + (1|family/Genus))
+
+summary(mod_ele)
+summary(mod_ele_tax)
+
+R2m = r.squaredGLMM(mod_ele)[[1]] # marginal R2, ie part of variation explain by fixed effect 
+R2c = r.squaredGLMM(mod_ele)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
+R2m_tax = r.squaredGLMM(mod_ele_tax)[[1]] 
+R2c_tax = r.squaredGLMM(mod_ele_tax)[[2]]
+
+
+## plot predictions
+ele_pred <- expand.grid(Group = unique(ele$Group),
+                        Position = unique(ele$Position), 
+                        annual_dispersal_pot = seq(min(ele$annual_dispersal_pot), max(ele$annual_dispersal_pot),
+                                                   by = 1))
+pred <- predict(mod_ele_tax, ele_pred, se.fit = T, re.form = NA)
+ele_pred$predicted_val = pred
+
+mod_data <- ele_pred %>%
+  group_by(annual_dispersal_pot, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- ele %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(annual_dispersal_pot), 
+            min = min(annual_dispersal_pot))
+
+ele_plots <- mod_data %>%
+  left_join(., minmax) %>%
+  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Group))  +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (m/y)",
+       y = "Predicted range shift (m/y)",
+       title = "Elevation") +
+  geom_point(data = ele, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
+             alpha = 0.1) +
+  scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+
+
+
+## try other models that control for climate velocity 
+#######################
+### Latitude (cv) #####
+#######################
+mod_lat_cv = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
+                     (1|Source))
+mod_lat_tax_cv = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
+                     (1|Source) + (1|family/Genus))
+
+summary(mod_lat_cv)
+summary(mod_lat_tax_cv)
+
+R2m_cv = r.squaredGLMM(mod_lat_cv)[[1]] # marginal R2, ie part of variation explain by fixed effect 
+R2c_cv = r.squaredGLMM(mod_lat_cv)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
+R2m_tax_cv = r.squaredGLMM(mod_lat_cv)[[1]] 
+R2c_tax_cv = r.squaredGLMM(mod_lat_tax_cv)[[2]]
+## this model has better R2s 
+
+## plot predictions
+lat_pred <- expand.grid(Group = unique(lat$Group),
+                        Position = unique(lat$Position), 
+                        annual_dispersal_pot = seq(min(lat$annual_dispersal_pot), max(lat$annual_dispersal_pot),
+                                                   by = 1),
+                        climate_velocity = mean(lat$climate_velocity))
+pred <- predict(mod_lat_tax_cv, lat_pred, se.fit = T, re.form = NA)
+lat_pred$predicted_val = pred
+
+mod_data <- lat_pred %>%
+  group_by(annual_dispersal_pot, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- lat %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(annual_dispersal_pot), 
+            min = min(annual_dispersal_pot))
+
+mod_data %>%
+  left_join(., minmax) %>%
+  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Group))  +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Latitude") +
+  geom_point(data = lat, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
+             alpha = 0.1) +
+  scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+
+## plot predictions across climate velocity
+lat_pred <- expand.grid(Group = unique(lat$Group),
+                        Position = unique(lat$Position), 
+                        annual_dispersal_pot = mean(lat$annual_dispersal_pot), 
+                        climate_velocity = seq(min(lat$climate_velocity), max(lat$climate_velocity),
+                                               by = 0.1))
+pred <- predict(mod_lat_tax_cv, lat_pred, se.fit = T, re.form = NA)
+lat_pred$predicted_val = pred
+
+mod_data <- lat_pred %>%
+  group_by(climate_velocity, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- lat %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(climate_velocity), 
+            min = min(climate_velocity))
+
+mod_data %>%
+  left_join(., minmax) %>%
+  filter(climate_velocity >= min, climate_velocity <= max) %>%
+  ggplot(data = ., aes(x = climate_velocity, y = predicted_val, 
+                       colour = Group)) +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Climate velocity (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Latitude") +
+  geom_point(data = lat, aes(y = ShiftR, x = climate_velocity, colour = Group),
+             alpha = 0.1) +
+  #scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+
+#######################
+### Elevation (cv) ####
+#######################
+mod_ele_cv = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
+                    (1|Source))
+mod_ele_tax_cv = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
+                        (1|Source) + (1|family/Genus))
+
+summary(mod_ele_cv)
+summary(mod_ele_tax_cv)
+
+R2m_cv = r.squaredGLMM(mod_ele_cv)[[1]] # marginal R2, ie part of variation explain by fixed effect 
+R2c_cv = r.squaredGLMM(mod_ele_cv)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
+R2m_tax_cv = r.squaredGLMM(mod_ele_cv)[[1]] 
+R2c_tax_cv = r.squaredGLMM(mod_ele_tax_cv)[[2]]
+## this model has better R2s but by a bit
+
+## plot predictions
+ele_pred <- expand.grid(Group = unique(ele$Group),
+                        Position = unique(ele$Position), 
+                        annual_dispersal_pot = seq(min(ele$annual_dispersal_pot), max(ele$annual_dispersal_pot),
+                                                   by = 5), 
+                        climate_velocity = mean(ele$climate_velocity))
+pred <- predict(mod_ele_cv, ele_pred, se.fit = T, re.form = NA)
+ele_pred$predicted_val = pred
+
+mod_data <- ele_pred %>%
+  group_by(annual_dispersal_pot, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- ele %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(annual_dispersal_pot), 
+            min = min(annual_dispersal_pot))
+
+mod_data %>%
+  left_join(., minmax) %>%
+  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
+  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
+                       colour = Group))  +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Maximum dispersal potential (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Elevation") +
+  geom_point(data = ele, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
+             alpha = 0.1) +
+  scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+
+## plot predictions across climate velocity 
+ele_pred <- expand.grid(Group = unique(ele$Group),
+                        Position = unique(ele$Position), 
+                        annual_dispersal_pot = mean(ele$annual_dispersal_pot), 
+                        climate_velocity = seq(min(ele$climate_velocity), max(ele$climate_velocity),
+                                               by = 0.1))
+pred <- predict(mod_ele_cv, ele_pred, se.fit = T, re.form = NA)
+ele_pred$predicted_val = pred
+
+mod_data <- ele_pred %>%
+  group_by(climate_velocity, Position, Group) %>%
+  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
+  ungroup() %>% 
+  distinct() 
+
+## restrict to proper data range
+minmax <- ele %>%
+  group_by(Group, Position) %>%
+  summarize(max = max(climate_velocity), 
+            min = min(climate_velocity))
+
+mod_data %>%
+  left_join(., minmax) %>%
+  filter(climate_velocity >= min, climate_velocity <= max) %>%
+  ggplot(data = ., aes(x = climate_velocity, y = predicted_val, 
+                       colour = Group)) +
+  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
+  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
+  # facet_wrap(Position~Group) +
+  theme_classic() +
+  labs(x = "Climate velocity (km/y)",
+       y = "Predicted range shift (km/y)",
+       title = "Elevation") +
+  geom_point(data = ele, aes(y = ShiftR, x = climate_velocity, colour = Group),
+             alpha = 0.1) +
+  #scale_x_log10() + 
+  facet_wrap(~Position) +
+  geom_line()
+
+
+## newest plan: compete models
+## one set for latitude, one set for elevation
+## source  and nested taxonomy as random effect 
+## with/without climate velocity 
+## with/without different methods 
+
+## problem:
+## lmer doesn't report AIC 
+
 
 
 
