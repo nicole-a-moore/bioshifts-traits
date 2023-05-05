@@ -73,16 +73,16 @@ rs_data = rs_data[order(rs_data$n_cl),]
 ## group irregular sampling with multiple sampling  
 rs_data$Sampling = ifelse(rs_data$Sampling %in% c("IRR","MULT"),"MULT", rs_data$Sampling)
 
-## group by study ID and calculate a mean range shift value 
+## group by study ID and class and calculate a mean range shift value 
 rs_study_level <- rs_data %>%
-  group_by(Gradient, Source) %>%
+  group_by(Gradient, Source, Class) %>%
   mutate(study_level_shift = mean(ShiftR)) %>%
-  select(-ShiftR, -Species, -Genus, -Kingdom, -Phylum, -Order, -Class, -Family, -Species,
+  select(-ShiftR, -Species, -Genus, -Kingdom, -Phylum, -Order, -Family, -Species,
          -n_cl, -n_sp, -Position) %>% ## make it such that there is one row per study
   distinct() %>%
   ungroup()
 
-length(unique(paste(rs_data$Source, rs_data$Gradient, sep = "_"))) # 343 studies should remain
+length(unique(paste(rs_data$Source, rs_data$Gradient, rs_data$Class, sep = "_"))) # 621 studies should remain
 
 unique(rs_study_level$Source)[which(!unique(rs_data$Source) %in% unique(other_rs_data$Source))] ## make sure all are there
 
@@ -98,19 +98,24 @@ rs_lat <- filter(rs_study_level, rs_study_level$Gradient == "Latitudinal")
 rs_ele <- filter(rs_study_level, rs_study_level$Gradient == "Elevation")
 
 ## get complete cases of variables we want to include 
-# rs_lat <- select(rs_lat, Source,
-#                  study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration, LatVeloT)
-rs_lat <- select(rs_lat,  Source,
-                 study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration)
+rs_lat <- select(rs_lat, Source,
+                 study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration, LatVeloT,
+                 Start, Start, Class)
+# rs_lat <- select(rs_lat,  Source,
+#                  study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration)
 rs_lat <- rs_lat[complete.cases(rs_lat),]
 
-# rs_ele <- select(rs_ele, Source,
-#                  study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration, EleVeloT)
 rs_ele <- select(rs_ele, Source,
-                 study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration)
+                 study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration, EleVeloT, 
+                 Class, Start)
+# rs_ele <- select(rs_ele, Source,
+#                  study_level_shift, LogArea, Grain, Quality, Sampling, PrAb, Signif, LogDuration)
 rs_ele <- rs_ele[complete.cases(rs_ele),]
 
-
+rs_ele$Gradient = "Elevation"
+rs_lat$Gradient = "Latitude"
+combined <- select(rs_lat, -LatVeloT) %>%
+  rbind(., select(rs_ele, -EleVeloT))
 
 #####################################
 ####        model fitting        ####
@@ -121,43 +126,291 @@ rs_ele <- rs_ele[complete.cases(rs_ele),]
 ####      latitude      ####
 ############################
 ## look at data 
+plot1 = rs_lat %>%
+  ggplot(., aes(x = Sampling, fill = Class)) +
+  geom_bar() +
+  #geom_point(position = position_jitter()) +
+  labs(y = "Mean study-level shift (km/y)") 
+
+legend = cowplot::get_legend(plot1)
+
+ggsave(legend, filename = "lat_class_legend.png", path = "figures/methodo", width = 6, height = 6, 
+       device = "png")
+
+plot1 <- plot1 + theme(legend.position = "none")
+
+ggsave(plot1, filename = "lat_class_sampling.png", path = "figures/methodo", width = 3, height = 3, 
+       device = "png")
+
+
+combined %>%
+  ggplot(., aes(x = Sampling, fill = Class)) +
+  geom_bar() +
+  facet_wrap(~Gradient) +
+  #geom_point(position = position_jitter()) +
+  labs(y = "Mean study-level shift (km/y)")  +
+  theme(legend.position = "none")
+
+ggsave(filename = "class_sampling.png", path = "figures/methodo", width = 5, height = 3, 
+       device = "png")
+
+combined %>%
+  group_by(Gradient, Class, Sampling) %>%
+  tally() %>%
+  group_by(Gradient, Class) %>%
+  tally() %>%
+  group_by(Gradient, n) %>%
+  tally()
+
+combined %>%
+  ggplot(., aes(x = PrAb, fill = Class)) +
+  geom_bar() +
+  facet_wrap(~Gradient) +
+  #geom_point(position = position_jitter()) +
+  labs(y = "Number of study/class combinations")  +
+  theme(legend.position = "none")
+
+ggsave(filename = "class_prab.png", path = "figures/methodo", width = 5, height = 3, 
+       device = "png")
+
+combined %>%
+  group_by(Gradient, Class, PrAb) %>%
+  tally() %>%
+  group_by(Gradient, Class) %>%
+  tally() %>%
+  group_by(Gradient, n) %>%
+  tally()
+
+
+combined %>%
+  ggplot(., aes(x = Grain, fill = Class)) +
+  geom_bar() +
+  facet_wrap(~Gradient) +
+  #geom_point(position = position_jitter()) +
+  labs(y = "Number of study/class combinations")  +
+  theme(legend.position = "none")
+
+ggsave(filename = "class_grain.png", path = "figures/methodo", width = 5, height = 3, 
+       device = "png")
+
+combined %>%
+  group_by(Gradient, Class, Grain) %>%
+  tally() %>%
+  group_by(Gradient, Class) %>%
+  tally() %>%
+  group_by(Gradient, n) %>%
+  tally()
+
+
+
+
+
+## how many classes have been studied using all types of sampling at least once?  
+length(unique(rs_lat$Class))
+
 rs_lat %>%
-  ggplot(., aes(x = Sampling, y = study_level_shift)) +
-  geom_boxplot()
+  group_by(Class, Sampling) %>%
+  tally() %>%
+  group_by(Class) %>%
+  tally() %>%
+  group_by(n) %>%
+  tally()
+
+
+
+
+
 
 rs_lat %>%
   ggplot(., aes(x = Grain, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin() +
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_grain.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
 
 rs_lat %>%
   ggplot(., aes(x = Quality, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_quality.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
 
 rs_lat %>%
   ggplot(., aes(x = PrAb, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_prab.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
 
 rs_lat %>%
   ggplot(., aes(x = Signif, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_signif.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
 
 rs_lat %>%
   ggplot(., aes(x = LogArea, y = study_level_shift)) +
-  geom_point() 
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_logarea.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
 
 rs_lat %>%
   ggplot(., aes(x = LogDuration, y = study_level_shift)) +
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_logduration.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+
+rs_lat %>%
+  ggplot(., aes(x = Start, y = study_level_shift)) +
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "lat_classMSLS_x_start.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+
+## now elevation
+rs_ele %>%
+  ggplot(., aes(x = Grain, y = study_level_shift)) +
+  geom_violin() +
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_grain.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+rs_ele %>%
+  ggplot(., aes(x = Quality, y = study_level_shift)) +
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_quality.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+rs_ele %>%
+  ggplot(., aes(x = PrAb, y = study_level_shift)) +
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_prab.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+rs_ele %>%
+  ggplot(., aes(x = Signif, y = study_level_shift)) +
+  geom_violin()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_signif.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+rs_ele %>%
+  ggplot(., aes(x = LogArea, y = study_level_shift)) +
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_logarea.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+rs_ele %>%
+  ggplot(., aes(x = LogDuration, y = study_level_shift)) +
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_logduration.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+
+rs_ele %>%
+  ggplot(., aes(x = Start, y = study_level_shift)) +
+  geom_point()+
+  geom_point(position = position_jitter(), aes(colour = Class))+
+  labs(y = "Mean study-level shift (km/y)") +
+  theme(legend.position = "none")
+
+ggsave(filename = "ele_classMSLS_x_start.png", path = "figures/methodo", width = 4, height = 4, 
+       device = "png")
+
+
+
+
+## see if things vary with climate velocity:
+rs_lat %>%
+  ggplot(., aes(x = Sampling, y = LatVeloT)) +
+  geom_violin()
+
+rs_lat %>%
+  ggplot(., aes(x = Grain, y = LatVeloT)) +
+  geom_violin()
+
+rs_lat %>%
+  ggplot(., aes(x = Quality, y = LatVeloT)) +
+  geom_violin()
+
+rs_lat %>%
+  ggplot(., aes(x = PrAb, y = LatVeloT)) +
+  geom_violin()
+
+rs_lat %>%
+  ggplot(., aes(x = Signif, y = LatVeloT)) +
+  geom_violin()
+
+rs_lat %>%
+  ggplot(., aes(x = LogArea, y = LatVeloT)) +
+  geom_point() 
+
+rs_lat %>%
+  ggplot(., aes(x = LogDuration, y = LatVeloT)) +
+  geom_point() 
+
+rs_lat %>%
+  ggplot(., aes(x = Start, y = LatVeloT)) +
   geom_point() 
 
 ## order factors in a logical way
 rs_lat$Grain <- factor(rs_lat$Grain, levels = c("FINE", "MEDIUM", "COARSE"))
-
+## change to continuous
+## keep only area, grain, duration
 
 ## fit model for latitude 
-# mod_lat <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration + LatVeloT, 
-#               data = rs_lat) # velocity not colinear with methodological variables 
-mod_lat <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration, 
-   data = rs_lat)
+mod_lat <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration,
+              data = rs_lat) # velocity not colinear with methodological variables
+# mod_lat <- lm(study_level_shift ~ LogArea + Grain + LogDuration, 
+#    data = rs_lat)
 summary(mod_lat)
 
 ## check for colinearity using VIFs:
@@ -198,7 +451,8 @@ pred_lat %>%
   ggplot(., aes(x = LogDuration, y = pred_val)) + 
   geom_point() +
   theme_bw() +
-  labs(y = "Predicted study-level range shift", x = "Study duration")
+  labs(y = "Predicted study-level range shift", x = "Study duration") +
+  geom_point(data = rs_lat, aes(x  = LogDuration, y = study_level_shift), inherit.aes = FALSE)
 ## shift decreases with study duration
 
 ## categorical variables 
@@ -264,23 +518,23 @@ pred_lat2 %>%
 ## look at data 
 rs_ele %>%
   ggplot(., aes(x = Sampling, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()
 
 rs_ele %>%
   ggplot(., aes(x = Grain, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()
 
 rs_ele %>%
   ggplot(., aes(x = Quality, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()
 
 rs_ele %>%
   ggplot(., aes(x = PrAb, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()
 
 rs_ele %>%
   ggplot(., aes(x = Signif, y = study_level_shift)) +
-  geom_boxplot()
+  geom_violin()
 
 rs_ele %>%
   ggplot(., aes(x = LogArea, y = study_level_shift)) +
@@ -295,10 +549,10 @@ rs_ele$Grain <- factor(rs_ele$Grain, levels = c("FINE", "MEDIUM", "COARSE"))
 
 
 ## fit model for latitude 
-# mod_ele <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration + EleVeloT,
-#               data = rs_ele) # velocity not colinear with methodological variables
-mod_ele <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration, 
-              data = rs_ele)
+mod_ele <- lm(study_level_shift ~ LogArea + Grain + Quality + Sampling + PrAb + Signif + LogDuration,
+              data = rs_ele) # velocity not colinear with methodological variables
+# mod_ele <- lm(study_level_shift ~ LogArea + Grain + LogDuration, 
+#               data = rs_ele)
 summary(mod_ele)
 
 ## check for colinearity using VIFs:
@@ -516,3 +770,20 @@ ggsave(diffs, path = "figures/corrected-shifts", filename = "observed-versus-cor
 
 ## save data set 
 write.csv(rs_data, "data-processed/corrected-bioshifts.csv", row.names = FALSE)
+
+
+
+## plot example:
+lat_corr <- filter(rs_data, Gradient == "Latitudinal")
+
+lat_corr %>%
+  ggplot(aes(x = log(Area), y = ShiftR)) +
+  geom_point() +
+  geom_point(data = rs_lat, aes(x = LogArea, y = study_level_shift), colour = "red")
+
+lat_corr %>%
+  ggplot(aes(x = log(Area), y = ShiftR)) +
+  geom_point() +
+  geom_point(data = rs_lat, aes(x = LogArea, y = study_level_shift), colour = "red") +
+  geom_point(aes(y = CorrShift), colour = "blue")
+

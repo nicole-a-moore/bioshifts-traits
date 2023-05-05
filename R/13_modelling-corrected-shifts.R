@@ -15,6 +15,7 @@ library(traitdataform)
 library(data.table)
 library(lme4)
 library(MuMIn)
+library(ggallin)
 source("R/taxonomic-harmonization/clean_taxa_functions.R")
 
 ## read function to harmonize taxonomy 
@@ -275,8 +276,8 @@ v1 %>%
 ####   calculate lags and expectations  ####
 ############################################
 ## CHOOSE WHETHER MEAN OR MAX HERE
-v1$dispersal_potential_kmY = v1$MeanDispersalPotentialKmY
-v1$dispersal_potential_mY = v1$MeanDispersalPotentialmY
+v1$dispersal_potential_kmY = v1$MaxDispersalPotentialKmY
+v1$dispersal_potential_mY = v1$MaxDispersalPotentialmY
 
 lags <- v1 %>%
   filter(!is.na(CorrShift)) %>%
@@ -345,1244 +346,682 @@ lags %>%
   labs(y = "Count", x = "Annual dispersal potential (km/y)") 
 
 
-#################################
-####   visualizing the data  ####
-#################################
-pal = pnw_palette("Bay",7)
+##############################################################
+####   test evidence for dispersal x climate interaction  ####
+##############################################################
+## convert units of latitudinal and elevation shifts & dispersal & climate velocity to km/y:
+lags$ShiftKmY <- ifelse(lags$Gradient == "Elevation", lags$ShiftR / 1000, lags$ShiftR)
+lags$ClimVeloTKmY <- ifelse(lags$Gradient == "Elevation", lags$EleVeloT / 1000, lags$LatVeloT)
+lags$AnnualDispPotKmY <- ifelse(lags$Gradient == "Elevation", lags$annual_dispersal_pot / 1000, lags$annual_dispersal_pot)
 
-## 1. How many species should vs. shouldn't be able to keep up with temperature change?
-## 2. Is dispersal potential less limiting across elevation than latitude?
-hist_gradient <- lags %>%
-  ggplot(aes(x = dispersal_potential_kmY, fill = expect_tracking)) + 
-  geom_histogram() +
-  theme_classic() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  facet_grid(Group~Gradient) +
-  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000), 
-                labels = c("0.0001","0.001", "0.01", "0.1", "1", "10", "100", "1000")) +
-  labs(x = "Annual dispersal potential (km/y)",
-       y = "Number of range shift observations", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?")
-
-ggsave(hist_gradient, height = 3.5, width = 8, device = "png", path = "figures/corrected-shifts/", 
-       filename = "histogram_dispersal-potential-across-gradients-and-taxa.png")
-
-bars = lags %>%
-  ggplot(aes(x = Group, fill = expect_tracking)) + 
-  geom_bar() +
-  theme_classic() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  coord_flip() +
-  facet_wrap(~Gradient) +
-  labs(x = "Taxonomic group", 
-       y = "Number of range shift observations", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?")
-
-ggsave(bars, height = 3.5, width = 8.5, device = "png", path = "figures/corrected-shifts/", 
-       filename = "barplot_dispersal-potential-across-groups.png")
-
-
-## 2. Do species that are expected to be able keep up with climate change have less range shift lags than species that are not expected to be able to keep up with climate change?
-ele_box_all <- lags %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Position~Gradient) +
-  scale_y_continuous(limits = c(-14, 45)) +
-  theme(legend.position = "none")+
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"))
-
-lat_box_all <- lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Position~Gradient) +
-  scale_y_continuous(limits = c(-14, 45)) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"))
-
-box_all = grid.arrange(ele_box_all, lat_box_all, nrow = 1, widths = c(0.38, 0.62))
-
-ggsave(box_all, height = 3.5, width = 7, device = "png", path = "figures/corrected-shifts/", 
-       filename = "dp-vs-raw-shift_boxplot.png")
-
-ele_box_all <- lags %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Position~Gradient) +
-  theme(legend.position = "none")+
-  scale_y_continuous(limits = c(-14, 45))+
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"))
-
-lat_box_all <- lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Position~Gradient) +
-  scale_y_continuous(limits = c(-14, 45)) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"))
-
-box_all = grid.arrange(ele_box_all, lat_box_all, nrow = 1, widths = c(0.38, 0.62))
-
-ggsave(box_all, height = 3.5, width = 7, device = "png", path = "figures/corrected-shifts/", 
-       filename = "dp-vs-raw-shift_points.png")
-
-## now plot by group
-## LEADING EDGE
-points_lat = lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-points_ele <- lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       title = "Leading edge") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"),
-        legend.position = "none")
-
-pts_all = grid.arrange(points_ele, points_lat, nrow = 2)
-
-ggsave(pts_all, height = 5, width = 11, device = "png", path = "figures/corrected-shifts", 
-       filename = "dp-vs-raw-shift_points_by-group_le.png")
-
-box_lat = lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-box_ele <- lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       title = "Leading edge") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"),
-        legend.position = "none")
-
-pts_all = grid.arrange(box_ele, box_lat, nrow = 2)
-
-ggsave(pts_all, height = 5, width = 11, device = "png", path = "figures/corrected-shifts", 
-       filename = "dp-vs-raw-shift_boxes_by-group_le.png")
-
-
-## CENTROID
-points_lat = lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"))
-
-points_ele <- lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       title = "Centroid") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"),
-        legend.position = "none") 
-
-pts_all = grid.arrange(points_ele, points_lat, nrow = 2)
-
-ggsave(pts_all, height = 5, width = 11, device = "png", path = "figures/corrected-shifts", 
-       filename = "dp-vs-raw-shift_points_by-group_cent.png")
-
-box_lat = lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Latitudinal") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Corrected range shift lag (km/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-box_ele <- lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, fill = expect_tracking)) + 
-  geom_boxplot() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (m/y)", 
-       y = "Corrected range shift lag (m/y)", 
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       title = "Centroid") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Group) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white"),
-        legend.position = "none")
-
-pts_all = grid.arrange(box_ele, box_lat, nrow = 2)
-
-ggsave(pts_all, height = 5, width = 11, device = "png", path = "figures/corrected-shifts", 
-       filename = "dp-vs-raw-shift_boxes_by-group_cent.png")
-
-
-## make plot of dispersal potential vs. climate velocity coloured by lag within studies
-# lags %>%
-#   filter(Gradient == "Latitudinal") %>%
-#   filter(Source %in% unique(.$Source)[1]) %>%
-#   ggplot(aes(x = annual_dispersal_pot, y = lag, colour = climate_velocity)) + 
-#   geom_point() +
-#   theme_bw() +
-#   scale_x_log10() +
-#   geom_smooth(method = "lm") +
-#   #geom_abline(slope = 1, intercept = 0) + 
-#   facet_wrap(Source~Group)
-
+## plot corrected shifts 
 lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = climate_velocity,
-             group = climate_velocity
-             )) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  geom_smooth(method = "lm", se = F) + 
-  facet_wrap(~Position)+
-  labs(colour = "Climate velocity")
+  ggplot(., aes(x = annual_dispersal_pot, y = CorrShift, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10()
+## use uncorrected shifts for now since we want to compare elevation and latitude
+## might need to correct shifts using a single model (converting units) if we want to plot latitude and elevation together 
 
+## now plot uncorrected shifts 
+## colour by gradient 
 lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Birds") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = climate_velocity,
-             group = climate_velocity
-             )) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  geom_smooth(method = "lm", se = F)  + 
-  facet_wrap(~Position)
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "")
 
+## most species have very high dispersal potential compared to the climate velocity and range shift
+lags %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ClimVeloTKmY, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  labs(x = "Annual dispersal potential (km/y)", y = "Annual climate velocity (km/y)",
+       colour = "") +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_x_continuous(limits = c(0, 1500))+
+  scale_y_continuous(limits = c(0, 1500))
+
+## zoom in: 
+lags %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ClimVeloTKmY, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  labs(x = "Annual dispersal potential (km/y)", y = "Annual climate velocity (km/y)",
+       colour = "") +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_x_continuous(limits = c(0, 8))+
+  scale_y_continuous(limits = c(0, 8))
+
+## species with higher dispersal potential have higher observed shifts 
+## line = 1:1 line
+lags %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  stat_function(colour = "black", fun = function(x){x}) +
+  scale_y_continuous(limits = c(0, 40))
+
+## across elevation, no effect of dispersal on shift 
+## across latitude, shift increases with dispersal potential 
+lags %>%
+  filter(ShiftKmY > 0.0001) %>%
+  filter(AnnualDispPotKmY < 8) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = Gradient)) + 
+  theme_bw() + 
+  geom_point() + 
+  # scale_x_log10() +
+  # scale_y_log10() +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  stat_function(colour = "black", fun = function(x){x}) +
+  geom_smooth(method = "lm", colour = "black", aes(group = Gradient))
+## but lots of species have observed shift > dispersal potential 
+
+## colour by taxonomic group 
+lags %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = Group)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "")
+
+## colour by climate velocity 
+lags %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() + 
+  facet_grid(~Gradient) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Climate velocity (km/y)")
+
+## just elevation shifts 
 lags %>%
   filter(Gradient == "Elevation") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = climate_velocity,
-             group = climate_velocity
-             )) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  geom_smooth(method = "lm", se = F) + 
-  facet_wrap(~Position)
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() + 
+  facet_grid(~Gradient) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Climate velocity (km/y)") +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") 
 
+## just latitudinal shifts 
 lags %>%
-  filter(Gradient == "Elevation") %>%
-  filter(Group == "Birds") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = climate_velocity,
-             group = climate_velocity
-             )) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  geom_smooth(method = "lm", se = F) + 
-  facet_wrap(~Position)
-
-
-## modelling approach:
-## climate velocity as interaction with dispersal distance 
-##    high climate velocity + high dispersal potential = high range shift 
-##    low climate velocity + high dispersal potential = low range shift
-##    high climate velocity + low dispersal potential = low range shift 
-##    low climate velocity + low dispersal potential = low range shift
-## birds and plants separate 
-
-
-
-
-
+  filter(Gradient == "Latitudinal") %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() + 
+  facet_grid(~Gradient) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Climate velocity (km/y)") +
+  geom_smooth(method = "lm", se = FALSE, colour = "black")
 
 
 ######################
 ####   modelling  ####
 ######################
-## get rid of groups that have only species who can or only species who can't keep up with climate change 
-# groups_keep <- lags %>% filter(Gradient == "Latitudinal") %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
-# lat_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
-# groups_keep <- lags %>% filter(Gradient == "Elevation")  %>% group_by(expect_tracking, Group, Gradient) %>% tally() 
-# ele_keep <- groups_keep$Group[which(duplicated(groups_keep$Group))]
-# 
-# lat <- filter(lags, Group %in% lat_keep & Gradient == "Latitudinal")%>%
-#   mutate(Group = factor(Group, ordered = F))
-# ele <-  filter(lags, Group %in% ele_keep & Gradient == "Elevation") %>%
-#   mutate(Group = factor(Group, ordered = F))
-
-lat <- filter(lags,Gradient == "Latitudinal")%>%
-  mutate(Group = factor(Group, ordered = F))
-ele <-  filter(lags,Gradient == "Elevation") %>%
+## bin climate velocity 
+ele <- filter(lags, Gradient == "Elevation") %>%
   mutate(Group = factor(Group, ordered = F))
 
-## try modelling shift ~ dispersal potential*Group, while controlling for study ID
-library(nlme)
-
-## start with only lat x birds 
-lat_birds <- filter(lat, Group == "Birds")
-mod_lat = lme(data = lat_birds, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
-summary(mod_lat)
-
-## plot predictions
-lat_pred <- expand.grid(Position = unique(lat_birds$Position), 
-                        annual_dispersal_pot = seq(min(lat_birds$annual_dispersal_pot), max(lat_birds$annual_dispersal_pot),
-                                                   by = 1), 
-                        Source = unique(lat_birds$Source))
-pred <- predict(mod_lat, lat_pred, se.fit = T, re.form = NA)
-lat_pred$predicted_val = pred
-
-mod_data <- lat_pred %>%
-  group_by(annual_dispersal_pot, Position) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  select(-Source) %>%
-  distinct() 
-
-mod_data %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot), y = predicted_val, 
-                       colour = Position) +
-  geom_line() +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Latitude") +
-  geom_point(data = filter(lat, Group == "Birds"), aes(y = ShiftR, x = annual_dispersal_pot)) +
-  scale_x_log10()
-
-
-## now elev x birds
-ele_birds <- filter(ele, Group == "Birds")
-mod_ele = lme(data = ele_birds, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
-summary(mod_ele)
-
-## plot predictions
-ele_pred <- expand.grid(Position = unique(ele_birds$Position), 
-                        annual_dispersal_pot = seq(min(ele_birds$annual_dispersal_pot), max(ele_birds$annual_dispersal_pot),
-                                                   by = 5), 
-                        Source = unique(ele_birds$Source))
-pred <- predict(mod_ele, ele_pred, se.fit = T, re.form = NA)
-ele_pred$predicted_val = pred
-
-mod_data <- ele_pred %>%
-  group_by(annual_dispersal_pot, Position) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  select(-Source) %>%
-  distinct() 
-
-mod_data %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Position)) +
-  geom_line() +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (m/y)",
-       y = "Predicted range shift (m/y)",
-       title = "Elevation") +
-  geom_point(data = filter(ele, Group == "Birds"), aes(y = ShiftR, x = annual_dispersal_pot)) +
-  scale_x_log10()
-
-
-##now with lat x plants 
-lat_plants <- filter(lat, Group == "Plants")
-mod_lat = lme(data = lat_plants, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
-summary(mod_lat)
-
-## plot predictions
-lat_pred <- expand.grid(Position = unique(lat_plants$Position), 
-                        annual_dispersal_pot = seq(min(lat_plants$annual_dispersal_pot), max(lat_plants$annual_dispersal_pot),
-                                                   by = 1), 
-                        Source = unique(lat_plants$Source))
-pred <- predict(mod_lat, lat_pred, se.fit = T, re.form = NA)
-lat_pred$predicted_val = pred
-
-mod_data <- lat_pred %>%
-  group_by(annual_dispersal_pot, Position) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  select(-Source) %>%
-  distinct() 
-
-mod_data %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-         colour = Position)) +
-  geom_line() +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Latitude") +
-  geom_point(data = filter(lat, Group == "Plants"), aes(y = ShiftR, x = annual_dispersal_pot)) +
-  scale_x_log10()
-
-
-## now elev x plants
-ele_plants <- filter(ele, Group == "Plants")
-mod_ele = lme(data = ele_plants, ShiftR ~ log(annual_dispersal_pot)*Position, random = ~1|Source)
-summary(mod_ele)
-
-## plot predictions
-ele_pred <- expand.grid(Position = unique(ele_plants$Position), 
-                        annual_dispersal_pot = seq(min(ele_plants$annual_dispersal_pot), max(ele_plants$annual_dispersal_pot),
-                                                   by = 5), 
-                        Source = unique(ele_plants$Source))
-pred <- predict(mod_ele, ele_pred, se.fit = T, re.form = NA)
-ele_pred$predicted_val = pred
-
-mod_data <- ele_pred %>%
-  group_by(annual_dispersal_pot, Position) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  select(-Source) %>%
-  distinct() 
-
-mod_data %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Position)) +
-  geom_line() +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (m/y)",
-       y = "Predicted range shift (m/y)",
-       title = "Elevation") +
-  geom_point(data = filter(ele, Group == "Plants"), aes(y = ShiftR, x = annual_dispersal_pot)) +
-  scale_x_log10()
-
-
-### try one model for everything
-#######################
-###### Latitude ######
-#######################
-mod_lat = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source))
-mod_lat_tax = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source) + (1|family/Genus))
-
-summary(mod_lat)
-summary(mod_lat_tax)
-
-R2m = r.squaredGLMM(mod_lat)[[1]] # marginal R2, ie part of variation explain by fixed effect 
-R2c = r.squaredGLMM(mod_lat)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
-R2m_tax = r.squaredGLMM(mod_lat_tax)[[1]] 
-R2c_tax = r.squaredGLMM(mod_lat_tax)[[2]]
-
-## plot predictions
-lat_pred <- expand.grid(Group = unique(lat$Group),
-                        Position = unique(lat$Position), 
-                        annual_dispersal_pot = seq(min(lat$annual_dispersal_pot), max(lat$annual_dispersal_pot),
-                                                   by = 1))
-pred <- predict(mod_lat_tax, lat_pred, se.fit = T, re.form = NA)
-lat_pred$predicted_val = pred
-
-mod_data <- lat_pred %>%
-  group_by(annual_dispersal_pot, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- lat %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(annual_dispersal_pot), 
-            min = min(annual_dispersal_pot))
-
-lat_plots <- mod_data %>%
-  left_join(., minmax) %>%
-  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Group))  +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Latitude") +
-  geom_point(data = lat, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
-             alpha = 0.1) +
-  scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-#######################
-###### Elevation ######
-#######################
-mod_ele = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source))
-mod_ele_tax = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + (1|Source) + (1|family/Genus))
-
-summary(mod_ele)
-summary(mod_ele_tax)
-
-R2m = r.squaredGLMM(mod_ele)[[1]] # marginal R2, ie part of variation explain by fixed effect 
-R2c = r.squaredGLMM(mod_ele)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
-R2m_tax = r.squaredGLMM(mod_ele_tax)[[1]] 
-R2c_tax = r.squaredGLMM(mod_ele_tax)[[2]]
-
-
-## plot predictions
-ele_pred <- expand.grid(Group = unique(ele$Group),
-                        Position = unique(ele$Position), 
-                        annual_dispersal_pot = seq(min(ele$annual_dispersal_pot), max(ele$annual_dispersal_pot),
-                                                   by = 1))
-pred <- predict(mod_ele_tax, ele_pred, se.fit = T, re.form = NA)
-ele_pred$predicted_val = pred
-
-mod_data <- ele_pred %>%
-  group_by(annual_dispersal_pot, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- ele %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(annual_dispersal_pot), 
-            min = min(annual_dispersal_pot))
-
-ele_plots <- mod_data %>%
-  left_join(., minmax) %>%
-  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Group))  +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (m/y)",
-       y = "Predicted range shift (m/y)",
-       title = "Elevation") +
-  geom_point(data = ele, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
-             alpha = 0.1) +
-  scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-
-
-
-## try other models that control for climate velocity 
-#######################
-### Latitude (cv) #####
-#######################
-mod_lat_cv = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
-                     (1|Source))
-mod_lat_tax_cv = lmer(data = lat, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
-                     (1|Source) + (1|family/Genus))
-
-summary(mod_lat_cv)
-summary(mod_lat_tax_cv)
-
-R2m_cv = r.squaredGLMM(mod_lat_cv)[[1]] # marginal R2, ie part of variation explain by fixed effect 
-R2c_cv = r.squaredGLMM(mod_lat_cv)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
-R2m_tax_cv = r.squaredGLMM(mod_lat_cv)[[1]] 
-R2c_tax_cv = r.squaredGLMM(mod_lat_tax_cv)[[2]]
-## this model has better R2s 
-
-## plot predictions
-lat_pred <- expand.grid(Group = unique(lat$Group),
-                        Position = unique(lat$Position), 
-                        annual_dispersal_pot = seq(min(lat$annual_dispersal_pot), max(lat$annual_dispersal_pot),
-                                                   by = 1),
-                        climate_velocity = mean(lat$climate_velocity))
-pred <- predict(mod_lat_tax_cv, lat_pred, se.fit = T, re.form = NA)
-lat_pred$predicted_val = pred
-
-mod_data <- lat_pred %>%
-  group_by(annual_dispersal_pot, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- lat %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(annual_dispersal_pot), 
-            min = min(annual_dispersal_pot))
-
-mod_data %>%
-  left_join(., minmax) %>%
-  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Group))  +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Latitude") +
-  geom_point(data = lat, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
-             alpha = 0.1) +
-  scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-
-## plot predictions across climate velocity
-lat_pred <- expand.grid(Group = unique(lat$Group),
-                        Position = unique(lat$Position), 
-                        annual_dispersal_pot = mean(lat$annual_dispersal_pot), 
-                        climate_velocity = seq(min(lat$climate_velocity), max(lat$climate_velocity),
-                                               by = 0.1))
-pred <- predict(mod_lat_tax_cv, lat_pred, se.fit = T, re.form = NA)
-lat_pred$predicted_val = pred
-
-mod_data <- lat_pred %>%
-  group_by(climate_velocity, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- lat %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(climate_velocity), 
-            min = min(climate_velocity))
-
-mod_data %>%
-  left_join(., minmax) %>%
-  filter(climate_velocity >= min, climate_velocity <= max) %>%
-  ggplot(data = ., aes(x = climate_velocity, y = predicted_val, 
-                       colour = Group)) +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Climate velocity (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Latitude") +
-  geom_point(data = lat, aes(y = ShiftR, x = climate_velocity, colour = Group),
-             alpha = 0.1) +
-  #scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-
-#######################
-### Elevation (cv) ####
-#######################
-mod_ele_cv = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
-                    (1|Source))
-mod_ele_tax_cv = lmer(data = ele, ShiftR ~ log(annual_dispersal_pot)*Position*Group + climate_velocity +
-                        (1|Source) + (1|family/Genus))
-
-summary(mod_ele_cv)
-summary(mod_ele_tax_cv)
-
-R2m_cv = r.squaredGLMM(mod_ele_cv)[[1]] # marginal R2, ie part of variation explain by fixed effect 
-R2c_cv = r.squaredGLMM(mod_ele_cv)[[2]] # conditional R2, ie part of variation explain by fixed effect and random effect 
-R2m_tax_cv = r.squaredGLMM(mod_ele_cv)[[1]] 
-R2c_tax_cv = r.squaredGLMM(mod_ele_tax_cv)[[2]]
-## this model has better R2s but by a bit
-
-## plot predictions
-ele_pred <- expand.grid(Group = unique(ele$Group),
-                        Position = unique(ele$Position), 
-                        annual_dispersal_pot = seq(min(ele$annual_dispersal_pot), max(ele$annual_dispersal_pot),
-                                                   by = 5), 
-                        climate_velocity = mean(ele$climate_velocity))
-pred <- predict(mod_ele_cv, ele_pred, se.fit = T, re.form = NA)
-ele_pred$predicted_val = pred
-
-mod_data <- ele_pred %>%
-  group_by(annual_dispersal_pot, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- ele %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(annual_dispersal_pot), 
-            min = min(annual_dispersal_pot))
-
-mod_data %>%
-  left_join(., minmax) %>%
-  filter(annual_dispersal_pot >= min, annual_dispersal_pot <= max) %>%
-  ggplot(data = ., aes(x = annual_dispersal_pot, y = predicted_val, 
-                       colour = Group))  +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Elevation") +
-  geom_point(data = ele, aes(y = ShiftR, x = annual_dispersal_pot, colour = Group),
-             alpha = 0.1) +
-  scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-
-## plot predictions across climate velocity 
-ele_pred <- expand.grid(Group = unique(ele$Group),
-                        Position = unique(ele$Position), 
-                        annual_dispersal_pot = mean(ele$annual_dispersal_pot), 
-                        climate_velocity = seq(min(ele$climate_velocity), max(ele$climate_velocity),
-                                               by = 0.1))
-pred <- predict(mod_ele_cv, ele_pred, se.fit = T, re.form = NA)
-ele_pred$predicted_val = pred
-
-mod_data <- ele_pred %>%
-  group_by(climate_velocity, Position, Group) %>%
-  mutate(predicted_val = mean(predicted_val, na.rm = T)) %>%
-  ungroup() %>% 
-  distinct() 
-
-## restrict to proper data range
-minmax <- ele %>%
-  group_by(Group, Position) %>%
-  summarize(max = max(climate_velocity), 
-            min = min(climate_velocity))
-
-mod_data %>%
-  left_join(., minmax) %>%
-  filter(climate_velocity >= min, climate_velocity <= max) %>%
-  ggplot(data = ., aes(x = climate_velocity, y = predicted_val, 
-                       colour = Group)) +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  # facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Climate velocity (km/y)",
-       y = "Predicted range shift (km/y)",
-       title = "Elevation") +
-  geom_point(data = ele, aes(y = ShiftR, x = climate_velocity, colour = Group),
-             alpha = 0.1) +
-  #scale_x_log10() + 
-  facet_wrap(~Position) +
-  geom_line()
-
-
-## newest plan: compete models
-## one set for latitude, one set for elevation
-## source  and nested taxonomy as random effect 
-## with/without climate velocity 
-## with/without different methods 
-
-## problem:
-## lmer doesn't report AIC 
-
-
-
-
-
-
-
-
-#######################
-####    garbage   #####
-#######################
-## now model
-# lat_mod <- lm(lag ~ expect_tracking*Group*Position, data = lat)
-# summary(lat_mod)
-# plot(lat_mod)
-
-
-# ncvTest(lat_mod)
-## residual error does not have constant variance
-## zero bound data - Poisson?
-## ask model to allow variance to get smaller depending on value of y 
-
-# ele_mod <- lm(lag ~ expect_tracking*Position, data = ele)
-# summary(ele_mod)
-# plot(ele_mod)
-
-## try new model
-lat$raw_lag <- as.numeric(as.character(lat$raw_lag))
-lat_mod <- lm(raw_lag ~ dispersal_potential_kmY*Group, data = lat)
-summary(lat_mod)
-#plot(lat_mod)
-
-ele_mod <- lm(raw_lag ~ dispersal_potential_mY*Position, data = ele)
-summary(ele_mod)
-#plot(ele_mod)
-
-## now plot predictions 
-# lat_pred <- expand.grid(Group = unique(lat$Group), expect_tracking = unique(lat$expect_tracking),
-#                         Position = unique(ele$Position)) 
-# pred <- predict(lat_mod, lat_pred, se.fit = TRUE)
-# lat_pred$predicted_val = pred$fit
-# lat_pred$predicted_se = pred$se.fit
-# lat_pred$expect_tracking = factor(lat_pred$expect_tracking, levels = c("No", "Yes"),
-#                                   ordered = T)
-# 
-# ele_pred <- expand.grid(Group = unique(ele$Group), expect_tracking = unique(ele$expect_tracking),
-#                         Position = unique(ele$Position)) 
-# pred <- predict(ele_mod, ele_pred, se.fit = TRUE)
-# ele_pred$predicted_val = pred$fit
-# ele_pred$predicted_se = pred$se.fit
-# ele_pred$expect_tracking = factor(ele_pred$expect_tracking, levels = c("No", "Yes"),
-#                                   ordered = T)
-# 
-# predplot_l <- ggplot(data = lat_pred, aes(x = expect_tracking, colour = expect_tracking, y = predicted_val,
-#                                           shape = Position)) + 
-#   geom_point() +
-#   geom_errorbar(aes(ymax = predicted_val + predicted_se,
-#                 ymin = predicted_val - predicted_se)) +
-#   facet_wrap(~Group) +
-#   theme_classic() +
-#   labs(x = "Expect dispersal potential to allow species to keep up with temp change?",
-#        y = "Model-predicted inferred range shift lag (km/y)",
-#        title = "Latitude") +
-#   scale_colour_manual(values = c(pal[6], pal[4])) +
-#   theme(legend.position = "none")
-# 
-# predplot_e <- ggplot(data = ele_pred, aes(x = expect_tracking, colour = expect_tracking, y = predicted_val,
-#                                           shape = Position)) + 
-#   geom_point() +
-#   geom_errorbar(aes(ymax = predicted_val + predicted_se,
-#                     ymin = predicted_val - predicted_se)) +
-#   facet_wrap(~Group) +
-#   theme_classic() +
-#   labs(x = "", title = "Elevation",
-#        y = "Model-predicted inferred range shift lag (m/y)") +
-#   scale_colour_manual(values = c(pal[6], pal[4])) +
-#   guides(colour = "none")
-# 
-# gr <- grid.arrange(predplot_l, predplot_e, nrow = 1, widths = c(0.6, 0.4))
-# 
-# ggsave(gr, height = 4, width = 9, device = "png", path = "figures/dispersal", 
-#        filename = "pred_inferred.png")
-
-
-
-lat_pred <- expand.grid(#Position = unique(lat$Position), 
-  Group = unique(lat$Group), 
-  dispersal_potential_kmY = seq(min(lat$dispersal_potential_kmY), max(lat$dispersal_potential_kmY),
-                                by = 1))
-pred <- predict(lat_mod, lat_pred, se.fit = TRUE)
-lat_pred$predicted_val = pred$fit
-lat_pred$predicted_se = pred$se.fit
-
-ele_pred <- expand.grid(Position = unique(ele$Position), 
-                        dispersal_potential_mY = seq(min(ele$dispersal_potential_mY), max(ele$dispersal_potential_mY),
-                                                     by = 1))
-pred <- predict(ele_mod, ele_pred, se.fit = TRUE)
-ele_pred$predicted_val = pred$fit
-ele_pred$predicted_se = pred$se.fit
-
-ggplot(data = lat_pred, aes(x = dispersal_potential_kmY, y = predicted_val,
-                            colour = Group)) +
-  geom_point() +
-  # geom_errorbar(aes(ymax = predicted_val + predicted_se,
-  #               ymin = predicted_val - predicted_se), alpha = 0.03) +
-  #facet_wrap(Position~Group) +
-  theme_classic() +
-  labs(x = "Maximum dispersal potential (km/y)",
-       y = "Predicted range shift lag (km/y)",
-       title = "Latitude") 
-
-ggplot(data = ele_pred, aes(x = expect_tracking, colour = expect_tracking, y = predicted_val,
-                            shape = Position)) +
-  geom_point() +
-  geom_errorbar(aes(ymax = predicted_val + predicted_se,
-                    ymin = predicted_val - predicted_se)) +
-  facet_wrap(~Group) +
-  theme_classic() +
-  labs(x = "", title = "Elevation",
-       y = "Model-predicted inferred range shift lag (m/y)") +
-  scale_colour_manual(values = c(pal[6], pal[4])) +
-  guides(colour = "none")
-
-
-lags %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = climate_velocity)) + 
-  geom_point() +
-  theme_bw() +
+hist(ele$ClimVeloTKmY)
+q = quantile(ele$ClimVeloTKmY, probs = c(0,0.2,0.4,0.6,0.8,1))
+ele$ClimVeloTKmY = cut(ele$ClimVeloTKmY,
+                       breaks = q,
+                       include.lowest = T)
+plot(ele$ClimVeloTKmY)
+
+ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\[", "(") 
+ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\]", ")") 
+
+ele <- ele %>%
+  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+  mutate(quant_mean = (quant_min + quant_max)/2) 
+
+## model everything beyond where dispersal = climate velocity 
+## model log-log relationship 
+## log shift ~ log annual dispersal potential + climate velocity 
+## expect flat relationship, and expect higher CV to have higher intercept 
+lat <- filter(lags, Gradient == "Latitudinal") %>%
+  mutate(Group = factor(Group, ordered = F))
+
+hist(lat$ClimVeloTKmY)
+q = quantile(lat$ClimVeloTKmY, probs = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
+lat$ClimVeloTKmY = cut(lat$ClimVeloTKmY,
+                       breaks = q,
+                       include.lowest = T)
+plot(lat$ClimVeloTKmY)
+
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\[", "(") 
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\]", ")") 
+
+mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
+
+lat <- lat %>%
+  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+  mutate(quant_mean = (quant_min + quant_max)/2) %>%
+  mutate(ClimVeloTKmY = paste(quant_min, " km/y - ", quant_max," km/y" , sep = ""))
+
+lat %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(annual_dispersal_pot < 8) %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  ggplot(., aes(x = annual_dispersal_pot, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  #scale_x_log10() +
+ # scale_y_log10() +
+  # scale_y_continuous(trans = pseudolog10_trans) +
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ele %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(annual_dispersal_pot < 5) %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  ggplot(., aes(x = annual_dispersal_pot, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  #scale_x_log10() +
+  # scale_y_log10() +
+  # scale_y_continuous(trans = pseudolog10_trans) +
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "all-data.png", 
+       device = "png", height = 4, width = 8.5)
+
+
+model_data <- lat %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(annual_dispersal_pot >= quant_min) %>%
+  arrange(quant_min) %>%
+  ungroup() %>%
+  mutate(ClimVeloTKmY = factor(ClimVeloTKmY, 
+                               levels = unique(ClimVeloTKmY),
+                               ordered = TRUE))
+
+
+## make log version of dispersal potential
+model_data$log_annual_dispersal_pot = log(model_data$annual_dispersal_pot)
+model_data$log_shift = log(model_data$ShiftKmY)
+
+mod <- lm(log_shift ~ log_annual_dispersal_pot + ClimVeloTKmY,
+          data = model_data)
+summary(mod)
+#plot(mod)
+
+pred_data <- expand.grid(log_annual_dispersal_pot = seq(from = min(model_data$log_annual_dispersal_pot),
+                                                        to = max(model_data$log_annual_dispersal_pot), 
+                                                        by = 0.01),
+                         ClimVeloTKmY = unique(model_data$ClimVeloTKmY))
+
+pred <- predict(mod, pred_data, se.fit = TRUE)
+pred_data$predicted_val = pred$fit
+pred_data$predicted_se = pred$se.fit
+
+
+## restrict X values 
+bounds <- select(model_data, ClimVeloTKmY, log_annual_dispersal_pot) %>%
+  group_by(ClimVeloTKmY) %>%
+  mutate(min_log_annual_dispersal_pot = min(log_annual_dispersal_pot),
+         max_log_annual_dispersal_pot = max(log_annual_dispersal_pot)) %>%
+  select(-log_annual_dispersal_pot) %>%
+  distinct()
+
+pred_data = left_join(pred_data, bounds) %>%
+  filter(log_annual_dispersal_pot >= min_log_annual_dispersal_pot & 
+           log_annual_dispersal_pot <= max_log_annual_dispersal_pot)
+  
+model_data %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  ggplot(., aes(x = annual_dispersal_pot, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
   scale_x_log10() +
-  facet_grid(~Gradient)
-
-lags %>%
-  filter(expect_tracking == "No") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = CorrShift, colour = Group)) + 
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  facet_grid(Group~Gradient)
-
-
-## look at trends within studies
-lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Birds") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_boxplot(aes(fill = expect_tracking)) +
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-
-lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Fish") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-
-lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Birds") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_boxplot(aes(fill = expect_tracking)) +
-  geom_point() +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-
-lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Fish") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-lags %>%
-  filter(Position == "Leading edge") %>%
-  filter(Gradient == "Elevation") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-lags %>%
-  filter(Position == "Centroid") %>%
-  filter(Gradient == "Elevation") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
-  geom_point() +
-  geom_boxplot(aes(fill = expect_tracking)) +
-  theme_bw() +
-  scale_x_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) + 
-  scale_fill_manual(values = c(pal[4], pal[6])) + 
-  labs(x = "Annual dispersal potential (km/y)", 
-       y = "Inferred range shift lag (km/y)", 
-       colour = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?",
-       fill = "Expect dispersal\npotential to allow\nspecies to keep up\nwith temp change?") +
-  geom_abline(intercept = 0, slope = 0) +
-  facet_grid(Gradient~Reference) +
-  theme(panel.grid = element_blank(),
-        strip.background = element_rect(colour="black", fill="white")) 
-
-
-## potential problem: velocity of temperature is the same within study areas
-## within studies, pattern doesn't hold but across studies it does 
-## I think only a problem if there is sampling bias (if species with different dispersal abilities are spread unevenly across sites with different climate velocity)
-## it's bad if this relationship is positive (ie. species with farther dispersal are sampled in places where climate is moving faster)
-## it's also bad if this relationship is negative (ie. species with shorter dispersal are sampled in places where climate is moving faster - this would cause us to see larger lags in species )
-
-lags %>%
-  ggplot(aes(x = climate_velocity, y = annual_dispersal_pot, colour = expect_tracking)) + 
-  geom_point() +
-  theme_bw() +
-  facet_wrap(~Gradient) +
   scale_y_log10() +
-  scale_colour_manual(values = c(pal[4], pal[6])) 
+  # scale_y_continuous(trans = pseudolog10_trans) +
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+  geom_smooth(data = pred_data, 
+         aes(x = exp(1)^log_annual_dispersal_pot, 
+             y = exp(1)^predicted_val,
+             col = ClimVeloTKmY),
+         colour = "black", linewidth = 1.25) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+# +
+#   geom_ribbon(data = pred_data, 
+#               aes(x = exp(1)^log_annual_dispersal_pot, 
+#                   y = exp(1)^predicted_val,
+#                   ymax = exp(1)^predicted_val+exp(1)^predicted_se,
+#                   ymin = exp(1)^predicted_val-exp(1)^predicted_se),
+#               colour = "#ffffff00",
+#               alpha = 0.3)
+  
+ggsave(path = "figures/sotm", filename = "model-predictions_not-dispersal-limited.png", 
+       device = "png", height = 4, width = 8.5)
 
-lags %>%
-  ggplot(aes(x = climate_velocity, y = annual_dispersal_pot, colour = Reference)) + 
+## plot model predictions 
+ggplot(pred_data, aes(x = ClimVeloTKmY, y = exp(1)^predicted_val, colour = ClimVeloTKmY)) +
   geom_point() +
-  theme_bw() +
-  facet_grid(Position~Gradient) +
   scale_y_log10() +
-  geom_smooth(method = "lm") 
-
-## is climate velocity lower in sp. we expect to be able to track?
-lags %>%
-  ggplot(aes(x = expect_tracking, y = climate_velocity)) + 
-  geom_violin() +
+  scale_colour_manual(values = mycolours) +
   theme_bw() +
-  facet_wrap(Position~Gradient) + 
-  geom_jitter(height = 0, width = 0.1)
+  labs(x = "Annual climate velocity (km/y)", y = "Predicted range shift (km/y)")
 
 
-## try binning by climate velocity and seeing whether relationship holds within places with similar climate velocity?
-lags %>%
-  mutate(cv_binned = ifelse(climate_velocity > 5, "high", "low")) %>%
-  ggplot(aes(x = annual_dispersal_pot, y = lag, colour = expect_tracking)) + 
+## plot predicted value at inflection point against predicted inflection point 
+pred_data <- model_data %>%
+  mutate(log_annual_dispersal_pot = log(quant_min)) %>%
+  select(ClimVeloTKmY, log_annual_dispersal_pot) %>%
+  distinct()
+
+pred <- predict(mod, pred_data, se.fit = TRUE)
+pred_data$predicted_val = pred$fit
+pred_data$predicted_se = pred$se.fit
+
+ggplot(pred_data, aes(x = ClimVeloTKmY, y = exp(1)^predicted_val, colour = ClimVeloTKmY))  +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = exp(1)^predicted_val - exp(1)^predicted_se,
+                    ymax = exp(1)^predicted_val + exp(1)^predicted_se)) +
+  geom_point(data = model_data, aes(y = quant_min), colour = "black", size = 3) +
+  scale_colour_manual(values = mycolours) +
+  theme_bw() +
+  scale_y_continuous(trans = pseudolog10_trans, limits = c(-1.1, 3.1)) +
+  labs(x = "Annual climate velocity (km/y)", y = "Predicted range shift (km/y)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none",
+        plot.margin = unit(c(0.5, 0.5, 0.5, 1.5), "cm")) 
+
+ggsave(path = "figures/sotm", filename = "model-predictions_not-dispersal-limited_intercept.png", 
+       device = "png", height = 4, width = 7)
+
+
+
+
+
+
+## now model relationship before inflection point 
+## expect 1:1 relationship, expect intercept to be the same across climate velocities
+model_data <- lat %>%
+  filter(annual_dispersal_pot < quant_min) %>%
+  arrange(quant_min) %>%
+  ungroup() %>%
+  mutate(ClimVeloTKmY = factor(ClimVeloTKmY, 
+                               levels = unique(ClimVeloTKmY),
+                               ordered = TRUE)) 
+  
+
+
+## make log version of dispersal potential
+model_data$log_annual_dispersal_pot = log(model_data$annual_dispersal_pot)
+model_data$log_shift = log(model_data$ShiftKmY)
+
+mod <- lm(log_shift ~ log_annual_dispersal_pot + ClimVeloTKmY,
+          data = model_data)
+summary(mod)
+#plot(mod)
+
+pred_data <- expand.grid(log_annual_dispersal_pot = seq(from = min(model_data$log_annual_dispersal_pot),
+                                                        to = max(model_data$log_annual_dispersal_pot), 
+                                                        by = 0.01),
+                         ClimVeloTKmY = unique(model_data$ClimVeloTKmY))
+
+pred <- predict(mod, pred_data, se.fit = TRUE)
+pred_data$predicted_val = pred$fit
+pred_data$predicted_se = pred$se.fit
+
+## restrict X values 
+bounds <- select(model_data, ClimVeloTKmY, log_annual_dispersal_pot) %>%
+  group_by(ClimVeloTKmY) %>%
+  mutate(min_log_annual_dispersal_pot = min(log_annual_dispersal_pot),
+         max_log_annual_dispersal_pot = max(log_annual_dispersal_pot)) %>%
+  select(-log_annual_dispersal_pot) %>%
+  distinct()
+
+pred_data = left_join(pred_data, bounds) %>%
+  filter(log_annual_dispersal_pot >= min_log_annual_dispersal_pot & 
+           log_annual_dispersal_pot <= max_log_annual_dispersal_pot)
+
+pred_data %>%
+  ggplot(aes(x = exp(1)^log_annual_dispersal_pot, 
+             y = exp(1)^predicted_val,
+             col = ClimVeloTKmY)) +
+  geom_point() +
+  scale_colour_manual(values = mycolours) +
+  theme_bw() +
+  scale_x_log10() +
+  scale_y_log10()
+
+lat %>%
+  filter(ShiftR > 0.0001) %>%
+  #filter(annual_dispersal_pot >= ShiftR) %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  filter(annual_dispersal_pot < quant_min) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  geom_abline(intercept = 0, slope = 1, colour = "black") +
+  geom_smooth(data = pred_data, 
+              aes(x = exp(1)^log_annual_dispersal_pot, 
+                  y = exp(1)^predicted_val, 
+                  group = ClimVeloTKmY),
+              colour = "black") +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "model-predictions_dispersal-limited.png", 
+       device = "png", height = 4, width = 8.5)
+## in most cases where dispersal potential was less than climate velocity, observed shift was greater than dispersal potential 
+
+## grey out very erroneous ones 
+alpha = filter(lat, ShiftKmY >= AnnualDispPotKmY + 0.05) 
+lat %>%
+  filter(ShiftR > 0.0001) %>%
+  #filter(annual_dispersal_pot >= ShiftR) %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  filter(annual_dispersal_pot < quant_min) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  geom_point(data = alpha, colour = "grey") + 
+  #facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  geom_abline(intercept = 0, slope = 1, colour = "black") +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+
+## now model all together to see if shifts are greater in spp with larger dispersal potential 
+lat %>%
+  filter(ShiftR > 0.0001) %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = expect_limited)) + 
+  theme_bw() + 
+  geom_point() + 
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  scale_x_log10() +
+  scale_y_log10(limits = c(0.00001, 40)) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Expect dispersal limitation?") +
   geom_boxplot() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "latitude.png", 
+       device = "png", height = 4, width = 8.5)
+
+ele %>%
+  filter(ShiftKmY > 0.0001) %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = expect_limited)) + 
+  theme_bw() + 
+  geom_point() + 
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  scale_x_log10() +
+  scale_y_log10(limits = c(0.00001, 40)) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Expect dispersal limitation?") +
+  geom_boxplot() +x
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "elevation.png", 
+       device = "png", height = 4, width = 6.25)
+
+
+lat %>%
+  filter(ShiftR > 0.0001) %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = expect_limited)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  scale_y_log10(limits = c(0.00001, 40)) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Expect dispersal limitation?") +
+  #geom_boxplot() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "latitude_yes-no.png", 
+       device = "png", height = 4, width = 4.5)
+
+ele %>%
+  filter(ShiftR > 0.0001) %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = expect_limited)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  scale_y_log10(limits = c(0.00001, 40)) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Expect dispersal limitation?") +
+  #geom_boxplot() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggsave(path = "figures/sotm", filename = "elevation_yes-no.png", 
+       device = "png", height = 4, width = 4.5)
+
+
+## for species whose dispersal potential < obsevred shift, how big is the difference?
+lags %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(ShiftKmY > AnnualDispPotKmY) %>%
+  mutate(diff = ShiftKmY - AnnualDispPotKmY) %>%
+  mutate(mean_diff = mean(.$diff)) %>%
+  ggplot(., aes(x = diff)) + 
+  theme_bw() + 
+  geom_histogram() +
+  labs(x = "Difference between observed expansion rate and dispersal potential",
+       y = "Frequency")
+
+lags %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(ShiftKmY > AnnualDispPotKmY) %>%
+  mutate(diff = ShiftKmY - AnnualDispPotKmY) %>%
+  mutate(mean_diff = mean(.$diff)) %>%
+  ggplot(., aes(x = diff)) + 
+  theme_bw() + 
+  geom_histogram() +
+  scale_x_log10() +
+  labs(x = "Difference between observed expansion rate and dispersal potential",
+       y = "Frequency")
+
+## how many?
+lags %>%
+  mutate(underestimate = ifelse(ShiftKmY > AnnualDispPotKmY, "Yes", "No")) %>%
+  group_by(underestimate) %>%
+  tally()
+
+## how many can still disperse faster than temperature change?
+lags %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  group_by(expect_limited) %>%
+  tally()
+
+lags %>%
+  filter(ShiftR > 0.0001) %>%
+  filter(ShiftKmY <= AnnualDispPotKmY + 0.001) %>%
+  mutate(expect_limited = ifelse(expect_tracking == "Yes", "No", "Yes")) %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  scale_y_log10(limits = c(0.00001, 40)) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "Expect dispersal limitation?") +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 20, hjust = 1)) +
+  geom_abline(intercept = 0, slope = 1) 
+
+
+  
+
+
+
+## modelling concerns:
+## shift is 0 bounded 
+hist(model_data$ShiftKmY)
+## modeling error structure might be important here - some studies have methodology that causes more measurement error, climate velocity bins are highly related to study
+## also expect more signal:noise where climate velocity is high
+
+
+
+model_data <- lat %>%
+  filter(ShiftR > 0.0001) %>%
+  arrange(quant_min) %>%
+  ungroup() %>%
+  mutate(ClimVeloTKmY = factor(ClimVeloTKmY, 
+                               levels = unique(ClimVeloTKmY),
+                               ordered = TRUE))
+
+
+## make log version of dispersal potential
+model_data$log_annual_dispersal_pot = log(model_data$annual_dispersal_pot)
+model_data$log_shift = log(model_data$ShiftKmY)
+
+mod <- lm(log_shift ~ log_annual_dispersal_pot + ClimVeloTKmY,
+          data = model_data)
+summary(mod)
+#plot(mod)
+
+pred_data <- expand.grid(log_annual_dispersal_pot = seq(from = min(model_data$log_annual_dispersal_pot),
+                                                        to = max(model_data$log_annual_dispersal_pot), 
+                                                        by = 0.01),
+                         ClimVeloTKmY = unique(model_data$ClimVeloTKmY))
+
+pred <- predict(mod, pred_data, se.fit = TRUE)
+pred_data$predicted_val = pred$fit
+pred_data$predicted_se = pred$se.fit
+
+
+## restrict X values 
+bounds <- select(model_data, ClimVeloTKmY, log_annual_dispersal_pot) %>%
+  group_by(ClimVeloTKmY) %>%
+  mutate(min_log_annual_dispersal_pot = min(log_annual_dispersal_pot),
+         max_log_annual_dispersal_pot = max(log_annual_dispersal_pot)) %>%
+  select(-log_annual_dispersal_pot) %>%
+  distinct()
+
+pred_data = left_join(pred_data, bounds) %>%
+  filter(log_annual_dispersal_pot >= min_log_annual_dispersal_pot & 
+           log_annual_dispersal_pot <= max_log_annual_dispersal_pot)
+
+model_data %>%
+  ## add lines to indicate where inflection point is expected (where mean cv = annual dp = observed shift)
+  ggplot(., aes(x = annual_dispersal_pot, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  scale_y_log10() +
+  # scale_y_continuous(trans = pseudolog10_trans) +
+  facet_wrap(~ClimVeloTKmY, nrow = 2) +
+  labs(x = "Annual dispersal potential (km/y)", y = "Observed range shift (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycolours) +
+  geom_vline(aes(xintercept = quant_min)) +
+  geom_hline(aes(yintercept = quant_min)) +
+  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+  geom_smooth(data = pred_data, 
+              aes(x = exp(1)^log_annual_dispersal_pot, 
+                  y = exp(1)^predicted_val,
+                  col = ClimVeloTKmY),
+              colour = "black", linewidth = 1.25) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 20, hjust = 1))
+# +
+#   geom_ribbon(data = pred_data, 
+#               aes(x = exp(1)^log_annual_dispersal_pot, 
+#                   y = exp(1)^predicted_val,
+#                   ymax = exp(1)^predicted_val+exp(1)^predicted_se,
+#                   ymin = exp(1)^predicted_val-exp(1)^predicted_se),
+#               colour = "#ffffff00",
+#               alpha = 0.3)
+
+ggsave(path = "figures/sotm", filename = "model-predictions_not-dispersal-limited_full-dataset.png", 
+       device = "png", height = 4, width = 8.5)
+
+## plot model predictions 
+ggplot(pred_data, aes(x = ClimVeloTKmY, y = exp(1)^predicted_val, colour = ClimVeloTKmY)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_colour_manual(values = mycolours) +
   theme_bw() +
-  facet_wrap(Position~Gradient~cv_binned) + 
-  scale_colour_manual(values = c(pal[4], pal[6])) +
-  scale_x_log10() 
- 
-
-test = filter(lags, Gradient == "Elevation", Position == "Leading edge")
-
-q1=quantile(test$climate_velocity,probs=c(0,0.25,0.5, 0.75,1))
-cut(test$climate_velocity,breaks=q1,include.lowest=T)
-
-min = min(test$climate_velocity)
-max = max(test$climate_velocity)
-cut(test$climate_velocity,breaks=c(min, (min+max)/2, max),include.lowest=T)
+  labs(x = "Annual climate velocity (km/y)", y = "Predicted range shift (km/y)")
 
 
-test %>%
-  mutate(expect_tracking = factor(expect_tracking, levels = c("No", "Yes"), ordered = TRUE)) %>%
-  mutate(cv_binned = cut(test$climate_velocity, breaks=c(min, (min+max)/3, 2*(min+max)/3, max), include.lowest=T)) %>%
-  ggplot(aes(x = cv_binned, y = lag, colour = expect_tracking)) + 
-  geom_boxplot() +
+## plot predicted value at inflection point against predicted inflection point 
+pred_data <- model_data %>%
+  mutate(log_annual_dispersal_pot = log(quant_min)) %>%
+  select(ClimVeloTKmY, log_annual_dispersal_pot) %>%
+  distinct()
+
+pred <- predict(mod, pred_data, se.fit = TRUE)
+pred_data$predicted_val = pred$fit
+pred_data$predicted_se = pred$se.fit
+
+ggplot(pred_data, aes(x = ClimVeloTKmY, y = exp(1)^predicted_val, colour = ClimVeloTKmY))  +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = exp(1)^predicted_val - exp(1)^predicted_se,
+                    ymax = exp(1)^predicted_val + exp(1)^predicted_se)) +
+  geom_point(data = model_data, aes(y = quant_min), colour = "black", size = 3) +
+  scale_colour_manual(values = mycolours) +
   theme_bw() +
-  facet_wrap(Position~Gradient~Group) + 
-  scale_colour_manual(values = c(pal[6], pal[4])) 
+  scale_y_continuous(trans = pseudolog10_trans, 
+                     limits = c(-1.1, 3.1)) +
+  labs(x = "Annual climate velocity (km/y)", y = "Predicted range shift (km/y)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none",
+        plot.margin = unit(c(0.5, 0.5, 0.5, 1.5), "cm")) 
 
-  
-  
-  
-
-
-
-
-
+ggsave(path = "figures/sotm", filename = "model-predictions_not-dispersal-limited_intercept_full-dataset.png", 
+       device = "png", height = 4, width = 7)
 
 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Plants") %>%
-  ggplot(., aes(x = lag, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Plants") %>%
-  ggplot(., aes(x = CorrShift, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Birds") %>%
-  ggplot(., aes(x = lag, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Birds") %>%
-  ggplot(., aes(x = CorrShift, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Fish") %>%
-  ggplot(., aes(x = lag, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(Group == "Fish") %>%
-  ggplot(., aes(x = CorrShift, fill = Source)) + geom_histogram() 
-
-lags %>%
-  filter(Gradient == "Elevation") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = lag, fill = Source)) + geom_histogram()
-
-lags %>%
-  filter(Gradient == "Elevation") %>%
-  filter(Group == "Plants") %>%
-  ggplot(aes(x = CorrShift, fill = Source)) + geom_histogram()

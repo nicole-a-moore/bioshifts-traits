@@ -1265,7 +1265,10 @@ dd_collated_ALL %>%
                                              DispersalDistance*1.60934,
                                              DispersalDistance))) %>%
   filter(!is.na(DispersalDistanceKm)) %>%
-  ggplot(aes(x = log(DispersalDistanceKm), fill = Group)) + geom_histogram()
+  ggplot(aes(x = DispersalDistanceKm, fill = Group)) + geom_histogram() +
+  theme_bw() +
+  scale_x_log10() +
+  labs(x = "Dispersal distance (km)", y = "Number of dispersal observations")
 
 dd_collated_ALL %>%
   mutate(Group = ifelse(is.na(class) & str_detect(order, "formes"),
@@ -1279,7 +1282,28 @@ dd_collated_ALL %>%
                                              DispersalDistance))) %>%
   filter(!is.na(DispersalDistanceKm)) %>%
   ggplot(aes(x = Group, fill = Group)) + geom_bar() + theme(legend.position = "none") +
-  coord_flip()
+  coord_flip() +
+  theme_bw() +
+  labs(y = "Number of dispersal observations") +
+  theme(legend.position = "none")
+
+dd_collated_ALL %>%
+  mutate(Group = ifelse(is.na(class) & str_detect(order, "formes"),
+                                         "Fish",
+                                         class)) %>%
+  mutate(DispersalDistance = as.numeric(as.character(DispersalDistance))) %>%
+  mutate(DispersalDistanceKm = ifelse(Unit == "m",
+                                      DispersalDistance/1000, 
+                                      ifelse(Unit == "miles",
+                                             DispersalDistance*1.60934,
+                                             DispersalDistance))) %>%
+  filter(!is.na(DispersalDistanceKm)) %>%
+  ggplot(aes(x = ObservationTypeGeneral, fill = Group)) +
+  theme_bw() + 
+  geom_bar() +
+  coord_flip() +
+  labs(x = "Type of observation", y = "Number of observations")  
+  
 
 ## look at intraspecific variation in dispersal distance 
 ## how do different observation types compare?
