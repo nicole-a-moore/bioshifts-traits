@@ -334,6 +334,8 @@ lags$AnnualDispPotKmY <- ifelse(lags$Gradient == "Elevation", lags$annual_disper
 
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
+lags <- select(lags, -c(lag, SLDiff, CorrShift, PredSLShift, study_level_shift)) %>%
+  distinct()
 
 ## make plots to summarize subset 
 nrow(lags) # 1935 range shifts
@@ -391,7 +393,6 @@ rug %>%
        y = "Expected range expansion rate (km/y)")
 
 ## make histograms
- 
 lags %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
   ggplot(aes(x = ClimVeloTKmY, fill = ..x..)) +
@@ -943,7 +944,7 @@ rugplot_ele_unzoom_log <- clim_data %>%
            inherit.aes = FALSE) 
 
 ggsave(rugplot_ele_unzoom_log, path = "figures/sotm", filename = "expectation-elevation-rug-log.png", 
-       device = "png", height = 4, width = 4.2)
+       device = "png", height = 2.8, width = 3.1)
 
 rugplot_ele_unzoom_log_line <- clim_data %>%
   filter(Gradient == "Elevation") %>%
@@ -1120,209 +1121,209 @@ lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\]", ")")
 
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
-lat <- lat %>%
-  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
-  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
-  mutate(quant_mean = (quant_min + quant_max)/2) %>%
-  mutate(ClimVeloTKmY = paste(quant_min, " km/y - ", quant_max," km/y" , sep = ""))
-
-obs_lat <- lat %>%
-  filter(ShiftR > 0.0001) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 2) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  scale_y_continuous(limits = c(0, 40)) +
-  geom_vline(aes(xintercept = quant_min)) +
-  geom_hline(aes(yintercept = quant_min)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank())
-
-ggsave(obs_lat, path = "figures/sotm", filename = "observations_lat.png", 
-       device = "png", height = 3.5, width = 8.5)
-
-
-obs_lat_zoom <- lat %>%
-  filter(ShiftR > 0.0001) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 2) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  scale_y_continuous(limits = c(0, 10)) +
-  scale_x_continuous(limits = c(0, 7)) +
-  geom_vline(aes(xintercept = quant_min)) +
-  geom_hline(aes(yintercept = quant_min)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank())
-
-
-
-ggsave(obs_lat_zoom, path = "figures/sotm", filename = "observations_lat_zoom.png", 
-       device = "png", height = 3.5, width = 8.5)
-
-
-disp_lim_lat <- lat %>%
-  filter(Gradient == "Latitudinal") %>%
-  filter(ShiftR > 0.0001) %>%
-  filter(ClimVeloTKmY_og > AnnualDispPotKmY) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 2) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  #scale_y_continuous(limits = c(0, 40)) +
-  #scale_x_continuous(limits = c(0, 5)) +
-  geom_vline(aes(xintercept = quant_max)) +
-  geom_hline(aes(yintercept = quant_max)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank()) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed") 
-
-ggsave(disp_lim_lat, path = "figures/sotm", filename = "disp_lim_lat.png", 
-       device = "png", height = 3.5, width = 8.5)
-
-not_disp_lim_lat <- lat %>%
-  filter(ShiftR > 0.0001) %>%
-  filter(ClimVeloTKmY_og <= AnnualDispPotKmY) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 2) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  scale_y_continuous(limits = c(0, 40)) +
-  geom_vline(aes(xintercept = quant_max)) +
-  geom_hline(aes(yintercept = quant_max)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank())
-
-ggsave(not_disp_lim_lat, path = "figures/sotm", filename = "not_disp_lim_lat.png", 
-       device = "png", height = 3.5, width = 8.5)
-
-## elevation
-ele <- filter(lags, Gradient == "Elevation") %>%
-  mutate(Group = factor(Group, ordered = F))
-
-ele$ClimVeloTKmY_og <- ele$ClimVeloTKmY
-hist(ele$ClimVeloTKmY)
-q = quantile(ele$ClimVeloTKmY, probs = c(0,0.2,0.4,0.6,0.8,1))
-ele$ClimVeloTKmY = cut(ele$ClimVeloTKmY,
-                       breaks = q,
-                       include.lowest = T)
-plot(ele$ClimVeloTKmY)
-
-ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\[", "(") 
-ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\]", ")") 
-
-ele <- ele %>%
-  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
-  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
-  mutate(quant_mean = (quant_min + quant_max)/2) 
-
-ele <- ele %>%
-  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
-  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
-  mutate(quant_mean = (quant_min + quant_max)/2) %>%
-  mutate(ClimVeloTKmY = paste(quant_min, " km/y - ", quant_max," km/y" , sep = "")) 
-
-
-obs_ele <- ele %>%
-  filter(ShiftR > 0.0001) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 1) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  geom_vline(aes(xintercept = quant_min)) +
-  geom_hline(aes(yintercept = quant_min)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank())
-
-ggsave(obs_ele, path = "figures/sotm", filename = "observations_ele.png", 
-       device = "png", height = 2.5, width = 10.5)
-
-
-disp_lim_ele <- ele %>%
-  filter(ShiftR > 0.0001) %>%
-  filter(ClimVeloTKmY_og > AnnualDispPotKmY) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 1) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  #scale_y_continuous(limits = c(0, 40)) +
-  #scale_x_continuous(limits = c(0, 5)) +
-  geom_vline(aes(xintercept = quant_max)) +
-  geom_hline(aes(yintercept = quant_max)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank()) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed") 
-
-ggsave(disp_lim_ele, path = "figures/sotm", filename = "disp_lim_ele.png", 
-       device = "png", height = 2.5, width = 10.5)
-
-not_disp_lim_ele <- ele %>%
-  filter(ShiftR > 0.0001) %>%
-  filter(ClimVeloTKmY_og <= AnnualDispPotKmY) %>%
-  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
-  theme_bw() + 
-  geom_point() + 
-  facet_wrap(~ClimVeloTKmY, nrow = 1) +
-  labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
-       colour = "") +
-  scale_colour_manual(values = mycolours) +
-  geom_vline(aes(xintercept = quant_max)) +
-  geom_hline(aes(yintercept = quant_max)) +
-  #geom_abline(intercept = 0, slope = 1, colour = "black") + 
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, hjust = 1)) +
-  theme(panel.grid = element_blank())
-
-ggsave(not_disp_lim_ele, path = "figures/sotm", filename = "not_disp_lim_ele.png", 
-       device = "png", height = 2.5, width = 10.5)
-
-
-lags %>%
-  mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  ggplot(aes(x = ClimVeloTKmY, fill = ..x..)) +
-  geom_histogram() +
-  theme_bw() +
-  facet_grid(~Gradient) 
-+
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        strip.text.x = element_blank(),
-        panel.spacing = unit(2 , "lines")) +
-  labs(x = "Potential dispersal rate (km/y)",
-       y = "Observed range expansion rate (km/y)", 
-       colour = "") +
-  theme(legend.position = "none")+
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+# lat <- lat %>%
+#   mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+#   mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+#   mutate(quant_mean = (quant_min + quant_max)/2) %>%
+#   mutate(ClimVeloTKmY = paste(quant_min, " km/y - ", quant_max," km/y" , sep = ""))
+# 
+# obs_lat <- lat %>%
+#   filter(ShiftR > 0.0001) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 2) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   scale_y_continuous(limits = c(0, 40)) +
+#   geom_vline(aes(xintercept = quant_min)) +
+#   geom_hline(aes(yintercept = quant_min)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank())
+# 
+# ggsave(obs_lat, path = "figures/sotm", filename = "observations_lat.png", 
+#        device = "png", height = 3.5, width = 8.5)
+# 
+# 
+# obs_lat_zoom <- lat %>%
+#   filter(ShiftR > 0.0001) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 2) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   scale_y_continuous(limits = c(0, 10)) +
+#   scale_x_continuous(limits = c(0, 7)) +
+#   geom_vline(aes(xintercept = quant_min)) +
+#   geom_hline(aes(yintercept = quant_min)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank())
+# 
+# 
+# 
+# ggsave(obs_lat_zoom, path = "figures/sotm", filename = "observations_lat_zoom.png", 
+#        device = "png", height = 3.5, width = 8.5)
+# 
+# 
+# disp_lim_lat <- lat %>%
+#   filter(Gradient == "Latitudinal") %>%
+#   filter(ShiftR > 0.0001) %>%
+#   filter(ClimVeloTKmY_og > AnnualDispPotKmY) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 2) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   #scale_y_continuous(limits = c(0, 40)) +
+#   #scale_x_continuous(limits = c(0, 5)) +
+#   geom_vline(aes(xintercept = quant_max)) +
+#   geom_hline(aes(yintercept = quant_max)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank()) +
+#   geom_abline(intercept = 0, slope = 1, linetype = "dashed") 
+# 
+# ggsave(disp_lim_lat, path = "figures/sotm", filename = "disp_lim_lat.png", 
+#        device = "png", height = 3.5, width = 8.5)
+# 
+# not_disp_lim_lat <- lat %>%
+#   filter(ShiftR > 0.0001) %>%
+#   filter(ClimVeloTKmY_og <= AnnualDispPotKmY) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 2) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   scale_y_continuous(limits = c(0, 40)) +
+#   geom_vline(aes(xintercept = quant_max)) +
+#   geom_hline(aes(yintercept = quant_max)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank())
+# 
+# ggsave(not_disp_lim_lat, path = "figures/sotm", filename = "not_disp_lim_lat.png", 
+#        device = "png", height = 3.5, width = 8.5)
+# 
+# ## elevation
+# ele <- filter(lags, Gradient == "Elevation") %>%
+#   mutate(Group = factor(Group, ordered = F))
+# 
+# ele$ClimVeloTKmY_og <- ele$ClimVeloTKmY
+# hist(ele$ClimVeloTKmY)
+# q = quantile(ele$ClimVeloTKmY, probs = c(0,0.2,0.4,0.6,0.8,1))
+# ele$ClimVeloTKmY = cut(ele$ClimVeloTKmY,
+#                        breaks = q,
+#                        include.lowest = T)
+# plot(ele$ClimVeloTKmY)
+# 
+# ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\[", "(") 
+# ele$ClimVeloTKmY <- str_replace_all(ele$ClimVeloTKmY, "\\]", ")") 
+# 
+# ele <- ele %>%
+#   mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+#   mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+#   mutate(quant_mean = (quant_min + quant_max)/2) 
+# 
+# ele <- ele %>%
+#   mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+#   mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+#   mutate(quant_mean = (quant_min + quant_max)/2) %>%
+#   mutate(ClimVeloTKmY = paste(quant_min, " km/y - ", quant_max," km/y" , sep = "")) 
+# 
+# 
+# obs_ele <- ele %>%
+#   filter(ShiftR > 0.0001) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 1) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   geom_vline(aes(xintercept = quant_min)) +
+#   geom_hline(aes(yintercept = quant_min)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank())
+# 
+# ggsave(obs_ele, path = "figures/sotm", filename = "observations_ele.png", 
+#        device = "png", height = 2.5, width = 10.5)
+# 
+# 
+# disp_lim_ele <- ele %>%
+#   filter(ShiftR > 0.0001) %>%
+#   filter(ClimVeloTKmY_og > AnnualDispPotKmY) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 1) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   #scale_y_continuous(limits = c(0, 40)) +
+#   #scale_x_continuous(limits = c(0, 5)) +
+#   geom_vline(aes(xintercept = quant_max)) +
+#   geom_hline(aes(yintercept = quant_max)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank()) +
+#   geom_abline(intercept = 0, slope = 1, linetype = "dashed") 
+# 
+# ggsave(disp_lim_ele, path = "figures/sotm", filename = "disp_lim_ele.png", 
+#        device = "png", height = 2.5, width = 10.5)
+# 
+# not_disp_lim_ele <- ele %>%
+#   filter(ShiftR > 0.0001) %>%
+#   filter(ClimVeloTKmY_og <= AnnualDispPotKmY) %>%
+#   ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+#   theme_bw() + 
+#   geom_point() + 
+#   facet_wrap(~ClimVeloTKmY, nrow = 1) +
+#   labs(x = "Potential dispersal rate (km/y)", y = "Observed range expansion rate (km/y)",
+#        colour = "") +
+#   scale_colour_manual(values = mycolours) +
+#   geom_vline(aes(xintercept = quant_max)) +
+#   geom_hline(aes(yintercept = quant_max)) +
+#   #geom_abline(intercept = 0, slope = 1, colour = "black") + 
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   theme(panel.grid = element_blank())
+# 
+# ggsave(not_disp_lim_ele, path = "figures/sotm", filename = "not_disp_lim_ele.png", 
+#        device = "png", height = 2.5, width = 10.5)
+# 
+# 
+# lags %>%
+#   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
+#   ggplot(aes(x = ClimVeloTKmY, fill = ..x..)) +
+#   geom_histogram() +
+#   theme_bw() +
+#   facet_grid(~Gradient) 
+# +
+#   theme(panel.grid = element_blank(),
+#         strip.background = element_blank(),
+#         strip.text.x = element_blank(),
+#         panel.spacing = unit(2 , "lines")) +
+#   labs(x = "Potential dispersal rate (km/y)",
+#        y = "Observed range expansion rate (km/y)", 
+#        colour = "") +
+#   theme(legend.position = "none")+
+#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
 
 
 
@@ -1355,7 +1356,7 @@ ggsave(data_unlog, path = "figures/sotm", filename = "data-unlog.png",
 data_log <- lags %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1383,7 +1384,7 @@ data_ele_log <- lags %>%
   filter(ShiftR > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1404,7 +1405,7 @@ data_ele_log <- lags %>%
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) 
 
 ggsave(data_ele_log, path = "figures/sotm", filename = "data-ele-log.png", 
-       device = "png", height = 4, width = 4.2)
+       device = "png", height = 2.8, width = 3.1)
 
 
 ## now, plot line representing max climate velocity across elev and lat:
@@ -1562,7 +1563,7 @@ nl_lat_nopred <- lags %>%
   filter(AnnualDispPotKmY >= ClimVeloTKmY) %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1619,7 +1620,7 @@ nl_ele_nopred <- lags %>%
   filter(Gradient == "Elevation") %>%
   filter(AnnualDispPotKmY >= ClimVeloTKmY) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1655,9 +1656,9 @@ nl_ele_pred <- nl_ele_nopred +
             colour = "black") # add prediction
 
 ggsave(nl_ele_nopred, path = "figures/sotm", filename = "data-notlimited-ele-nopredictions.png", 
-       device = "png", height = 4, width = 4.2)
+       device = "png", height = 2.8, width = 3.1)
 ggsave(nl_ele_pred, path = "figures/sotm", filename = "data-notlimited-ele-predictions.png", 
-       device = "png", height = 4, width = 4.2)
+       device = "png", height = 2.8, width = 3.1)
 
 
 
@@ -1677,7 +1678,7 @@ l_lat_nopred <- lags %>%
   filter(AnnualDispPotKmY < ClimVeloTKmY) %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1734,7 +1735,7 @@ l_ele_nopred <- lags %>%
   filter(Gradient == "Elevation") %>%
   filter(AnnualDispPotKmY < ClimVeloTKmY) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) +
-  geom_point() +
+  geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
@@ -1770,8 +1771,7 @@ l_ele_pred <- l_ele_nopred +
             colour = "black") # add prediction
 
 ggsave(l_ele_nopred, path = "figures/sotm", filename = "data-limited-ele-nopredictions.png", 
-       device = "png", height = 4, width = 4.2)
+       device = "png", height = 2.8, width = 3.1)
 ggsave(l_ele_pred, path = "figures/sotm", filename = "data-limited-ele-predictions.png", 
-       device = "png", height = 4, width = 4.2)
-
+       device = "png", height = 2.8, width = 3.1)
 
