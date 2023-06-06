@@ -96,6 +96,8 @@ rs_study_level <- rs_data %>%
   ungroup()
 
 ## filter to studies with at least 5 species 
+## justification - average shift of studies with few species might be biased because of species traits, or publication bias
+## (might want to test the sensitivity to this)
 rs_study_level <- filter(rs_study_level, Ntaxa >= 5)
 
 length(unique(paste(rs_data$Source, rs_data$Gradient, rs_data$Class, sep = "_"))) # 621 studies should remain
