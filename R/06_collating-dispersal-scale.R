@@ -42,14 +42,19 @@ par <- left_join(par, par_harm, by = c("reported_name_fixed" = "species")) %>%
 ## reorganize
 par_dd <- par %>%
   select(all_of(cols_to_keep), 
-         AM_breeding, AM_natal) %>%
-  gather(key = "Field", value = "DispersalDistance", c(AM_breeding, AM_natal)) %>%
+         AM_breeding, AM_natal, GM_breeding, GM_natal) %>%
+  gather(key = "Field", value = "DispersalDistance", c(AM_breeding, AM_natal, GM_breeding, GM_natal)) %>%
   mutate(Field = ifelse(Field == "AM_breeding", "ArithmeticMeanBreedingDispersal",
                         ifelse(Field == "AM_natal", 
                                "ArithmeticMeanNatalDispersal",
-                               NA))) %>%
+                               ifelse(Field == "GM_natal", 
+                                      "GeometricMeanNatalDispersal",
+                                      ifelse(Field == "GM_breeding", 
+                                             "GeometricMeanBreedingDispersal", 
+                                             NA))))) %>%
   mutate(Code = "MeanDispersalDistance") %>%
-  mutate(ObservationTypeSpecific = ifelse(Field == "ArithmeticMeanNatalDispersal", "natal dispersal", 
+  mutate(ObservationTypeSpecific = ifelse(Field %in% c("ArithmeticMeanNatalDispersal", 
+                                                       "GeometricMeanNatalDispersal"), "natal dispersal", 
                                           "breeding dispersal")) %>%
   filter(!is.na(DispersalDistance)) %>%
   mutate(Sex = NA, Source = NA, Unit = "km",
@@ -199,6 +204,7 @@ suth_bird_dd <- suth_bird %>%
          `Natal_dispersal_median_distance_(km)`,
          `Natal_dispersal_maximum_distance_(km)`, Obs_type,
          Source) %>%
+  filter(Source != "Paradis et al. (1998)") %>% ## get rid of estimates that are from Paradis 
   mutate(ObservationTypeSpecific = "natal dispersal") %>%
   gather(key = "Field", value = "DispersalDistance", c(`Natal_dispersal_median_distance_(km)`,
                                                        `Natal_dispersal_maximum_distance_(km)`)) %>%
@@ -214,7 +220,7 @@ suth_bird_dd <- suth_bird %>%
   select(-Obs_type)
 
 ## check how many species in bioshifts 
-length(which(unique(suth_bird_dd$scientificName) %in% unique(sp$scientificName))) ## 72
+length(which(unique(suth_bird_dd$scientificName) %in% unique(sp$scientificName))) ## 69
 suth_bird_sp <- unique(suth_bird_dd$scientificName)[which(unique(suth_bird_dd$scientificName) %in% unique(sp$scientificName))]
 
 #---------------------
@@ -1203,7 +1209,7 @@ dd_collated %>%
   group_by(kingdom) %>%
   unique() %>%
   ungroup() %>%
-  mutate(class = factor(class, levels = as.character(class), ordered = TRUE)) %>%
+  mutate(class = factor(class, levels = unique(as.character(class)), ordered = TRUE)) %>%
   ggplot(., aes(x = class, y = n, fill = kingdom)) + geom_col() + 
   coord_flip() +
   theme_minimal() + 
@@ -1460,6 +1466,9 @@ try_am <- try_am %>%
 
 try_am <- left_join(try_am, try_am_harm, by = c("reported_name_fixed" = "species")) %>%
   unique()
+
+## write 
+write.csv(try_am, "data-processed/TRY_age-at-maturity_harmonized.csv", row.names = FALSE)
 
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
