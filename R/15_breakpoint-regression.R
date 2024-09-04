@@ -328,6 +328,7 @@ mod_data %>%
 #########################################################
 ####     fit segmented linear mixed effect model     ####
 #########################################################
+#----------------------
 ## allow breakpoint to vary between climate velocity bins
 ## hold slopes left and right of the breakpoint constant across climate velocity
 ## test whether:
@@ -338,6 +339,446 @@ mod_data %>%
 
 ## get only latitudinal observations 
 lat = filter(mod_data, Gradient == "Latitudinal")
+write.csv(lat, "data-processed/model-data_lat.csv", row.names = FALSE)
+
+## choose 4 climate velocity bins so that enough species with different dispersal abilities are sampled across different climate velocities
+hist(lat$ClimVeloTKmY) ## right skewed
+q = quantile(lat$ClimVeloTKmY, probs = c(0,0.25, 0.5, 0.75,1))
+lat$ClimVeloTKmY_cont <- lat$ClimVeloTKmY # save original climate velocity as new variable
+lat$ClimVeloTKmY = cut(lat$ClimVeloTKmY,
+                       breaks = q,
+                       include.lowest = T)
+plot(lat$ClimVeloTKmY)
+
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\[", "(") 
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\]", ")") 
+
+## calculate max, min and mean climate velocity of each quantile
+lat <- lat %>%
+  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+  mutate(quant_mean = (quant_min + quant_max)/2) %>%
+  group_by(ClimVeloTKmY) %>%
+  mutate(quant_median = median(ClimVeloTKmY_cont)) %>%
+  ungroup()
+
+## plot distribution of climate velocities within each quantile
+lat %>%
+  ggplot(aes(x = ClimVeloTKmY_cont)) + geom_histogram() +
+  facet_grid(~ClimVeloTKmY) +
+  geom_vline(aes(xintercept = quant_mean), colour = "red") +
+  geom_vline(aes(xintercept = quant_median), colour = "blue")
+
+most_spec = filter(lat, Source == "A19_P2")
+
+most_spec %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY)) +
+  geom_point() +
+  # scale_x_log10() +
+  # coord_trans(x = "log") + 
+  geom_vline(aes(xintercept = ClimVeloTKmY_cont)) + 
+  geom_hline(aes(yintercept = ClimVeloTKmY_cont)) + 
+  geom_abline(slope = 1, intercept = 0)
+
+## get quantiles 
+quants <- lat %>%
+  ungroup() %>%
+  dplyr::select(quant_mean, quant_min, quant_max, ClimVeloTKmY) %>%
+  distinct()
+
+mycol <- rev(colorRampPalette(RColorBrewer::brewer.pal(6, "RdBu"))(4))
+
+## plot by binned climate velocity 
+lat %>%
+  ggplot(., aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY)) + 
+  theme_bw() + 
+  geom_point() + 
+  scale_x_log10() +
+  facet_grid(~ClimVeloTKmY) +
+  scale_y_continuous(limits = c(0, 41), 
+                     expand = c(0.1, 0.1)) +
+  labs(x = "Potential dispersal rate (km/y)", y = "Observed range shift rate (km/y)",
+       colour = "") +
+  scale_colour_manual(values = mycol) +
+  stat_function(colour = "black", linetype = "dashed", fun = function(x){x}) 
+
+##  fit linear mixed effect model:
+mod_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, 
+               random = ~1|ClimVeloTKmY,
+               data = lat)
+
+## and feed to breakpoint regression model:
+fit = segmented(mod_lat, 
+                seg.Z = ~ AnnualDispPotKmY,
+                z.psi = ~ ClimVeloTKmY_cont, ## add continuous climate velocity as a covariate to breakpoint param
+                ## allow breakpoint, but not slopes, to vary by climate velocity bin:
+                random = list(ClimVeloTKmY = pdDiag(~1 + AnnualDispPotKmY + G0)),
+                ## set starting breakpoint values as mean climate velocity across sites:
+                psi = mean(lat$ClimVeloTKmY_cont)) 
+
+fit ## high variance of G0 as a fixed effect = lots of variation in change point 
+summary(fit$lme.fit)
+## intercept: 0.5475239
+
+#plot(fit)
+## low variance among slope U (when slope is also allowed to vary)
+## high variance among breakpoints G0
+fit$psi.i
+mean(fit$psi.i)
+## all are reliable (within covariate range) 
+
+## get slopes
+left = fit$lme.fit$coefficients$fixed[2]
+right = fit$lme.fit$coefficients$fixed[2] +  fit$lme.fit$coefficients$fixed[3]
+## left = 0.793884
+## right = 0.0001327778
+
+AIC(mod_lat, fit$lme.fit)
+## random bp model is best fit 
+
+## plot the residuals 
+hist(fit$lme.fit$residuals)
+## not normal - right skewed 
+qqnorm(fit$lme.fit$residuals)
+qqline(fit$lme.fit$residuals, col = "steelblue", lwd = 2)
+
+## plot residuals versus independent var. and make sure there is no structure
+df <- data.frame(resid = as.numeric(fit$lme.fit$residuals),
+                 disp_pot = lat$AnnualDispPotKmY,
+                 clim_velo = lat$ClimVeloTKmY,
+                 fitted = as.numeric(fit$lme.fit$fitted))
+
+
+df %>%
+  ggplot(aes(x = disp_pot, y = resid)) + geom_point() +
+  scale_x_log10() +
+  geom_hline(yintercept = 0, colour = "red")
+
+df %>%
+  ggplot(aes(y = resid, x = clim_velo)) + geom_boxplot() +
+  geom_hline(yintercept = 0, colour = "red")
+
+## fitted vs. residuals 
+df %>%
+  ggplot(aes(x = fitted, y = resid)) + geom_point() +
+  scale_x_log10() +
+  geom_hline(yintercept = 0, colour = "red")
+## heteroscedastic - higher residual error for high fitted values 
+
+## get confidence intervals 
+ci = intervals(zfit$lme.fit)
+ci_leftslope = ci$fixed[2,]
+ci_rightslope = ci$fixed[3,] + ci$fixed[2,]
+ci_intercept = ci$fixed[1,] 
+ci_breakpoints = ci$fixed[4,]
+
+low = ci_breakpoints[2] - ci_breakpoints[1]
+up = ci_breakpoints[3] - ci_breakpoints[2]
+
+## calculate the y coordinates of the breakpoints 
+breakpoints <- as.numeric(fit$psi.i)
+slope_left <- slope(fit)[1,1]
+slope_right <- slope(fit)[2,1]
+intercept <- fit$lme.fit$coefficients$fixed[1]
+intercepts <- fit$lme.fit$coefficients$random$id[,1] + intercept
+
+y_coords <- slope_left*breakpoints + intercepts
+
+## plot 
+df <- data.frame(theoretical_bp = sort(unique(lat$quant_mean)),
+                 model_fitted_bp = y_coords) %>%
+  left_join(lat, ., by = c("quant_mean" = "theoretical_bp"))
+
+## median
+df %>%
+  ggplot(aes(y = model_fitted_bp, x = quant_median)) +
+  geom_point() +
+  geom_linerange(aes(ymax = model_fitted_bp + up, ymin = model_fitted_bp - low)) +
+  geom_point(data = lat, aes(x = quant_median, y = ClimVeloTKmY_cont), 
+             size = 0.25, colour = "red") +  ## small red points = plot all climate velocities
+  geom_point(aes(y = quant_median), colour = "red") + ## large red point =  median climate velocity within quantile bins 
+  facet_wrap(~ClimVeloTKmY, nrow = 1) +
+  labs(x = 'Climate velocity', y = "Breakpoint") 
+## range of theoretical intercepts (red) is lower than detected breakpoint 
+## this means: species are shifting faster than expected 
+
+#----------------------
+## plotting theoretical predictions against data and model predictions 
+## note: there is no prediction function for segmented lme yet, so I'm on my own here
+
+## make prediction data frame 
+pred <- data.frame(expand_grid(AnnualDispPotKmY = seq(min(lat$AnnualDispPotKmY), max(lat$AnnualDispPotKmY), by = 0.01), 
+                   ClimVeloTKmY = unique(lat$ClimVeloTKmY)))
+
+## attach breakpoints for each quantile 
+breakpoints <- data.frame(fitted_breakpoint = as.numeric(fit$psi.i),
+                          ClimVeloTKmY = sort(unique(lat$ClimVeloTKmY)),
+                          theoretical_breakpoint = sort(unique(lat$quant_median)),
+                          intercept = intercepts)
+pred = left_join(pred, breakpoints)
+
+## calculate predictions 
+pred = pred %>%
+  mutate(predShiftKmY = ifelse(AnnualDispPotKmY < fitted_breakpoint,
+                               slope_left*AnnualDispPotKmY + intercept,
+                               ifelse(AnnualDispPotKmY > fitted_breakpoint,
+                                      slope_right*AnnualDispPotKmY + intercept + slope_left*fitted_breakpoint,
+                                      NA))) ## y = mx+ b, where m is left slope if AnnualDispPotKmY < breakpoint, m is right slope if AnnualDispPotKmY > breakpoint
+
+## plot 
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) 
+
+## on log x axis:
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10()
+
+## alongside theoretical prediction:
+pred = pred %>%
+  mutate(theoreticalShiftKmY = ifelse(AnnualDispPotKmY < theoretical_breakpoint,
+                               1*AnnualDispPotKmY + 0,
+                               ifelse(AnnualDispPotKmY > theoretical_breakpoint,
+                                      0*AnnualDispPotKmY + 0 + 1*theoretical_breakpoint,
+                                      NA))) 
+  
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10() +
+  geom_line(aes(x = AnnualDispPotKmY, y = theoreticalShiftKmY), colour = "red")
+
+## with raw data: 
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_point(data = lat, 
+             aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_cont), 
+             alpha = 0.5) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_line(linewidth = 1) + ## solid line = model fitted relationship
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10() +
+  geom_line(aes(x = AnnualDispPotKmY, y = theoreticalShiftKmY), colour = "red",
+            linewidth = 1, linetype = "dotted") +  ## dotted line = theoretical prediction
+  labs(x = "Potential dispersal rate (km/y)", y = "Range expansion rate (km/y)",
+       colour = "Climate velocity (km/y)")
+
+
+###############################################################################
+####      analyzing influence of outliers / points with high leverage      ####
+###############################################################################
+## assess model fit
+## https://online.stat.psu.edu/stat462/node/171/
+## reset data
+lat = filter(mod_data, Gradient == "Latitudinal")
+
+## choose 4 climate velocity bins so that enough species with different dispersal abilities are sampled across different climate velocities
+hist(lat$ClimVeloTKmY) ## right skewed
+q = quantile(lat$ClimVeloTKmY, probs = c(0,0.25, 0.5, 0.75,1))
+lat$ClimVeloTKmY_cont <- lat$ClimVeloTKmY # save original climate velocity as new variable
+lat$ClimVeloTKmY = cut(lat$ClimVeloTKmY,
+                       breaks = q,
+                       include.lowest = T)
+plot(lat$ClimVeloTKmY)
+
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\[", "(") 
+lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\]", ")") 
+
+## calculate max, min and mean climate velocity of each quantile
+lat <- lat %>%
+  mutate(quant_max = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,2], "\\)", " "))) %>%
+  mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
+  mutate(quant_mean = (quant_min + quant_max)/2) %>%
+  group_by(ClimVeloTKmY) %>%
+  mutate(quant_median = median(ClimVeloTKmY_cont)) %>%
+  ungroup()
+
+## which range shift points have high leverage in the model?
+## unfortuantely there is no framework for checking this in for a segmented.lme object :(
+## but, there is a good description of how it can be done in Nieuwenhuis et al.:
+## DOI: 10.32614/RJ-2012-011
+
+## the procedure:
+## remove points one-by-one from data, each time refitting the same model 
+## calculate the influence of each point on the model parameters by comparing full model to model with each point removed 
+## Cook's distance can be used to calculate influence on all parameters at once 
+## DFBETAS can be used to calculate influence on a particular parameter 
+
+## we care how each point affects:
+## - the right / left slopes
+## - the breakpoint
+## - the intercept
+
+## DFBETAS = difference in the magnitude of the parameter estimate between the model including and the model excluding the case, divided by the standard error of the parameter estimate excluding the case
+
+##  fit linear mixed effect model to full data:
+mod_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, 
+               random = ~1|ClimVeloTKmY,
+               data = lat)
+
+summary(mod_lat)
+
+## and feed to breakpoint regression model:
+fit = segmented(mod_lat, 
+                seg.Z = ~ AnnualDispPotKmY,
+                z.psi = ~ ClimVeloTKmY_cont, ## add continuous climate velocity as a covariate to breakpoint param
+                ## allow breakpoint, but not slopes, to vary by climate velocity bin:
+                random = list(ClimVeloTKmY = pdDiag(~1 + AnnualDispPotKmY + G0)),
+                ## set starting breakpoint values as mean climate velocity across sites:
+                psi = mean(lat$ClimVeloTKmY_cont)) 
+
+## get params of full model
+params <- fit$lme.fit$coefficients$fixed
+
+## now: loop through points, removing one by one and fitting model
+
+## note: must assign new data frame to old 'lat' object, or else weird error occurs 
+## so must refresh data each time 
+results <- c()
+x = 1
+while(x < nrow(lat)) {
+  lat = filter(mod_data, Gradient == "Latitudinal")
+  
+  ## choose 4 climate velocity bins so that enough species with different dispersal abilities are sampled across different climate velocities
+  q = quantile(lat$ClimVeloTKmY, probs = c(0,0.25, 0.5, 0.75,1))
+  lat$ClimVeloTKmY_cont <- lat$ClimVeloTKmY # save original climate velocity as new variable
+  lat$ClimVeloTKmY = cut(lat$ClimVeloTKmY,
+                         breaks = q,
+                         include.lowest = T)
+  lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\[", "(") 
+  lat$ClimVeloTKmY <- str_replace_all(lat$ClimVeloTKmY, "\\]", ")") 
+  
+  ## remove point x
+  lat <- lat[-x,]
+  
+  ##  fit linear mixed effect model to data without the point:
+  mod_lat_sub <- lme(ShiftKmY ~ AnnualDispPotKmY, 
+                     random = ~1|ClimVeloTKmY,
+                     data = lat)
+  
+  ## and feed to breakpoint regression model:
+  fit_sub = segmented(mod_lat, 
+                  seg.Z = ~ AnnualDispPotKmY,
+                  z.psi = ~ ClimVeloTKmY_cont, ## add continuous climate velocity as a covariate to breakpoint param
+                  ## allow breakpoint, but not slopes, to vary by climate velocity bin:
+                  random = list(ClimVeloTKmY = pdDiag(~1 + AnnualDispPotKmY + G0)),
+                  ## set starting breakpoint values as mean climate velocity across sites:
+                  psi = mean(lat$ClimVeloTKmY_cont)) 
+
+  ## get magnitude of parameter estimates
+  params_sub <- fit_sub$lme.fit$coefficients$fixed
+  
+  ## get standard error of parameter estimate excluding case 
+  se_sub <- sqrt(diag(vcov(fit_sub)))
+  
+  ## calculate DFBETAS
+  dfbetas = abs(params - params_sub)/se_sub
+  
+  ## get the parameter estimates 
+  breakpoints_sub <- as.numeric(fit_sub$psi.i)
+  slope_left_sub <- slope(fit_sub)[1,1]
+  slope_right_sub <- slope(fit_sub)[2,1]
+  intercepts_sub <- fit_sub$lme.fit$coefficients$fixed[1] + fit_sub$lme.fit$coefficients$random$id[,1]
+  subreg = fit_sub$lme.fit$coefficients$fixed[5]
+ 
+  param_ests = data.frame(breakpoint = breakpoints_sub,
+                          left_slope = rep(slope_left_sub, 4),
+                          left_right = rep(slope_right_sub, 4),
+                          intercept = intercepts_sub, 
+                          subregression_slope = subreg,
+                          ClimVeloTKmY = sort(unique(lat$ClimVeloTKmY)),
+                          point_excluded = x)
+  
+  results_mini <- full_join(param_ests, data.frame(point_excluded = x, 
+                                              param = names(params),
+                                              param_full = params,
+                                              param_sub = params_sub,
+                                              se_sub = se_sub,
+                                              dfbetas = dfbetas),
+                       by = "point_excluded")
+  
+  ## save results:
+  results <- rbind(results, results_mini)
+  
+  print(paste0("On obs. number: ", x))
+  
+  x = x + 1
+}
+
+## save: 
+# write.csv(results, "data-processed/breakpoint-regression-leverage-analysis-results.csv", row.names = FALSE)
+results <- read.csv("data-processed/breakpoint-regression-leverage-analysis-results.csv")
+
+## calculate cutoff: 2 / root(n)
+cutoff <- 2/sqrt(nrow(lat))
+
+results$cutoff = cutoff
+
+## how many are bigger than cutoff?
+results %>%
+  mutate(is_bigger = cutoff < dfbetas) %>%
+  #filter(is_bigger == TRUE) 
+  ggplot(aes(x = is_bigger)) + geom_bar()
+
+## how big are the actual parameter differences?
+results %>%
+  mutate(param_diff = abs(param_full - param_sub)) %>%
+  ggplot(aes(x = param_diff)) + geom_histogram()
+## most are small 
+## some are large 
+
+## which parameters are affected most?
+results %>%
+  mutate(param_diff = abs(param_full - param_sub)) %>%
+  ggplot(aes(x = param_diff)) + geom_histogram() + 
+  facet_grid(~param) 
+## mostly the breakpoint param is affected 
+
+## how different are the actual breakpoints from the full model?
+results %>%
+  select(breakpoint, point_excluded, ClimVeloTKmY) %>%
+  distinct() %>%
+  ggplot(aes(x = breakpoint)) + geom_histogram() +
+  facet_grid(~ClimVeloTKmY) +
+  geom_vline(data = real_bps, aes(xintercept = breakpoint), colour = "red")
+
+## and to theoretical breakpoints?
+results %>%
+  select(breakpoint, ClimVeloTKmY, point_excluded) %>%
+  distinct()
+  
+## plot breakpoints from models with 1 point removed alongside theoretical breakpoints (climate velocity)
+results %>% 
+  ggplot(aes(y = breakpoint, x = ClimVeloTKmY)) +
+  geom_point() + ## large black dots = breakpoints from models with 1 point removed 
+  facet_wrap(~ClimVeloTKmY, nrow = 1) +
+  geom_point(data = lat, aes(x = ClimVeloTKmY, y = ClimVeloTKmY_cont), 
+             size = 0.25, colour = "red") + ## small red points = plot all climate velocities
+  geom_point(data = lat, aes(y = quant_median), colour = "red") ## large red point =  median climate velocity within quantile bins 
+
+## plot variation in slope of subregression (breakpoint location ~ climate velocity)
+results %>% 
+  filter(param == "G.ClimVeloTKmY_cont") %>%
+  select(subregression_slope, param_full, param_sub) %>%
+  distinct() %>%
+  ggplot(aes(x = param_sub)) +
+  geom_histogram() +
+  geom_vline(aes(xintercept = param_full), colour = "red")
+
+
+#############################################################################
+####     fit segmented linear mixed effect model - leading edge only     ####
+#############################################################################
+#----------------------
+## fit to only leading edge data, not centroid 
+
+## get only latitudinal observations 
+lat = filter(mod_data, Gradient == "Latitudinal" & Position == "Leading edge")
 
 ## choose 4 climate velocity bins so that enough species with different dispersal abilities are sampled across different climate velocities
 hist(lat$ClimVeloTKmY) ## right skewed
@@ -357,6 +798,13 @@ lat <- lat %>%
   mutate(quant_min = as.numeric(str_replace_all(str_split_fixed(ClimVeloTKmY, "\\,", 2)[,1], "\\(", " "))) %>%
   mutate(quant_mean = (quant_min + quant_max)/2) 
 
+## plot distribution of climate velocities within each quantile
+lat %>%
+  ggplot(aes(x = ClimVeloTKmY_cont)) + geom_histogram() +
+  facet_grid(~ClimVeloTKmY) +
+  geom_vline(aes(xintercept = quant_mean), colour = "red")
+
+## get quantiles 
 quants <- lat %>%
   ungroup() %>%
   dplyr::select(quant_mean, quant_min, quant_max, ClimVeloTKmY) %>%
@@ -389,35 +837,37 @@ summary(mod_lat)
 fit = segmented(mod_lat, 
                 seg.Z = ~ AnnualDispPotKmY,
                 ## allow breakpoint, but not slopes, to vary by climate velocity bin:
-                random = list(ClimVeloTKmY = pdDiag(~1 + AnnualDispPotKmY + G0)),
+                random = list(ClimVeloTKmY = pdDiag(~1 + G0)),
                 ## set starting breakpoint values as mean climate velocity across sites:
                 psi = mean(lat$ClimVeloTKmY_cont)) 
 
-summary(fit)
+fit ## less variance in G0 as a fixed effect = lots of variation in change point 
+summary(fit$lme.fit)
+## intercept: 1.083429
+
+
 plot(fit)
-## low variance among slope U
+## low variance among slope U (when slope is also allowed to vary)
 ## high variance among breakpoints G0
 fit$psi.i
-## all reliable (within covariate range) 
-
-fit$fixed.eta.delta
+mean(fit$psi.i)
+## all are reliable (within covariate range) 
 
 ## get slopes
-slope(fit)
-## left = 0.464
-## right = -0.0000599
+left = fit$lme.fit$coefficients$fixed[2]
+right =  fit$lme.fit$coefficients$fixed[2] +  fit$lme.fit$coefficients$fixed[3]
+## left = 0.1544394
+## right = -0.002850327 
 
-AIC(mod_lat, fit)
+AIC(mod_lat, fit$lme.fit)
 ## random bp model is best fit 
 
 ## plot the residuals 
 hist(fit$lme.fit$residuals)
-## not normal
+## more normal than model fit to full dataset  
 qqnorm(fit$lme.fit$residuals)
 qqline(fit$lme.fit$residuals, col = "steelblue", lwd = 2)
-
-## bootstrap confints 
-ci = bootNP(fit, B = 50, seed = 199)
+## distribution still has long tails
 
 ## plot residuals versus independent var. and make sure there is no structure
 df <- data.frame(resid = as.numeric(fit$lme.fit$residuals),
@@ -441,26 +891,223 @@ df %>%
   geom_hline(yintercept = 0, colour = "red")
 ## heteroscedastic - higher residual error for high fitted values 
 
+## get confidence intervals 
+ci = intervals(fit$lme.fit)
+ci_leftslope = ci$fixed[2,]
+ci_rightslope = ci$fixed[3,] + ci$fixed[2,]
+ci_intercept = ci$fixed[1,] 
+ci_breakpoints = ci$fixed[4,]
+
+low = ci_breakpoints[2] - ci_breakpoints[1]
+up = ci_breakpoints[3] - ci_breakpoints[2]
 
 ## calculate the y coordinates of the breakpoints 
 breakpoints <- as.numeric(fit$psi.i)
 slope_left <- slope(fit)[1,1]
 slope_right <- slope(fit)[2,1]
 intercept <- fit$lme.fit$coefficients$fixed[1]
+intercepts <- fit$lme.fit$coefficients$random$id[,1] + intercept
 
-y_coords <- slope_left*breakpoints + intercept
-
+y_coords <- slope_left*breakpoints + intercepts
 
 ## plot 
 df <- data.frame(theoretical_bp = sort(unique(lat$quant_mean)),
-                 model_fitted_bp = y_coords)
+                 model_fitted_bp = y_coords) %>%
+  left_join(lat, ., by = c("quant_mean" = "theoretical_bp"))
+
 
 df %>%
-  ggplot(aes(y = model_fitted_bp, x = theoretical_bp)) +
+  ggplot(aes(y = model_fitted_bp, x = quant_mean)) +
   geom_point() +
-  geom_point(aes(y = theoretical_bp), colour = "red")
-## theoretical intercept is 
+  geom_linerange(aes(ymax = model_fitted_bp + up, ymin = model_fitted_bp - low)) +
+  geom_point(data = lat, aes(x = quant_mean, y = ClimVeloTKmY_cont), 
+             size = 0.25, colour = "red") +  ## small red points = plot all climate velocities
+  geom_point(aes(y = quant_mean), colour = "red") + ## large red point =  mean climate velocity within quantile bind 
+  facet_wrap(~ClimVeloTKmY) +
+  labs(x = 'Climate velocity', y = "Breakpoint") 
+## range of theoretical intercepts (red) is within detected breakpoint confidence intervals
 
+#----------------------
+## plotting theoretical predictions against data and model predictions 
+## note: there is no prediction function for segmented lme yet, so I'm on my own here
+
+## make prediction data frame 
+pred <- data.frame(expand_grid(AnnualDispPotKmY = seq(min(lat$AnnualDispPotKmY), max(lat$AnnualDispPotKmY), by = 0.01), 
+                               ClimVeloTKmY = unique(lat$ClimVeloTKmY)))
+
+## attach breakpoints for each quantile 
+breakpoints <- data.frame(fitted_breakpoint = as.numeric(fit$psi.i),
+                          ClimVeloTKmY = sort(unique(lat$ClimVeloTKmY)),
+                          theoretical_breakpoint = sort(unique(lat$quant_mean)),
+                          intercept = intercepts)
+pred = left_join(pred, breakpoints)
+
+## calculate predictions 
+pred = pred %>%
+  mutate(predShiftKmY = ifelse(AnnualDispPotKmY < fitted_breakpoint,
+                               slope_left*AnnualDispPotKmY + intercept,
+                               ifelse(AnnualDispPotKmY > fitted_breakpoint,
+                                      slope_right*AnnualDispPotKmY + intercept + slope_left*fitted_breakpoint,
+                                      NA))) ## y = mx+ b, where m is left slope if AnnualDispPotKmY < breakpoint, m is right slope if AnnualDispPotKmY > breakpoint
+
+## plot 
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) 
+
+## on log x axis:
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10()
+
+## alongside theoretical prediction:
+pred = pred %>%
+  mutate(theoreticalShiftKmY = ifelse(AnnualDispPotKmY < theoretical_breakpoint,
+                                      1*AnnualDispPotKmY + 0,
+                                      ifelse(AnnualDispPotKmY > theoretical_breakpoint,
+                                             0*AnnualDispPotKmY + 0 + 1*theoretical_breakpoint,
+                                             NA))) 
+
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_line() +
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10() +
+  geom_line(aes(x = AnnualDispPotKmY, y = theoreticalShiftKmY), colour = "red")
+
+## with raw data: 
+pred %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = predShiftKmY)) +
+  geom_point(data = lat, 
+             aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_cont), 
+             alpha = 0.5) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_line(linewidth = 1) + ## solid line = model fitted relationship
+  facet_grid(~ClimVeloTKmY) +
+  scale_x_log10() +
+  geom_line(aes(x = AnnualDispPotKmY, y = theoreticalShiftKmY), colour = "red",
+            linewidth = 1, linetype = "dotted") +  ## dotted line = theoretical prediction
+  labs(x = "Potential dispersal rate (km/y)", y = "Range expansion rate (km/y)",
+       colour = "Climate velocity (km/y)")
+
+
+## make up some data with breakpoints to see how the model is being fit 
+## breakpoint increases with level, intercept stays at 0
+data1 <- data.frame(x = seq(1:60),
+                   y = c(seq(1:20), rep(0+20, 40)))
+data2 <- data.frame(x = seq(1:60),
+                    y = c(seq(1:30), rep(0+30, 30)))
+data3 <- data.frame(x = seq(1:60),
+                    y = c(seq(1:40), rep(0+40, 20)))
+data4 <- data.frame(x = seq(1:60),
+                    y = c(seq(1:50), rep(0+50, 10)))
+
+data = rbind(data1, data2) %>%
+  rbind(., data3) %>%
+  rbind(., data4)
+
+data$level = rep(1:4, each = 60)
+
+## add noise to avoid singular fit 
+data$y = data$y + rnorm(240, mean = 0, sd = 0.1)
+
+ggplot(data, aes(x = x, y = y, colour = level)) + geom_point()
+
+##  fit linear mixed effect model:
+mod<- lme(y ~ x, 
+          random = ~1|level,
+          data = data)
+
+summary(mod)
+
+## and feed to breakpoint regression model:
+fit = segmented(mod, 
+                seg.Z = ~ x,
+                ## allow breakpoint, but not slopes, to vary by level:
+                random = list(level = pdDiag(~1 + G0)),
+                ## set starting breakpoint values as mean climate velocity across sites:
+                psi = mean(data$y),
+                data = data) 
+
+fit
+summary(fit)
+
+fit$psi.i
+## break points are: 20, 30, 40, 50
+
+slope(fit)
+## left slope 1, right slope 0
+
+fit$lme.fit$coefficients$fixed[1] + fit$lme.fit$coefficients$random$id[,1]
+## intercepts: 0, 0, 0, 0
+
+mean(fit$lme.fit$coefficients$fixed[1] + fit$lme.fit$coefficients$random$id[,1])
+## overall intercept: 0
+
+## what happens if we have imperfect sampling across x?
+## remove points where x < 10 from level 1
+## prediction: intercept for this level will increase, overall intercept will increase
+
+data <- data %>%
+  filter(!(x < 20 & level == 1))
+
+##  fit linear mixed effect model:
+mod<- lme(y ~ x, 
+          random = ~1|level,
+          data = data)
+
+summary(mod)
+
+## and feed to breakpoint regression model:
+fit = segmented(mod, 
+                seg.Z = ~ x,
+                ## allow breakpoint, but not slopes, to vary by level:
+                random = list(level = pdDiag(~1 + G0)),
+                ## set starting breakpoint values as mean climate velocity across sites:
+                psi = mean(data$y),
+                data = data) 
+
+summary(fit)
+
+fit$psi.i
+mean(fit$psi.i)
+## break points are: 20, 30, 40, 50
+## mean is 34.98
+
+slope(fit)
+## left slope 1, right slope 0
+
+fit$lme.fit$coefficients$fixed[1] + fit$lme.fit$coefficients$random$id[,1]
+## intercepts: 0, 0, 0, 0
+
+mean(fit$lme.fit$coefficients$fixed[1] + fit$lme.fit$coefficients$random$id[,1])
+## overall intercept: 0
+
+
+
+
+
+
+
+
+## garbage 
+breakpoints <- as.numeric(fit$psi.i)
+slope_left <- slope(fit)[1,1]
+slope_right <- slope(fit)[2,1]
+intercepts <- fit$lme.fit$coefficients$fixed[1] + fit$lme.fit$coefficients$random$id[,1]
+
+breakpoints_sub <- as.numeric(fit_sub$psi.i)
+slope_left_sub <- slope(fit_sub)[1,1]
+slope_right_sub <- slope(fit_sub)[2,1]
+intercepts_sub <- fit_sub$lme.fit$coefficients$fixed[1] + fit_sub$lme.fit$coefficients$random$id[,1]
+
+diff_bps = abs(breakpoints - breakpoints_sub)
+diff_lslope = abs(slope_left - slope_left_sub)
+diff_rslope = abs(slope_right - slope_right_sub)
+diff_ints = abs(intercepts - intercepts_sub)
 
 
 
