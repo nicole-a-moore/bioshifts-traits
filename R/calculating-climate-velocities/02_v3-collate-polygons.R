@@ -1,7 +1,9 @@
-## calculate species-specific climate velocities for species with primary range maps 
+## collate study area polygons + species range map polygons from different sources
 library(tidyverse) 
 library(sf)
 library(stringr)
+library(terra)
+library(tidyterra)
 
 
 ###############################################
@@ -76,6 +78,7 @@ bien <- st_read("data-processed/large-data/BIEN/BIEN_v3.shp")
 
 bien <- bien[, which(colnames(bien) %in% c("species", "geometry"))]
 bien <- rename(bien, "binomial" = species)
+bien$binomial <- str_replace_all(bien$binomial, "\\_", " ")
 bien$range_source = "BIEN"
 
 ## Fishmap
@@ -84,6 +87,13 @@ fshmap <- st_read("data-processed/large-data/Fishmap/Fishmap_v3.shp")
 fshmap <- fshmap[, which(colnames(fshmap) %in% c("SCIENTIFIC", "geometry"))]
 fshmap <- rename(fshmap, "binomial" = SCIENTIFIC)
 fshmap$range_source = "Fishmap"
+
+## Butterfly Maps 
+bfs <- st_read("data-processed/large-data/ButterflyMaps/ButterflyMaps_v3.shp")
+
+bfs <- bfs[, which(colnames(bfs) %in% c("binomial", "geometry"))]
+bfs$range_source = "Butterfly Maps"
+
 
 ## GBIF 
 ## read all together and save 
@@ -116,8 +126,8 @@ gbif <- rename(gbif, "binomial" = spcs_nm)
 gbif$range_source = "GBIF occurrence"
 
 ## combine
-ranges <- rbind(iucn, gard, botw, bien, fshmap, gbif)
-length(unique(ranges$binomial)) # 6583 spp
+ranges <- rbind(iucn, gard, botw, bien, fshmap, bfs, gbif)
+length(unique(ranges$binomial)) # 6590 spp
 
 ## for now:
 # files = list.files(path = "/Volumes/NIKKI/Bioshfits_GBIF/GBIF_data")
@@ -125,6 +135,7 @@ length(unique(ranges$binomial)) # 6583 spp
 # gbif_list = str_replace_all(gbif_list, "\\_", " ")
 # 
 # ranges_for <- unique(c(gbif_list, ranges$binomial))
+# ranges_for = str_replace_all(ranges_for, "\\_", " ")
 # length(unique(ranges_for))
 
 ## what kinds of species are they?
@@ -218,21 +229,6 @@ get_gift_range <- function(x) {
 
 lapply(1:length(sp), FUN = get_gift_range)
 
-dead_files <- sp[which(sp %in% ranges_for)]
-dead_files = paste(paste0("data-processed/large-data/GIFT/", str_replace_all(dead_files, " ", "\\_"), ".shx"))
-
-i= 1
-while(i <= length(dead_files)) {
-  fn = dead_files[i]
-  if (file.exists(fn)) {
-    #Delete file if it exists
-    file.remove(fn)
-  }
-  
-  i = i + 1
-}
-
-
 ## read all together and save 
 files = list.files(path = "data-processed/large-data/GIFT", pattern="shp$", recursive=TRUE, full.names=TRUE)
 i = 1
@@ -255,101 +251,160 @@ while(i <= length(files)) {
   
   i = i + 1
 }
+gift <- unique(gift)
 st_write(gift, "data-processed/large-data/GIFT/GIFT_v3.shp", append = FALSE)
 
+gift <- st_read("data-processed/large-data/GIFT/GIFT_v3.shp")
 gift <- gift[, which(colnames(gift) %in% c("species", "geometry"))]
 gift <- rename(gift, "binomial" = species)
 gift$range_source = "GIFT"
+gift = unique(gift)
 
 ## combine
 ranges <- rbind(ranges, gift)
+length(unique(ranges$binomial)) # 7974 spp
 
+## try to get Aquamaps ranges for missing species 
+################################
+##         Aquamaps           ##
+################################
+am_key <- read.csv("/Volumes/NIKKI/Aquamaps/Speciesoccursum_v10_2019-2.csv")
 
-##############################################
-##       CROP STUDY AREA BY RANGE MAP       ##
-##############################################
-id <- id %>%
-  filter(species_name %in% ranges$binomial) 
+am_key$Binomial = paste(am_key$Genus_valid, am_key$Species_valid)
 
-polys <- filter(polys, Name %in% id$ID)
+## filter to bioshifts species 
+bs_am <- filter(am_key, Binomial %in% v3$species_name)
 
-length(unique(id$id_cv)) # 6549 unique species-study polygon combos
+## filter to missing bioshfits species 
+bs_am <- bs_am[which(!bs_am$Binomial %in% ranges$binomial),]
+length(unique(bs_am$Binomial)) ## 127
 
-## for each study area 
+## read in the aquamaps 
+aqua <- read.csv("/Volumes/NIKKI/Aquamaps/GTE10_HSPEC_NATIVE/hcaf_species_native_gte10.csv")
+
+## filter to aquamaps for the missing species 
+aqua <- filter(aqua, SpeciesID %in% bs_am$SpeciesID)
+
+length(unique(bs_am$SpeciesID))
+length(unique(aqua$SpeciesID)) ## note: 7 missing 
+
+# filter to values above threshold ----------------------------------------
+# usually, >0.5 occurrence probability works for the range
+# inner join species to points in canadian EEZ ----------------------------
+threshold <- .05
+aqua_thresh <- aqua %>%
+  # first, cut ranges to specified threshold
+  # since we only consider ranges present above this
+  filter(Probability >= threshold)
+
+# split by species --------------------------------------------------------
+aqua_split <- aqua_thresh %>%
+  split(.$SpeciesID)
+
+# convert to raster -------------------------------------------------------
+ranges_split_rast <- purrr::map(
+  .x = aqua_split,
+  .f = ~.x %>%
+    select(-SpeciesID, -CsquareCode) %>%
+    relocate(CenterLong, CenterLat) %>%
+    rast(crs = crs("EPSG: 4326")),
+  .progress = T
+)
+
+ggplot() +
+  geom_spatraster(data = ranges_split_rast[[4]] ) +
+  theme_bw() +
+  scale_fill_continuous(na.value = "transparent")
+
+# convert to polygons -----------------------------------------------------
+ranges_split_polygons <- purrr::map(
+  .x = ranges_split_rast,
+  .f = ~.x %>%
+    as.polygons()
+)
+
+# ggplot() +
+#   geom_spatvector(data = ranges_split_polygons[[2]], fill = "red") +
+#   theme_bw() 
+
+## convert to sf
 sf_use_s2(FALSE)
-cropped_polys = NULL
-sa = 1
-while(sa <= length(unique(id$ID))) {
-  curr_sa = unique(id$ID)[sa]
-  poly <- filter(polys, Name == curr_sa)
-  
-  ## get list of species in study
-  species_list <- filter(id, ID == curr_sa)
-  
-  sp = 1
-  while(sp <= length(unique(species_list$species_name))) {
-    species = unique(species_list$species_name)[sp]
-    
-    ## crop study polygon by species range map
-    range <- filter(ranges, binomial == species)
-    
-    r = 1
-    while(r <= nrow(range)) {
-      
-      ggplot(range[r,]) +
-        geom_sf(fill = "orange")
-      
-      crop <- st_intersection(st_make_valid(poly), st_make_valid(range[r,])) 
-      
-      if(nrow(crop) == 0) {
-        
-      }
-      else if(st_geometry_type(crop) == "GEOMETRYCOLLECTION") {
-        
-        
-        ## note: shorebirds become weird - e.g., Thalasseus sandvicensis in study area 50 (A141_P1)
-        ## fix later
-        # ggplot(poly) +
-        #   geom_sf(fill = "orange") +
-        #   geom_sf(data = range, fill = "blue") +
-        #   geom_sf(data = crop, fill = "red")
-      }
-      else {
-        if(is.null(cropped_polys)) {
-          cropped_polys = crop %>%
-            mutate(species_studyid = paste(species, curr_sa, sep = "_"), 
-                   range_source = range$range_source[r])
-        } else {
-          cropped_polys = crop %>%
-            mutate(species_studyid = paste(species, curr_sa, sep = "_"),
-                   range_source = range$range_source[r]) %>%
-            rbind(cropped_polys, .)
-        }
-      }
-      
-      r = r + 1
-    }
-    
-    print(paste0("On species no. ", sp, " of study no. ", sa))
-    sp = sp + 1
-  }
-  
-  ## save the cropped polygons for each study area in a separate file 
-  if(!is.null(cropped_polys)) {
-    st_write(cropped_polys, paste0("data-processed/spp-specific-study-polygons/", curr_sa, ".shp"), append = TRUE)
-  }
-  
-  ## empty object
-  cropped_polys <- NULL
-  
-  sa = sa + 1
-}
+ranges_split_sf <- purrr::map(
+  .x = ranges_split_polygons,
+  .f = ~.x %>%
+    st_as_sf() %>%
+    st_make_valid() %>%
+    st_union()
+)
+
+ggplot(data = ranges_split_sf[[2]]) +
+  geom_sf() 
+
+## make into one sfc 
+aquamaps <- st_sf(data.frame(geometry = do.call(rbind, ranges_split_sf)))
+aquamaps$SpeciesID = names(ranges_split_sf)
+
+## add species name column 
+aquamaps <- left_join(aquamaps, bs_am) %>%
+  select(Binomial, geometry) %>%
+  rename("binomial" = Binomial) %>%
+  mutate(range_source = "Aquamaps")
+
+## change crs
+st_crs(aquamaps) <- st_crs(ranges)
+
+## save 
+st_write(aquamaps, "data-processed/large-data/Aquamaps/Aquamaps_v3.shp", append = FALSE)
+
+## add to ranges collection
+aquamaps <- st_read("data-processed/large-data/Aquamaps/Aquamaps_v3.shp")
+aquamaps <- aquamaps[, which(colnames(aquamaps) %in% c("binomil", "geometry"))]
+aquamaps <- rename(aquamaps, "binomial" = binomil)
+aquamaps$range_source = "Aquamaps"
+
+ranges = rbind(ranges, aquamaps)
+length(unique(ranges$binomial)) #8408
+
+## save collated ranges as rds object 
+saveRDS(ranges, "data-processed/large-data/collated-ranges.rds")
 
 
-## crop study polygon by range map of each species in study
-## and save
 
-ggplot(cropped_polys) +
-  geom_sf() +
-  geom_sf(data = crop, fill = "red") +
-  geom_sf(range)
+## check how many species we have maps for now
+length(unique(ranges$binomial, ranges_for)) #9035
+
+## make a breakdown of there they are from 
+ranges_sp = data.frame(species_name = c(iucn$binomial, gard$binomial, botw$binomial, bien$binomial, fshmap$binomial,
+                                        bfs$binomial,aquamaps$binomial, gift$binomial, gbif_list), 
+                  range_source = c(iucn$range_source, gard$range_source, botw$range_source, bien$range_source, 
+                                   fshmap$range_source, bfs$range_source,
+                                   aquamaps$range_source, gift$range_source, rep("GBIF convex hull", length(gbif_list))))
+length(unique(ranges_sp$species_name)) #10838
+key = select(v3, species_name, class) %>%
+  distinct()
+ranges_sp <- left_join(ranges_sp, key)
+
+ranges_sp %>%
+  ggplot(aes(x = range_source)) +
+  geom_bar() +
+  coord_flip() +
+  labs(y = "Number of species", x = "Range polygon source")
+
+ranges_sp %>%
+  ggplot(aes(x = class)) +
+  geom_bar() +
+  coord_flip() +
+  labs(y = "Number of species", x = "Class")
+
+missing_sp = filter(key, !species_name %in% ranges_sp$species_name)
+
+missing_sp %>%
+  ggplot(aes(x = class)) +
+  geom_bar() +
+  coord_flip() +
+  labs(y = "Number of species missing", x = "Class")
+
+## save list of missing species to search for in GBIF
+write.csv(missing_sp, "data-processed/v3_spp-missing-range-polygons.csv", row.names = FALSE)
+
+

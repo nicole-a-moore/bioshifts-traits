@@ -180,3 +180,29 @@ fshmap_bs <- filter(fshmap, SCIENTIFIC %in% v3$species_name)
 st_write(fshmap_bs, "data-processed/large-data/Fishmap/Fishmap_v3.shp")
 
 
+######################################
+##          BUTTERFLIES             ##
+######################################
+## read all together
+files = list.files(path = "data-raw/large-data/ButterflyMaps/butterfly_maps_bioshifts", 
+          recursive=TRUE, full.names=TRUE)
+
+bfs = NULL
+for(i in 1:length(files)) {
+  cur = st_read(files[i])
+ 
+  if(is.null(bfs)) {
+    bfs <- cur
+  }
+  else {
+    bfs <- rbind(bfs, cur)
+  }
+}
+
+## filter to bioshifts species
+bfs <- filter(bfs, binomial %in% v3$species_name)
+
+st_write(bfs, "data-processed/large-data/ButterflyMaps/ButterflyMaps_v3.shp", append = FALSE)
+
+
+
