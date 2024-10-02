@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A62_P1","map_gVelEle",2.48441227572737,2.24694290432078,"Brachylagus idahoensis_A62_P1","IUCN",2.65957438546796,2.43617575339129
+"A62_P1","map_gVelLat",-0.00269803054248501,0.0449054249719628,"Brachylagus idahoensis_A62_P1","IUCN",-0.00293629915436562,0.0461961264865818
+"A62_P1","mat_gVelEle",1.63481146056585,0.392373069407795,"Brachylagus idahoensis_A62_P1","IUCN",1.50226180995798,0.303168415077183
+"A62_P1","mat_gVelLat",0.0297032640809574,0.147183418038252,"Brachylagus idahoensis_A62_P1","IUCN",0.037668652831359,0.154190306028229

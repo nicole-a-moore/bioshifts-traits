@@ -9,6 +9,10 @@ files
 
 study_ids <- unique(paste(str_split_fixed(files, "\\_", 3)[,1], str_split_fixed(files, "\\_", 3)[,2], sep = "_"))
 
+## make sure we have velocities for all study areas
+v3 = read.csv("data-raw/bioshiftsv3/BIOSHIFTS_v3.csv")
+unique(v3$ID)[which(!unique(v3$ID) %in% study_ids)]
+
 cv_data = NULL
 
 i = 1
@@ -25,9 +29,7 @@ while(i <= length(study_ids)) {
       layers <- paste0("data-raw/bioshiftsv3/Velocity_SA/", files[which(str_detect(files, study))])
       
       if(length(layers)!=0) {
-        layers <- layers[which(!str_detect(layers, "25km"))] ## get rid of 25km terrestrial velocities 
-        layers <- layers[which(!str_detect(layers, "map"))] # and precip layers
-        layers <- layers[which(!str_detect(layers, "sst_gVel"))] # and non-northward sst layer
+        layers <- layers[which(!str_detect(layers, "gVel.tif"))] # get rid of non-northward layers
         
         if(length(layers)!=0) {
           if(str_detect(layers[1], "mat")) {
@@ -179,10 +181,7 @@ plot(test)
 plot(testlat)
 
 
-## get all climate velocity layers for the study 
-
-
-
+## get all climate velocity layers fo
 
 ## calculate climate velocity metrics for whole study area
 ## check against Brunno's calculation

@@ -1,0 +1,4 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A94_P1","sst_gVelLat",0.6120346649416,1.68027552234273,"Calanus finmarchicus_A94_P1","GBIF occurrence",0.151447416348987,1.45226369837602
+"A94_P1","sst_gVelLat",0.6120346649416,1.68027552234273,"Calanus helgolandicus_A94_P1","GBIF occurrence",0.284304423249227,1.49130042799563
+"A94_P1","sst_gVelLat",0.6120346649416,1.68027552234273,"Calanus hyperboreus_A94_P1","GBIF occurrence",0.637689280513021,1.40044748882322

@@ -1,0 +1,7 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria albatrus_A160_P1","BOTW",2.50302412168233,2.66555151865729
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria albatrus_A160_P1","GBIF occurrence",2.24902695374591,2.71470703886446
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria immutabilis_A160_P1","BOTW",2.55560506453173,2.63595467739479
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria immutabilis_A160_P1","GBIF occurrence",2.23002447051345,2.70688896564344
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria nigripes_A160_P1","BOTW",2.4451727334341,2.6715384133395
+"A160_P1","sst_gVelLat",2.39045825891896,2.74608801641654,"Phoebastria nigripes_A160_P1","GBIF occurrence",2.0996784348207,2.71213220302955

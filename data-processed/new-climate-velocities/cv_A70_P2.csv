@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A70_P2","sst_gVelLat",-0.824095670954655,3.78672981714558,"Jania rosea_A70_P2","GBIF occurrence",2.47531676292419,2.75312514225604
+"A70_P2","sst_gVelLat",-0.824095670954655,3.78672981714558,"Martensia fragilis_A70_P2","Aquamaps",-0.83019353027365,3.85217090097996
+"A70_P2","sst_gVelLat",-0.824095670954655,3.78672981714558,"Amphiroa anceps_A70_P2","GBIF occurrence",-0.950510280927024,4.45224589710268
+"A70_P2","sst_gVelLat",-0.824095670954655,3.78672981714558,"Champia parvula_A70_P2","Aquamaps",-0.83019353027365,3.85217090097996

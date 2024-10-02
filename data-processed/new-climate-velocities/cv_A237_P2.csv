@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A237_P2","map_gVelEle",0.907141003527882,3.61404337991028,"Bombus alpinus_A237_P2","GBIF occurrence",0.997990169015312,3.73078748320493
+"A237_P2","map_gVelLat",0.000327797448814297,0.012236898838136,"Bombus alpinus_A237_P2","GBIF occurrence",0.000176900350378772,0.0121559434773971
+"A237_P2","mat_gVelEle",5.60947205807752,0.698458875092629,"Bombus alpinus_A237_P2","GBIF occurrence",5.5590770045322,0.689471267124728
+"A237_P2","mat_gVelLat",0.00254068900327266,0.042616420994408,"Bombus alpinus_A237_P2","GBIF occurrence",0.00176779929568145,0.0351810516625337

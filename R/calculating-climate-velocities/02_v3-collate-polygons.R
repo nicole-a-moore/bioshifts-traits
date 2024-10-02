@@ -106,6 +106,7 @@ while(i <= length(files)) {
   
   ## read in shapefiles 
   sf <- st_read(file)
+  nrow <- append(nrow, nrow(sf))
   
   ## bind
   if(nrow(sf) > 0) {
@@ -119,15 +120,16 @@ while(i <= length(files)) {
   
   i = i + 1
 }
-st_write(gbif, "data-processed/large-data/GBIF/GBIF_v3.shp", append = FALSE)
+saveRDS(gbif, "data-processed/large-data/GBIF_polygons/GBIF_v3.rds")
 
+gbif <- readRDS("data-processed/large-data/GBIF_polygons/GBIF_v3.rds")
 gbif <- gbif[, which(colnames(gbif) %in% c("spcs_nm", "geometry"))]
 gbif <- rename(gbif, "binomial" = spcs_nm)
 gbif$range_source = "GBIF occurrence"
 
 ## combine
 ranges <- rbind(iucn, gard, botw, bien, fshmap, bfs, gbif)
-length(unique(ranges$binomial)) # 6590 spp
+length(unique(ranges$binomial)) # 9363 spp
 
 ## for now:
 # files = list.files(path = "/Volumes/NIKKI/Bioshfits_GBIF/GBIF_data")
@@ -139,27 +141,27 @@ length(unique(ranges$binomial)) # 6590 spp
 # length(unique(ranges_for))
 
 ## what kinds of species are they?
-v3 %>%
-  filter(species_name %in% ranges) %>%
-  select(species_name, class) %>%
-  distinct() %>% 
-  select(-species_name) %>%
-  table() %>% View
-
-v3 %>%
-  filter(species_name %in% ranges) %>%
-  select(species_name, class) %>%
-  distinct() %>% 
-  ggplot(aes(x = class)) +
-  geom_bar() +
-  coord_flip()
-
-v3 %>%
-  filter(!species_name %in% ranges) %>%
-  select(species_name, class) %>%
-  distinct() %>% 
-  select(-species_name) %>%
-  table() %>% View
+# v3 %>%
+#   filter(species_name %in% ranges) %>%
+#   select(species_name, class) %>%
+#   distinct() %>% 
+#   select(-species_name) %>%
+#   table() %>% View
+# 
+# v3 %>%
+#   filter(species_name %in% ranges) %>%
+#   select(species_name, class) %>%
+#   distinct() %>% 
+#   ggplot(aes(x = class)) +
+#   geom_bar() +
+#   coord_flip()
+# 
+# v3 %>%
+#   filter(!species_name %in% ranges) %>%
+#   select(species_name, class) %>%
+#   distinct() %>% 
+#   select(-species_name) %>%
+#   table() %>% View
 ## magnoliopsida, Liliopsida, bryopsida, 
 ## Insecta, arachnidia
 
@@ -262,7 +264,7 @@ gift = unique(gift)
 
 ## combine
 ranges <- rbind(ranges, gift)
-length(unique(ranges$binomial)) # 7974 spp
+length(unique(ranges$binomial)) # 10710 spp
 
 ## try to get Aquamaps ranges for missing species 
 ################################
@@ -363,15 +365,13 @@ aquamaps <- rename(aquamaps, "binomial" = binomil)
 aquamaps$range_source = "Aquamaps"
 
 ranges = rbind(ranges, aquamaps)
-length(unique(ranges$binomial)) #8408
+length(unique(ranges$binomial)) #10833
 
 ## save collated ranges as rds object 
 saveRDS(ranges, "data-processed/large-data/collated-ranges.rds")
 
 
 
-## check how many species we have maps for now
-length(unique(ranges$binomial, ranges_for)) #9035
 
 ## make a breakdown of there they are from 
 ranges_sp = data.frame(species_name = c(iucn$binomial, gard$binomial, botw$binomial, bien$binomial, fshmap$binomial,

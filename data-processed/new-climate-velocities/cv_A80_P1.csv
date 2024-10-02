@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A80_P1","map_gVelEle",1.75611603936186,1.00480815175606,"Viscum album_A80_P1","GBIF occurrence",1.75613186117464,1.00330384423598
+"A80_P1","map_gVelLat",-0.000339358770329884,0.00483574223496678,"Viscum album_A80_P1","GBIF occurrence",-0.000342319959262906,0.00482526410336985
+"A80_P1","mat_gVelEle",1.30885452773328,0.0168526220937382,"Viscum album_A80_P1","GBIF occurrence",1.30891623983023,0.0168004501234217
+"A80_P1","mat_gVelLat",-0.000305678031634945,0.0037542243484489,"Viscum album_A80_P1","GBIF occurrence",-0.000300791954425074,0.00375207775830381

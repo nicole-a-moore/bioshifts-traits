@@ -1,0 +1,9 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Gymnocanthus galeatus_A117_P1","Aquamaps",-0.71640926827961,1.5595409158857
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Hemilepidotus jordani_A117_P1","Aquamaps",-1.62277573243326,0.140061546475697
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Pandalus eous_A117_P1","Aquamaps",-0.55317487081696,1.56306381103668
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Pleurogrammus monopterygius_A117_P1","Aquamaps",-0.71640926827961,1.5595409158857
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Sarritor frenatus_A117_P1","Aquamaps",-0.725777040772317,1.55434546989711
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Sebastes polyspinis_A117_P1","Aquamaps",-0.716447553194622,1.55953944698986
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Triglops forficatus_A117_P1","Aquamaps",-0.712096627575521,1.57089433734367
+"A117_P1","sst_gVelLat",-0.780479614171937,1.39288363163807,"Triglops scepticus_A117_P1","Aquamaps",-0.725777040772317,1.55434546989711

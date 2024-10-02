@@ -1,0 +1,3 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"B633_P1","sst_gVelLat",6.06787143454459,5.92340971998389,"Scomber scombrus_B633_P1","IUCN",6.59689695497521,6.5948839967809
+"B633_P1","sst_gVelLat",6.06787143454459,5.92340971998389,"Scomber scombrus_B633_P1","GBIF occurrence",4.43832219426538,5.37533421731313

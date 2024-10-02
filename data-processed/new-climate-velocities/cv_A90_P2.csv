@@ -1,0 +1,9 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A90_P2","map_gVelEle",-47.7437273297991,10.6819785821138,"Hemideina crassidens_A90_P2","GBIF occurrence",-48.8750426769257,10.4654428621262
+"A90_P2","map_gVelEle",-47.7437273297991,10.6819785821138,"Hemideina thoracica_A90_P2","GBIF occurrence",-48.8750426769257,10.4654428621262
+"A90_P2","map_gVelLat",-0.371831633602934,0.468176779325189,"Hemideina crassidens_A90_P2","GBIF occurrence",-0.362696627649711,0.480128084207146
+"A90_P2","map_gVelLat",-0.371831633602934,0.468176779325189,"Hemideina thoracica_A90_P2","GBIF occurrence",-0.362696627649711,0.480128084207146
+"A90_P2","mat_gVelEle",6.70407242093767,0.216636059052515,"Hemideina crassidens_A90_P2","GBIF occurrence",6.71694630384445,0.219272651675595
+"A90_P2","mat_gVelEle",6.70407242093767,0.216636059052515,"Hemideina thoracica_A90_P2","GBIF occurrence",6.71694630384445,0.219272651675595
+"A90_P2","mat_gVelLat",-0.00501861450445306,0.0111876893791769,"Hemideina crassidens_A90_P2","GBIF occurrence",-0.00482161033414741,0.0113029361924364
+"A90_P2","mat_gVelLat",-0.00501861450445306,0.0111876893791769,"Hemideina thoracica_A90_P2","GBIF occurrence",-0.00482161033414741,0.0113029361924364

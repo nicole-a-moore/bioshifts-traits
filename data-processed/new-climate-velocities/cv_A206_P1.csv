@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A206_P1","map_gVelEle",9.81710823585516,7.95285881427879,"Betula ermanii_A206_P1","GIFT",9.83843290533762,7.95388732729806
+"A206_P1","map_gVelLat",0.00668641157067225,0.170964004844264,"Betula ermanii_A206_P1","GIFT",0.00614616622560719,0.170879265832459
+"A206_P1","mat_gVelEle",10.9983522670785,0.345018323189486,"Betula ermanii_A206_P1","GIFT",10.9989755591198,0.343771820629969
+"A206_P1","mat_gVelLat",-0.168597196761021,0.254657724944212,"Betula ermanii_A206_P1","GIFT",-0.169216889807832,0.254053981210116

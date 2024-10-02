@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"B475_P1","map_gVelEle",1.8125395378807,1.64058318480987,"Branchinecta paludosa_B475_P1","GBIF occurrence",1.64955035543085,1.5566895913808
+"B475_P1","map_gVelLat",0.000639824357620927,0.0149121861304021,"Branchinecta paludosa_B475_P1","GBIF occurrence",0.000949962496172227,0.0144977664729584
+"B475_P1","mat_gVelEle",5.24719873762384,0.078099056550555,"Branchinecta paludosa_B475_P1","GBIF occurrence",5.24905050023102,0.0773052651951939
+"B475_P1","mat_gVelLat",0.00413672159346377,0.0448897841292187,"Branchinecta paludosa_B475_P1","GBIF occurrence",0.00371782302755658,0.045937004246988

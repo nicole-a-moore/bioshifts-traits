@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A76_P1","map_gVelEle",1.15698239972971,1.58635910287388,"Ochotona princeps_A76_P1","IUCN",1.47007241583957,1.65345773863943
+"A76_P1","map_gVelLat",-0.00106971077993888,0.0260730288889497,"Ochotona princeps_A76_P1","IUCN",-0.000313025348132021,0.0218903036385982
+"A76_P1","mat_gVelEle",1.40186993414829,0.332524142646523,"Ochotona princeps_A76_P1","IUCN",1.35908723974252,0.314834272000156
+"A76_P1","mat_gVelLat",0.0261325362436647,0.121640336321776,"Ochotona princeps_A76_P1","IUCN",0.0170716189782447,0.103093989411272

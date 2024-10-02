@@ -1,0 +1,4 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Chiton granosus_A46_P1","Aquamaps",-0.0183144146941951,0.884703676624295
+"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Echinolittorina peruviana_A46_P1","GBIF occurrence",0.0133842490696276,0.901643335905111
+"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Fissurella costata_A46_P1","Aquamaps",0.122151156688301,1.01953417830535

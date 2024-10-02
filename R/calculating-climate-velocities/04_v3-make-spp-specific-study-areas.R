@@ -31,8 +31,8 @@ id <- v3 %>%
 length(id$id_cv) # 24005
 
 ## read in collated range maps
-ranges <- readRDS("data-processed/large-data/collated-ranges.rds")
-nrow(ranges)
+ranges <- readRDS("data-processed/large-data/collated-ranges_ALL.rds")
+nrow(ranges) # 14768
 
 ##############################################
 ##       CROP STUDY AREA BY RANGE MAP       ##
@@ -42,7 +42,7 @@ id <- id %>%
 
 polys <- filter(polys, Name %in% id$ID)
 
-length(unique(id$id_cv)) # 15926 unique species-study polygon combos
+length(unique(id$id_cv)) # 23093 unique species-study polygon combos
 
 ## for each study area 
 sf_use_s2(FALSE)
@@ -117,3 +117,6 @@ while(sa <= length(unique(id$ID))) {
   
   sa = sa + 1
 }
+
+
+

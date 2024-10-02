@@ -1,0 +1,4 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A146_P1","sst_gVelLat",3.54239404744062,6.16063536319398,"Istiompax indica_A146_P1","IUCN",3.54239404744062,6.16063536319398
+"A146_P1","sst_gVelLat",3.54239404744062,6.16063536319398,"Istiompax indica_A146_P1","Fishmap",2.94923138834462,4.13511645608865
+"A146_P1","sst_gVelLat",3.54239404744062,6.16063536319398,"Istiompax indica_A146_P1","GBIF occurrence",2.20461922997444,4.31457785916744

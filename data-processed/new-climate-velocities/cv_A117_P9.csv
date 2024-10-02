@@ -1,0 +1,8 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Amblyraja radiata_A117_P9","IUCN",3.92509967309457,1.82686710994641
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Amblyraja radiata_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Gadus morhua_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Glyptocephalus cynoglossus_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Hippoglossoides platessoides_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Myoxocephalus octodecemspinosus_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957
+"A117_P9","sst_gVelLat",4.56529318525436,2.65580959226356,"Urophycis tenuis_A117_P9","GBIF occurrence",4.2940112135627,2.28372397715957

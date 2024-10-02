@@ -1,0 +1,5 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A242_P1","map_gVelEle",15.150242867711,9.66502385290181,"Scytalopus robbinsi_A242_P1","BOTW",20.89721255771,9.59975101916364
+"A242_P1","map_gVelLat",0.000599065609523278,0.0714720646169332,"Scytalopus robbinsi_A242_P1","BOTW",0.00328480708051126,0.0811222016334212
+"A242_P1","mat_gVelEle",-1.60457753639237,0.129356305545242,"Scytalopus robbinsi_A242_P1","BOTW",-1.59754915182301,0.120938044802211
+"A242_P1","mat_gVelLat",-0.000178806299727943,0.011577049786948,"Scytalopus robbinsi_A242_P1","BOTW",0.000141281125146987,0.00659747270912827

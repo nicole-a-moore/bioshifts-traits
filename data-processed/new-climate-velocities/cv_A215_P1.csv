@@ -1,0 +1,7 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
+"A215_P1","map_25km_gVelLat",0.0367575877373649,0.565407651947792,"Sylvia conspicillata_A215_P1","GBIF occurrence",0.0285798877516226,0.560131294520541
+"A215_P1","map_gVelEle",-2.53925351269097,2.60493268887919,"Sylvia conspicillata_A215_P1","GBIF occurrence",-2.60493421179256,2.65647141130795
+"A215_P1","map_gVelLat",0.00348446611373277,0.073360395980175,"Sylvia conspicillata_A215_P1","GBIF occurrence",-0.000362018828783444,0.0516003090315313
+"A215_P1","mat_25km_gVelLat",0.274041401904836,1.29557258504453,"Sylvia conspicillata_A215_P1","GBIF occurrence",0.229251514966976,1.26181364258908
+"A215_P1","mat_gVelEle",6.07976790970429,0.669981107318104,"Sylvia conspicillata_A215_P1","GBIF occurrence",6.09451879781619,0.642678941677752
+"A215_P1","mat_gVelLat",0.0639530838210034,0.48218754984646,"Sylvia conspicillata_A215_P1","GBIF occurrence",0.0276478586969506,0.354614928882775

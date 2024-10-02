@@ -196,7 +196,6 @@ v3 <- v3 %>%
 
 missing <- left_join(missing, v3)
 
-# Filter and save species occurrences ----
 GBIF_zip_dir <- "/Volumes/NIKKI/Bioshfits_GBIF/GBIF_data_NM"
 if(!dir.exists(GBIF_zip_dir)){
     dir.create(GBIF_zip_dir,recursive = T)
@@ -233,7 +232,6 @@ if(!dir.exists(tmp.dir)){
 
 
 ncores = parallelly::availableCores()
-
 
 test_if_work <- mclapply(1:length(occs), function(i){
     
@@ -323,7 +321,7 @@ test_if_work <- mclapply(1:length(occs), function(i){
         sps. <- sps.[which(sps.$species %in% my_sps_i),]
         
         # save data per species
-        if(length(my_sps_i)>1){
+        if(length(my_sps_i)==1){
             for(j in 1:length(my_sps_i)){ 
                 cat("\rsaving sps", j, "from", length(my_sps_i))
                 tmp_sps <- subset(sps., species == my_sps_i[j])
@@ -345,3 +343,134 @@ test_if_work <- mclapply(1:length(occs), function(i){
 # delete tmp dir used to decompress zipfiles
 unlink(tmp.dir, recursive = TRUE)
 unlink(GBIF_zip_dir, recursive = TRUE)
+
+
+################################
+#    MAKE MORE CONVEX HULLS    #
+################################
+library(gbif.range)
+library(sf)
+library(terra)
+occ_dir = "/Volumes/NIKKI/Bioshfits_GBIF/GBIF_occurrences_NM"
+
+## read in bioshifts 
+v3 = read.csv("data-raw/bioshiftsv3/BIOSHIFTS_v3.csv")
+v3$species_name = str_replace_all(v3$sp_name_checked, "\\_", " ")
+v3$species_name
+
+## read GBIF occurrence filenames
+files = list.files(occ_dir)
+
+## get realm from v3
+key = v3 %>%
+  filter(sp_name_checked %in% str_split_fixed(files, "\\.qs", 2)[,1]) %>%
+  mutate(Eco = ifelse(Eco %in% c("Mar"), "Mar", "Ter")) %>%
+  select(sp_name_checked, Eco, species_name) %>%
+  distinct()
+
+## get the ecoregions 
+eco_terra = read_bioreg(bioreg_name = "eco_terra", save_dir = NULL)
+eco_fresh = read_bioreg(bioreg_name = "eco_fresh", save_dir = NULL)
+eco_marine = read_bioreg(bioreg_name = "eco_marine", save_dir = NULL)
+
+## for each species with occurrence data 
+# 721
+i = 1
+while(i <= length(files)) {
+  ## read in filtered occurrence data
+  occ = qs::qread(paste0(occ_dir, "/", files[i]))
+  sp_name = str_split_fixed(files, "\\.qs", 2)[i,1]
+  
+  realm = key$Eco[which(key$sp_name_checked == sp_name)]
+  
+  ## select correct ecoregion
+  if("Ter" %in% realm) {
+    ecoregion = eco_terra
+    name = "ECO_NAME"
+    r = "Ter"
+  }
+  else if("Mar" %in% realm) {
+    ecoregion = eco_marine
+    name = "REALM"
+    r = "Mar"
+  }
+  else(
+    ## for now, if other realm, don't make a file
+    ecoregion = NA
+  )
+  
+  if(!is.na(ecoregion)[1]) {
+    ## draw the range 
+    range = get_range(occ_coord = occ,
+                      bioreg = ecoregion,
+                      bioreg_name = name)
+    
+    ## plot the range + the occurrence records
+    plot <- ggplot() +
+      tidyterra::geom_spatraster(data = range, aes(fill = layer)) +
+      scale_fill_continuous(na.value = "transparent") +
+      geom_point(data = occ, aes(x = decimalLongitude, y = decimalLatitude), size = 0.1,
+                 inherit.aes = FALSE) +
+      labs(x = "Longitude", y = "Latitude", title = sp_name) +
+      theme_bw() +
+      theme(legend.position = "none")
+    
+    ## save plot
+    ggsave(plot, path = "figures/gbif_range_polygons/", filename = paste0(sp_name, ".png"),
+           width = 6, height = 4)
+    
+    range = st_as_sf(as.polygons(range))
+    
+    range <- range %>%
+      mutate(species_name = unique(key$species_name[which(key$sp_name_checked == sp_name)]),
+             range_source = "GBIF occurrence",
+             realm = r) %>%
+      select(-layer)
+    
+    ## save the range
+    st_write(range, paste0("data-processed/large-data/GBIF_polygons_new/", sp_name, ".shp"), append = FALSE)
+  }
+  
+  print(paste0("On species no. ", i, " out of ", length(unique(files))))
+  i = i + 1
+}
+
+
+## read all together and save 
+files = list.files(path = "data-processed/large-data/GBIF_polygons_new", 
+                   pattern="shp$", recursive=TRUE, full.names=TRUE)
+i = 1
+gbif = NULL
+while(i <= length(files)) {
+  file = files[i]
+  
+  ## read in shapefiles 
+  sf <- st_read(file)
+  
+  ## bind
+  if(nrow(sf) > 0) {
+    if(is.null(gbif)) {
+      gbif <- sf
+    }
+    else {
+      gbif <- rbind(gbif, sf)
+    }
+  }
+  
+  i = i + 1
+}
+st_write(gbif, "data-processed/large-data/GBIF_polygons_new/GBIF_v3_2.shp", append = FALSE)
+
+gbif2 <- st_read("data-processed/large-data/GBIF_polygons_new/GBIF_v3_2.shp")
+gbif2 <- gbif2[, which(colnames(gbif2) %in% c("spcs_nm", "geometry"))]
+gbif2 <- rename(gbif2, "binomial" = spcs_nm)
+gbif2$range_source = "GBIF occurrence"
+
+## add to ranges RDS
+ranges <- readRDS("data-processed/large-data/collated-ranges.rds")
+nrow(ranges)
+
+ranges <- rbind(ranges, gbif2)
+length(unique(ranges$binomial)) ## 11666
+
+saveRDS(ranges, "data-processed/large-data/collated-ranges_ALL.rds")
