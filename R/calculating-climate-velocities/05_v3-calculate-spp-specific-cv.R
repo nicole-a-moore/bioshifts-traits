@@ -13,6 +13,8 @@ study_ids <- unique(paste(str_split_fixed(files, "\\_", 3)[,1], str_split_fixed(
 v3 = read.csv("data-raw/bioshiftsv3/BIOSHIFTS_v3.csv")
 unique(v3$ID)[which(!unique(v3$ID) %in% study_ids)]
 
+sf_use_s2(FALSE)
+
 cv_data = NULL
 
 i = 1
@@ -48,9 +50,19 @@ while(i <= length(study_ids)) {
             sd_cv_studylevel = sd(values(r), na.rm = TRUE)
             
             ## calculate species-specific cv metrics 
+            ## make sure all extents overlap
+            ol <- is.related(vect(study_polys), r, "intersects")
+
+            if(any(ol == FALSE)) {
+              ## remove the non-overlapping poly
+              index = c(1:nrow(study_polys))[which(ol == TRUE)]
+            }
+            else{
+              index = c(1:nrow(study_polys))
+            }
             
             ## crop cv raster by the sp specific study polgyons
-            cropped = lapply(1:nrow(study_polys), function(x) {(crop(r, study_polys[x,], mask = TRUE))})
+            cropped = lapply(index, function(x) {(crop(r, study_polys[x,], mask = TRUE))})
             
             ## calculate mean per sp specific polygon 
             cropped_means = unlist(lapply(1:length(cropped), function(x) {mean(values(cropped[[x]]), na.rm = TRUE)}))
@@ -62,8 +74,8 @@ while(i <= length(study_ids)) {
                                     cv_type = rep(cv_type[l], length(cropped_means)),
                                     mean_cv_studylevel = rep(mean_cv_studylevel, length(cropped_means)),
                                     sd_cv_studylevel = rep(sd_cv_studylevel, length(cropped_means)),
-                                    species_studyid = study_polys$spcs_st,
-                                    range_source = study_polys$rng_src,
+                                    species_studyid = study_polys$spcs_st[index],
+                                    range_source = study_polys$rng_src[index],
                                     mean_cv_sppspecific = cropped_means,
                                     sd_cv_sppspecific = cropped_sds)
             } else {
@@ -72,8 +84,8 @@ while(i <= length(study_ids)) {
                                           cv_type = rep(cv_type[l], length(cropped_means)),
                                           mean_cv_studylevel = rep(mean_cv_studylevel, length(cropped_means)),
                                           sd_cv_studylevel = rep(sd_cv_studylevel, length(cropped_means)),
-                                          species_studyid = study_polys$spcs_st,
-                                          range_source = study_polys$rng_src,
+                                          species_studyid = study_polys$spcs_st[index],
+                                          range_source = study_polys$rng_src[index],
                                           mean_cv_sppspecific = cropped_means,
                                           sd_cv_sppspecific = cropped_sds))
             }

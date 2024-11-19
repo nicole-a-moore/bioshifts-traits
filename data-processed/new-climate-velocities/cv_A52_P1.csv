@@ -1,6 +1,5 @@
 "study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
 "A52_P1","sst_gVelLat",0.369150778598019,0.56997681903116,"Chthamalus malayensis_A52_P1","Aquamaps",0.343177472986281,0.580634171751841
-"A52_P1","sst_gVelLat",0.369150778598019,0.56997681903116,"Microeuraphia withersi_A52_P1","Aquamaps",0.0994213688083821,0.332330461204156
 "A52_P1","sst_gVelLat",0.369150778598019,0.56997681903116,"Littoraria undulata_A52_P1","IUCN",-0.0358037560557326,0.354813127691777
 "A52_P1","sst_gVelLat",0.369150778598019,0.56997681903116,"Nerita albicilla_A52_P1","GBIF occurrence",0.343177472986281,0.580634171751841
 "A52_P1","sst_gVelLat",0.369150778598019,0.56997681903116,"Nerita chamaeleon_A52_P1","Aquamaps",0.343177472986281,0.580634171751841

@@ -1,7 +1,7 @@
 "study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
 "A77_P1","map_25km_gVelLat",-0.0237378689150012,2.2095610948426,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",-0.0237378689150012,2.2095610948426
-"A77_P1","map_gVelEle",0.857331169594347,0.355034200151566,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.857331169594347,0.355034200151566
-"A77_P1","map_gVelLat",0.00793517901935211,0.142379406806045,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.00793517901935211,0.142379406806045
+"A77_P1","map_gVelEle",0.860050317161593,0.356698967930555,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.860050317161593,0.356698967930555
+"A77_P1","map_gVelLat",0.00798747189360906,0.14305586180956,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.00798747189360906,0.14305586180956
 "A77_P1","mat_25km_gVelLat",4.05544170074993,4.5945694351094,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",4.05544170074993,4.5945694351094
-"A77_P1","mat_gVelEle",7.78188469623533,1.57972902027378,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",7.78188469623533,1.57972902027378
-"A77_P1","mat_gVelLat",0.4554888458125,1.56424987187736,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.4554888458125,1.56424987187736
+"A77_P1","mat_gVelEle",7.81271514217164,1.6118581699611,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",7.81271514217164,1.6118581699611
+"A77_P1","mat_gVelLat",0.461519238249446,1.57253139477565,"Thaumetopoea pityocampa_A77_P1","GBIF occurrence",0.461519238249446,1.57253139477565

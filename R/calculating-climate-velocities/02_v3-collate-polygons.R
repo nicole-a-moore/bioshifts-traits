@@ -45,7 +45,7 @@ id <- v3 %>%
   distinct() %>%
   mutate(id_cv = paste(species_name, ID, sep = "_"))
 
-length(id$id_cv) # 24005
+length(id$id_cv) # 24047
 
 
 ############################

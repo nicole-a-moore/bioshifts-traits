@@ -28,7 +28,7 @@ id <- v3 %>%
   distinct() %>%
   mutate(id_cv = paste(species_name, ID, sep = "_"))
 
-length(id$id_cv) # 24005
+length(id$id_cv) # 24047
 
 ## read in collated range maps
 ranges <- readRDS("data-processed/large-data/collated-ranges_ALL.rds")
@@ -42,7 +42,7 @@ id <- id %>%
 
 polys <- filter(polys, Name %in% id$ID)
 
-length(unique(id$id_cv)) # 23093 unique species-study polygon combos
+length(unique(id$id_cv)) # 21747 unique species-study polygon combos
 
 ## for each study area 
 sf_use_s2(FALSE)

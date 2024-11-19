@@ -110,40 +110,117 @@ area_ranges <- ranges %>%
   select(binomial, range_source) %>%
   mutate(area_m2 = st_area(.))
 
-#Extract coordinates
-bbox_list <- lapply(st_geometry(area_study_pols), st_bbox)
 
-#To df
-maxmin <- as.data.frame(matrix(unlist(bbox_list),nrow=nrow(area_study_pols)))
+## make sf dataframe into list
+area_study_pols_split <- area_study_pols %>%
+  split(f = .$Name)
 
-#get names
-names(maxmin) <- names(bbox_list[[1]])
+# find bboxes
+bbox_list <- map(
+  .x = area_study_pols_split,
+  .f = ~st_bbox(.x) %>% unlist() %>% c()
+)
 
-area_study_pols = bind_cols(area_study_pols, maxmin)
+# unsplit
+df <- bbox_list %>% bind_rows(.id = "Name")
+
+## get max and min latitude of species range within min and max longitude of study area 
+## make boxes
+# split by id
+df_spit <- df %>%
+  split(f = .$Name)
+
+# create bbox polygons from xmin to xmax, -90 to 90
+boxes <- purrr::map(
+  .x = df_spit,
+  .f = ~st_bbox(c(xmin = .x$xmin,
+                  xmax = .x$xmax,
+                  ymin = -90,
+                  ymax = 90)) %>% 
+    st_as_sfc(crs = st_crs(area_study_pols)) %>%
+    st_set_crs(st_crs(area_study_pols)) %>%
+    st_as_sf()
+) %>%
+  bind_rows(.id = "Name")
+
+# split ranges by study id
+# to make stacks of all the species ranges within one study
+## add columns 
+test <- data.frame(st_drop_geometry(area_cut_pols)) %>%
+  mutate(binomial = str_split_fixed(spcs_st, "_", 2)[,1]) %>%
+  select(Name, binomial, rng_src) %>%
+  rename("range_source" = rng_src)
+
+area_ranges_new <- left_join(area_ranges, test)
+
+ranges_split <- area_ranges_new %>% split(f = .$Name)
+
+# split study areas bounding box polygons by study id - should be just one each
+boxes <- boxes %>% split(f = .$Name)
+
+# make vector of all study area ids
+# because this is how we'll call elements of each list
+study_area_names <- names(boxes)
+
+# crop full stack of ranges in each study id cluster 
+# by the bounding box for that study
+boxes <- boxes[which(names(boxes) %in% names(ranges_split))]
+study_area_names <- study_area_names[which(study_area_names %in% names(ranges_split))]
+
+cropped_ranges <- purrr::map(
+  # map over ids of all study areas
+  .x = study_area_names,
+  .f = ~st_crop(ranges_split[[.x]],
+                boxes[[.x]]),
+  .progress = TRUE) %>%
+  set_names(study_area_names)
+
+cropped_ranges_bound <- cropped_ranges %>%
+  bind_rows(.id = "Name")
 
 
-#Extract coordinates
-bbox_list <- lapply(st_geometry(area_cut_pols), st_bbox)
-
-#To df
-maxmin <- as.data.frame(matrix(unlist(bbox_list),nrow=nrow(area_cut_pols)))
-
-#get names
-names(maxmin) <- names(bbox_list[[1]])
-
-area_cut_pols = bind_cols(area_cut_pols, maxmin)
+saveRDS(cropped_ranges_bound, "data-processed/ranges_cropped_by_study_bbox.rds")
 
 
-#Extract coordinates
-bbox_list <- lapply(st_geometry(area_ranges), st_bbox)
 
-#To df
-maxmin <- as.data.frame(matrix(unlist(bbox_list),nrow=nrow(area_ranges)))
+area_study_pols = left_join(area_study_pols, df)
 
-#get names
-names(maxmin) <- names(bbox_list[[1]])
 
-area_ranges = bind_cols(area_ranges, maxmin)
+
+
+
+## make sf dataframe into list
+area_cut_pols_split <- area_cut_pols %>%
+  split(f = .$spcs_st)
+
+# find bboxes
+bbox_list <- map(
+  .x = area_cut_pols_split,
+  .f = ~st_bbox(.x) %>% unlist() %>% c()
+)
+
+# unsplit
+df <- bbox_list %>% bind_rows(.id = "spcs_st")
+
+area_cut_pols = left_join(area_cut_pols, df)
+
+
+## make sf dataframe into list
+area_ranges$binomial_rangesource = paste0(area_ranges$binomial, "_", area_ranges$range_source)
+area_ranges_split <- area_ranges %>%
+  split(f = .$binomial_rangesource)
+
+# find bboxes
+bbox_list <- map(
+  .x = area_ranges_split,
+  .f = ~st_bbox(.x) %>% unlist() %>% c()
+)
+
+# unsplit
+df <- bbox_list %>% bind_rows(.id = "binomial_rangesource")
+
+area_ranges = left_join(area_ranges, df)
+
 
 colnames(area_study_pols)
 colnames(area_cut_pols)
@@ -162,6 +239,7 @@ names(list) <- c("study_polys", "cut_study_polys", "range_polygons")
 list[[1]]
 
 saveRDS(list, "data-processed/polygon_metrics.RDS")
+
 
 ## make data frame the has one column for area of range, one for area of range within study poly, one for area of study poly
 head(area_ranges)
@@ -320,5 +398,11 @@ test %>%
   geom_abline(intercept = 0, slope = 1) +
   facet_wrap(small_xmax_diff~Param) 
 
+
+
+data2 <- list[[2]]
+data <- list[[3]]
+
+which(data$binomial == "Cleisthenes pinetorum")
 
 

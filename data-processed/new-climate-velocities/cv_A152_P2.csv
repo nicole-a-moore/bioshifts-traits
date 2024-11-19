@@ -1,6 +1,5 @@
 "study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
 "A152_P2","sst_gVelLat",0.0645275927221481,0.276191243554382,"Austroglossus microlepis_A152_P2","Aquamaps",0.0794058531446723,0.265407778168042
-"A152_P2","sst_gVelLat",0.0645275927221481,0.276191243554382,"Coelorinchus simorhynchus_A152_P2","Aquamaps",0.0642514349236134,0.275822619403736
 "A152_P2","sst_gVelLat",0.0645275927221481,0.276191243554382,"Callorhinchus capensis_A152_P2","IUCN",0.149666947156324,0.142988871935291
 "A152_P2","sst_gVelLat",0.0645275927221481,0.276191243554382,"Chelidonichthys capensis_A152_P2","Aquamaps",0.0569656575024719,0.204031591266092
 "A152_P2","sst_gVelLat",0.0645275927221481,0.276191243554382,"Chlorophthalmus atlanticus_A152_P2","Aquamaps",0.0740457671999686,0.291995345334949
