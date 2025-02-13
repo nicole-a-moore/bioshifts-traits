@@ -1,3 +1,7 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A188_P1","sst_gVelLat",3.90332236223751,1.68853622561945,"Oculina patagonica_A188_P1","IUCN",4.04463809356093,1.66882939546964
-"A188_P1","sst_gVelLat",3.90332236223751,1.68853622561945,"Oculina patagonica_A188_P1","GBIF occurrence",3.8885382028187,1.73930203511642
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A188_P1","sst_110km_gVelLat",NA,NA,"Oculina patagonica_A188_P1","IUCN",NA,NA,NA,NA
+"A188_P1","sst_110km_gVelLat",NA,NA,"Oculina patagonica_A188_P1","GBIF occurrence",NA,NA,NA,NA
+"A188_P1","sst_25km_gVelLat",3.90331788526641,1.68852579714523,"Oculina patagonica_A188_P1","IUCN",4.04463332518935,1.6688180686891,1.38259011507034,6.02388572692871
+"A188_P1","sst_25km_gVelLat",3.90331788526641,1.68852579714523,"Oculina patagonica_A188_P1","GBIF occurrence",3.8885337990873,1.73929129017313,1.24651546478272,5.99734697341919
+"A188_P1","sst_50km_gVelLat",6.22980403900146,0.567251963228275,"Oculina patagonica_A188_P1","IUCN",6.22980403900146,0.567251963228275,5.7622724533081,6.66120357513428
+"A188_P1","sst_50km_gVelLat",6.22980403900146,0.567251963228275,"Oculina patagonica_A188_P1","GBIF occurrence",6.22980403900146,0.567251963228275,5.7622724533081,6.66120357513428

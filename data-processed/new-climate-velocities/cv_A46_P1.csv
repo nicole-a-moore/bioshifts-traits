@@ -1,4 +1,10 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Chiton granosus_A46_P1","Aquamaps",-0.0183144146941951,0.884703676624295
-"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Echinolittorina peruviana_A46_P1","GBIF occurrence",0.0133842490696276,0.901643335905111
-"A46_P1","sst_gVelLat",-0.0187272118359578,0.831923900454519,"Fissurella costata_A46_P1","Aquamaps",0.122151156688301,1.01953417830535
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A46_P1","sst_110km_gVelLat",NA,NA,"Chiton granosus_A46_P1","Aquamaps",NA,NA,NA,NA
+"A46_P1","sst_110km_gVelLat",NA,NA,"Echinolittorina peruviana_A46_P1","GBIF occurrence",NA,NA,NA,NA
+"A46_P1","sst_110km_gVelLat",NA,NA,"Fissurella costata_A46_P1","Aquamaps",NA,NA,NA,NA
+"A46_P1","sst_25km_gVelLat",0.667402883793099,0.94165175046632,"Chiton granosus_A46_P1","Aquamaps",0.729819010239462,0.992737483338811,0.0109847221523524,2.05590333938599
+"A46_P1","sst_25km_gVelLat",0.667402883793099,0.94165175046632,"Echinolittorina peruviana_A46_P1","GBIF occurrence",0.749587530434029,1.00400583450296,-0.110183833539486,2.02516462802887
+"A46_P1","sst_25km_gVelLat",0.667402883793099,0.94165175046632,"Fissurella costata_A46_P1","Aquamaps",1.12482947598308,0.845313482536923,0.137833826243877,2.38713707923889
+"A46_P1","sst_50km_gVelLat",1.13065042686601,1.57541592795467,"Chiton granosus_A46_P1","Aquamaps",1.18936798491911,1.59429409350936,0.0453696087002754,3.151828956604
+"A46_P1","sst_50km_gVelLat",1.13065042686601,1.57541592795467,"Echinolittorina peruviana_A46_P1","GBIF occurrence",1.31218270707177,1.67746982380008,-0.0290836941450834,4.05288937091828
+"A46_P1","sst_50km_gVelLat",1.13065042686601,1.57541592795467,"Fissurella costata_A46_P1","Aquamaps",1.83737126729907,1.46230376938397,0.39072117805481,4.79610271453857

@@ -1,0 +1,4 @@
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"B564_P5","sst_110km_gVelLat",1.92903401893212,1.90676223764211,"Xiphias gladius_B564_P5","IUCN",1.92943363165093,1.91058825705749,0.300347715616226,4.56848697662354
+"B564_P5","sst_25km_gVelLat",1.90175114208155,2.06685049117801,"Xiphias gladius_B564_P5","IUCN",1.90276066446982,2.08237794424769,0.130276381969452,4.69987592697144
+"B564_P5","sst_50km_gVelLat",1.91335008783529,2.00849550408021,"Xiphias gladius_B564_P5","IUCN",1.90395896835088,2.00963531890817,0.186925625801086,4.62719106674194

@@ -1,5 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"B489_P1","map_gVelEle",6.69876182079315,5.60067835627744,"Agoliinus lapponum_B489_P1","GBIF occurrence",6.69876182079315,5.60067835627744
-"B489_P1","map_gVelLat",-0.0221048937659831,0.0296300597427724,"Agoliinus lapponum_B489_P1","GBIF occurrence",-0.0221048937659831,0.0296300597427724
-"B489_P1","mat_gVelEle",3.50345486979331,0.060318464489785,"Agoliinus lapponum_B489_P1","GBIF occurrence",3.50345486979331,0.060318464489785
-"B489_P1","mat_gVelLat",0.0133796932979397,0.0368566588349899,"Agoliinus lapponum_B489_P1","GBIF occurrence",0.0133796932979397,0.0368566588349899
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"B489_P1","map_1km_gVelLat",-0.0271262232845108,0.0364085035974159,"Agoliinus lapponum_B489_P1","GBIF occurrence",-0.0271262232845108,0.0364085035974159,-0.0587414167821407,0.0214566053822637
+"B489_P1","mat_1km_gVelLat",0.0115271365427743,0.0317370673884941,"Agoliinus lapponum_B489_P1","GBIF occurrence",0.0115271365427743,0.0317370673884941,-0.0401547145098448,0.0555108018219471
+"B489_P1","mat_gVelEle_1km",97.6196131936142,99.3353947695886,"Agoliinus lapponum_B489_P1","GBIF occurrence",98.4224392620344,102.527576685644,2.01116412878036,234.260292053223

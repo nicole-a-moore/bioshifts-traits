@@ -1,2 +1,11 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A164_P1","sst_gVelLat",-0.67621121839614,3.7367577112092,"Lottia gigantea_A164_P1","Aquamaps",-0.598608309676335,3.76615066113666
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A164_P1","map_110km_gVelLat",NA,NA,"Lottia gigantea_A164_P1","Aquamaps",NA,NA,NA,NA
+"A164_P1","map_1km_gVelLat",-0.0130818369119064,0.0423754419114021,"Lottia gigantea_A164_P1","Aquamaps",-0.0130065657357315,0.041841409064893,-0.0605659484863281,0.0243180772289634
+"A164_P1","map_25km_gVelLat",0.160647715083682,0.68684059904572,"Lottia gigantea_A164_P1","Aquamaps",0.190357186676313,0.708603381846606,-0.266997087001801,1.40988871091977
+"A164_P1","map_50km_gVelLat",NA,NA,"Lottia gigantea_A164_P1","Aquamaps",NA,NA,NA,NA
+"A164_P1","map_gVelEle_1km",75.6942663176019,90.6616850860968,"Lottia gigantea_A164_P1","Aquamaps",76.5386227571783,91.5689306529116,-0.433932971954346,213.881280517578
+"A164_P1","mat_110km_gVelLat",NA,NA,"Lottia gigantea_A164_P1","Aquamaps",NA,NA,NA,NA
+"A164_P1","mat_1km_gVelLat",-0.0152387268725577,0.111866351921304,"Lottia gigantea_A164_P1","Aquamaps",-0.015720728651051,0.110947868486222,-0.134221793711185,0.0606405809521675
+"A164_P1","mat_25km_gVelLat",0.011441964082993,0.213899303491307,"Lottia gigantea_A164_P1","Aquamaps",0.0244693988934159,0.217957366849029,-0.205424270033836,0.306094080209732
+"A164_P1","mat_50km_gVelLat",NA,NA,"Lottia gigantea_A164_P1","Aquamaps",NA,NA,NA,NA
+"A164_P1","mat_gVelEle_1km",75.6942663176019,90.6616850860968,"Lottia gigantea_A164_P1","Aquamaps",76.5386227571783,91.5689306529116,-0.433932971954346,213.881280517578

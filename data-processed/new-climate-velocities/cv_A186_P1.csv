@@ -1,5 +1,5 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A186_P1","map_gVelEle",3.20657387356187,2.84514562115999,"Betula pubescens_A186_P1","GBIF occurrence",3.19725777685368,2.83876271170037
-"A186_P1","map_gVelLat",-0.0132531279318395,0.0345056945349442,"Betula pubescens_A186_P1","GBIF occurrence",-0.0133170516005763,0.0344866067959597
-"A186_P1","mat_gVelEle",1.26196132418774,0.22818168393441,"Betula pubescens_A186_P1","GBIF occurrence",1.26175340459105,0.228508079289879
-"A186_P1","mat_gVelLat",0.0270401124760263,0.257380086367965,"Betula pubescens_A186_P1","GBIF occurrence",0.027142279413827,0.257781225416331
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A186_P1","map_1km_gVelLat",-0.00967334845546054,0.0244115049130108,"Betula pubescens_A186_P1","GBIF occurrence",-0.00971878366420092,0.0243967253617352,-0.038673834502697,0.0198221649974585
+"A186_P1","map_gVelEle_1km",86.169335634239,109.356684706119,"Betula pubescens_A186_P1","GBIF occurrence",85.944601485268,109.832324150602,0.58995772600174,273.144818115234
+"A186_P1","mat_1km_gVelLat",0.073965400533327,0.680980318543695,"Betula pubescens_A186_P1","GBIF occurrence",0.0742396966716302,0.682041724553941,-0.187006759643555,0.306288105249405
+"A186_P1","mat_gVelEle_1km",86.169335634239,109.356684706119,"Betula pubescens_A186_P1","GBIF occurrence",85.944601485268,109.832324150602,0.58995772600174,273.144818115234

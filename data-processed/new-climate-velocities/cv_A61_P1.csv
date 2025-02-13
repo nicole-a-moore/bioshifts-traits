@@ -1,5 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A61_P1","map_gVelEle",0.86943594969261,0.344470558323146,"Arianta arbustorum_A61_P1","GBIF occurrence",0.86552994929511,0.337921980749649
-"A61_P1","map_gVelLat",0.00019443995183507,0.0026688113504901,"Arianta arbustorum_A61_P1","GBIF occurrence",0.000274254620936603,0.00261367483339502
-"A61_P1","mat_gVelEle",2.25904126193283,0.0283252852304726,"Arianta arbustorum_A61_P1","GBIF occurrence",2.25926360590705,0.0278648492966855
-"A61_P1","mat_gVelLat",0.000157903540090464,0.00732391562118494,"Arianta arbustorum_A61_P1","GBIF occurrence",7.4003591963113e-05,0.00722655767448707
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A61_P1","map_1km_gVelLat",0.00019443995183507,0.0026688113504901,"Arianta arbustorum_A61_P1","GBIF occurrence",0.000274254620936603,0.00261367483339502,-0.00335511055309325,0.00329105337150395
+"A61_P1","mat_1km_gVelLat",0.000157903540090464,0.00732391562118494,"Arianta arbustorum_A61_P1","GBIF occurrence",7.4003591963113e-05,0.00722655767448707,-0.00864769211038947,0.0100426012650132
+"A61_P1","mat_gVelEle_1km",87.918063241378,100.404167965324,"Arianta arbustorum_A61_P1","GBIF occurrence",86.0775296576421,99.7186054268014,0.593168485164642,236.182525634766

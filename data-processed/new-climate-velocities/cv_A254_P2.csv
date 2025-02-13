@@ -1,2 +1,3 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A254_P2","sst_gVelLat",1.67616124664034,0.471181536091925,"Gadus morhua_A254_P2","GBIF occurrence",1.72073500431501,0.459174840505505
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A254_P2","sst_25km_gVelLat",1.67616044410637,0.471180179008599,"Gadus morhua_A254_P2","GBIF occurrence",1.72073400249848,0.45917361698171,1.12400460243225,2.31759166717529
+"A254_P2","sst_50km_gVelLat",1.84518550123487,0.293963595879354,"Gadus morhua_A254_P2","GBIF occurrence",1.84518550123487,0.293963595879354,1.58019816875458,2.17165131568909

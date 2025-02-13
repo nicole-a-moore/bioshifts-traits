@@ -1,2 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A176_P1","sst_gVelLat",0.0946779054834722,1.87958165402075,"Fucus vesiculosus_A176_P1","GBIF occurrence",0.201383334274094,2.20562384012279
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A176_P1","sst_110km_gVelLat",NA,NA,"Fucus vesiculosus_A176_P1","GBIF occurrence",NA,NA,NA,NA
+"A176_P1","sst_25km_gVelLat",0.0288889467321927,1.47166918923341,"Fucus vesiculosus_A176_P1","GBIF occurrence",0.100611463310601,1.71318007654698,-1.449960064888,1.96952047348023
+"A176_P1","sst_50km_gVelLat",0.183666536584496,0.503196171425504,"Fucus vesiculosus_A176_P1","GBIF occurrence",0.936595499515533,NA,0.936595499515533,0.936595499515533

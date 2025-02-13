@@ -1,5 +1,0 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A167_P1","map_gVelEle",0.269183950477635,0.221461300684466,"Speyeria diana_A167_P1","GBIF occurrence",0.259899472427581,0.245281334595435
-"A167_P1","map_gVelLat",0.000325285499907132,0.0449950154732452,"Speyeria diana_A167_P1","GBIF occurrence",-0.00138354091443655,0.0288353958345806
-"A167_P1","mat_gVelEle",0.205195517066508,0.448874110881041,"Speyeria diana_A167_P1","GBIF occurrence",0.138675719138627,0.438010444857778
-"A167_P1","mat_gVelLat",0.0153389188835174,0.0700074945219051,"Speyeria diana_A167_P1","GBIF occurrence",0.000873558660656839,0.0368180409045542

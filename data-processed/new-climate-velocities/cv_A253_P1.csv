@@ -1,2 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A253_P1","sst_gVelLat",5.66239010635986,10.5831267243909,"Emiliania huxleyi_A253_P1","GBIF occurrence",3.56498504443326,4.06074109971662
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A253_P1","sst_110km_gVelLat",7.77998358319023,9.49229111489627,"Emiliania huxleyi_A253_P1","GBIF occurrence",4.76107266646274,2.60826185891311,1.71264035701752,7.77257318496704
+"A253_P1","sst_25km_gVelLat",5.52959008385144,10.5635860051278,"Emiliania huxleyi_A253_P1","GBIF occurrence",3.53694115778689,4.08374796592831,-0.477197229862213,8.12383670806885
+"A253_P1","sst_50km_gVelLat",6.25216661353398,9.99609625932811,"Emiliania huxleyi_A253_P1","GBIF occurrence",4.03728286347384,3.38322733184172,0.558761310577393,8.2070634841919

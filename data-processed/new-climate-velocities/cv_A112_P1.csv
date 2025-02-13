@@ -1,177 +1,379 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Acanthaluteres spilomelanurus_A112_P1","Fishmap",13.5788455230218,16.2738588939832
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Acanthaluteres spilomelanurus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Acanthaluteres vittiger_A112_P1","Fishmap",18.5800031052695,20.2441104415339
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Acanthaluteres vittiger_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Acrocarpia paniculata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Aplodactylus arctidens_A112_P1","Fishmap",18.5800031052695,20.2441104415339
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Aplodactylus arctidens_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Aracana aurita_A112_P1","Fishmap",16.8769975571797,18.3503798661142
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Aracana aurita_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Argobuccinum pustulosum_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Atypichthys strigatus_A112_P1","Fishmap",22.7048245598288,27.5204392496331
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Atypichthys strigatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Australostichopus mollis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Ballia callitricha_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cabestana spengleri_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caesioperca lepidoptera_A112_P1","Fishmap",17.3836300553016,19.0736516229481
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caesioperca lepidoptera_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caesioperca rasor_A112_P1","Fishmap",16.8760307095268,18.9019673518792
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caesioperca rasor_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Callophyllis lambertii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Callophyllis rangiferina_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Carpomitra costata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caulerpa brownii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caulerpa flexilis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caulerpa geminata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caulerpa longifolia_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Caulerpa simpliciuscula_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cenolia trichoptera_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Centrostephanus rodgersii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cephaloscyllium laticeps_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cephaloscyllium laticeps_A112_P1","Fishmap",17.4155431311085,19.0456692138118
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cephaloscyllium laticeps_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Charonia lampas_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cheilodactylus nigripes_A112_P1","Fishmap",22.0110405815972,22.3896877677843
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cheilodactylus nigripes_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cheilodactylus spectabilis_A112_P1","Fishmap",17.9232051803711,20.0482513891723
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cheilodactylus spectabilis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Chromis hypsilepis_A112_P1","Fishmap",43.3361212730408,28.8478533664373
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Chromis hypsilepis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Codium fragile_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Conger verreauxi_A112_P1","Fishmap",16.434456551075,18.1974442298593
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Conger verreauxi_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Coscinasterias muricata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cystophora platylobium_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Cystophora retroflexa_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dactylophora nigricans_A112_P1","Fishmap",33.7559884389242,26.6672030338018
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dactylophora nigricans_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Bathytoshia brevicaudata_A112_P1","IUCN",15.9561646363092,17.9330790706503
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Bathytoshia brevicaudata_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Bathytoshia brevicaudata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dicathais orbita_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dictyopteris muelleri_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dinolestes lewini_A112_P1","Fishmap",17.4155431311085,19.0456692138118
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dinolestes lewini_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dotalabrus aurantiacus_A112_P1","IUCN",30.8235361359336,23.199629586301
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dotalabrus aurantiacus_A112_P1","Fishmap",24.323851927467,26.8998194257599
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Dotalabrus aurantiacus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Echinaster arcystatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Echinothamnion hystrix_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Ecklonia radiata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Enoplosus armatus_A112_P1","Fishmap",16.714697518519,18.768214636408
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Enoplosus armatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Eubalichthys gunnii_A112_P1","Fishmap",17.6769376432194,19.3665106416611
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Eubalichthys gunnii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Euptilota articulata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Fromia polypora_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella elevata_A112_P1","Fishmap",18.4567687988281,25.3164196668795
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella elevata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella tricuspidata_A112_P1","Fishmap",17.2233168520033,19.2598347987644
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella tricuspidata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella zebra_A112_P1","Fishmap",17.2233168520033,19.2598347987644
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Girella zebra_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Goniocidaris tubaria_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haletta semifasciata_A112_P1","IUCN",17.2647983973676,20.8336597897048
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haletta semifasciata_A112_P1","Fishmap",19.654406951024,21.6957876793405
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haletta semifasciata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haliotis laevigata_A112_P1","IUCN",29.1520485877991,22.8981094187822
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haliotis laevigata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haliotis rubra_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Haliotis rubra_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heliocidaris erythrogramma_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Hemineura frondosa_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heterodontus portusjacksoni_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heterodontus portusjacksoni_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heterodontus portusjacksoni_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Holopneustes inflatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Jasus edwardsii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Kyphosus sydneyanus_A112_P1","Fishmap",17.2233168520033,19.2598347987644
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Kyphosus sydneyanus_A112_P1","GBIF occurrence",16.0393145507382,18.0822946981556
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Latridopsis forsteri_A112_P1","Fishmap",17.4155431311085,19.0456692138118
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Latridopsis forsteri_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Latris lineata_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Latris lineata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Lessonia corrugata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Macrocystis pyrifera_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Melanthalia obtusata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Mendosoma lineatum_A112_P1","Fishmap",6.82320582369963,4.43169618353635
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia australis_A112_P1","Fishmap",18.0865775942802,19.8250884548855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia australis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia flavolineata_A112_P1","Fishmap",25.3705747231193,22.6825560701324
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia flavolineata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia freycineti_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia freycineti_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia hippocrepis_A112_P1","Fishmap",53.951021194458,23.6661944768687
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meuschenia hippocrepis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Nectocarcinus tuberculosus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Nectria macrobrachia_A112_P1","GBIF occurrence",16.1180448115818,17.946759720038
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Nectria ocellata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Neoodax balteatus_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Neoodax balteatus_A112_P1","Fishmap",17.2233168520033,19.2598347987644
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Neoodax balteatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Neosebastes scorpaenoides_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Neosebastes scorpaenoides_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pseudonepanthia troughtoni_A112_P1","GBIF occurrence",16.1180448115818,17.946759720038
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus fucicola_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus fucicola_A112_P1","Fishmap",16.714697518519,18.768214636408
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus fucicola_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus tetricus_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus tetricus_A112_P1","Fishmap",17.2233168520033,19.2598347987644
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Notolabrus tetricus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heteroscarus acroptilus_A112_P1","IUCN",17.2647983973676,20.8336597897048
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heteroscarus acroptilus_A112_P1","Fishmap",20.5202911496162,27.2062999654513
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Heteroscarus acroptilus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Olisthops cyanomelas_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Olisthops cyanomelas_A112_P1","Fishmap",18.0865775942802,19.8250884548855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Olisthops cyanomelas_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Ophthalmolepis lineolata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Parma microlepis_A112_P1","Fishmap",19.7111866533756,26.1037519502649
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Parma microlepis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meridiastra gunnii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Meridiastra calcar_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pempheris multiradiata_A112_P1","Fishmap",17.2434085982817,18.9074971318084
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pempheris multiradiata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Penion mandarinus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pentaceropsis recurvirostris_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pentaceropsis recurvirostris_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pentagonaster duebeni_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Petricia vernicina_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Phacelocarpus peperocarpos_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pictilabrus laticlavius_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pictilabrus laticlavius_A112_P1","Fishmap",19.2628602545436,21.0902981208067
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pictilabrus laticlavius_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Plectaster decanus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Australaria australasia_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Plocamium angustum_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Plocamium cartilagineum_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Plocamium dilatatum_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pseudolabrus rubicundus_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Pseudolabrus rubicundus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Ranella australasia_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Scaberia agardhii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Scorpis aequipinnis_A112_P1","Fishmap",18.8512050662722,20.4941250069816
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Scorpis aequipinnis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Scorpis lineolata_A112_P1","Fishmap",18.0865775942802,19.8250884548855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Scorpis lineolata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Seirococcus axillaris_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Siphamia cephalotes_A112_P1","Fishmap",18.0865775942802,19.8250884548855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Siphamia cephalotes_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Tosia australis_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Tosia magnifica_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Trachinops caudimaculatus_A112_P1","Fishmap",18.3472679069168,19.7297052951357
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Trachinops caudimaculatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Lunella undulata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Uniophora granifera_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Upeneichthys vlamingii_A112_P1","Fishmap",16.714697518519,18.768214636408
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Upeneichthys vlamingii_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus cruciatus_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus cruciatus_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus cruciatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus paucimaculatus_A112_P1","IUCN",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus paucimaculatus_A112_P1","Fishmap",16.2878119085656,18.0814723942946
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Urolophus paucimaculatus_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Vincentia conspersa_A112_P1","Fishmap",11.137734754141,8.27219426925992
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Vincentia conspersa_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Xiphophora chondrophylla_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
-"A112_P1","sst_gVelLat",15.7315411535028,16.7674518711022,"Xiphophora gladiata_A112_P1","GBIF occurrence",15.9611724666927,17.1928457973855
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A112_P1","sst_110km_gVelLat",NA,NA,"Acanthaluteres spilomelanurus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Acanthaluteres vittiger_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Acrocarpia paniculata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Aplodactylus arctidens_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Aracana aurita_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Argobuccinum pustulosum_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Atypichthys strigatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Australostichopus mollis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Ballia callitricha_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cabestana spengleri_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caesioperca lepidoptera_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caesioperca rasor_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Callophyllis lambertii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Callophyllis rangiferina_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Carpomitra costata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caulerpa brownii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caulerpa flexilis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caulerpa geminata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caulerpa longifolia_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Caulerpa simpliciuscula_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cenolia trichoptera_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Centrostephanus rodgersii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cephaloscyllium laticeps_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cephaloscyllium laticeps_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Charonia lampas_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cheilodactylus nigripes_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cheilodactylus spectabilis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Chromis hypsilepis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Codium fragile_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Conger verreauxi_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Coscinasterias muricata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cystophora platylobium_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Cystophora retroflexa_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dactylophora nigricans_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Bathytoshia brevicaudata_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Bathytoshia brevicaudata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dicathais orbita_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dictyopteris muelleri_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dinolestes lewini_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dotalabrus aurantiacus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Dotalabrus aurantiacus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Echinaster arcystatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Echinothamnion hystrix_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Ecklonia radiata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Enoplosus armatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Eubalichthys gunnii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Euptilota articulata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Fromia polypora_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Girella elevata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Girella tricuspidata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Girella zebra_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Goniocidaris tubaria_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haletta semifasciata_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haletta semifasciata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haliotis laevigata_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haliotis laevigata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haliotis rubra_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Haliotis rubra_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Heliocidaris erythrogramma_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Hemineura frondosa_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Heterodontus portusjacksoni_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Heterodontus portusjacksoni_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Holopneustes inflatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Jasus edwardsii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Kyphosus sydneyanus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Latridopsis forsteri_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Latris lineata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Lessonia corrugata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Macrocystis pyrifera_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Melanthalia obtusata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meuschenia australis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meuschenia flavolineata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meuschenia freycineti_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meuschenia hippocrepis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Nectocarcinus tuberculosus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Nectria macrobrachia_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Nectria ocellata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Neoodax balteatus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Neoodax balteatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Neosebastes scorpaenoides_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pseudonepanthia troughtoni_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Notolabrus fucicola_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Notolabrus fucicola_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Notolabrus tetricus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Notolabrus tetricus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Heteroscarus acroptilus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Heteroscarus acroptilus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Olisthops cyanomelas_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Olisthops cyanomelas_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Ophthalmolepis lineolata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Parma microlepis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meridiastra gunnii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Meridiastra calcar_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pempheris multiradiata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Penion mandarinus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pentaceropsis recurvirostris_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pentagonaster duebeni_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Petricia vernicina_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Phacelocarpus peperocarpos_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pictilabrus laticlavius_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pictilabrus laticlavius_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Plectaster decanus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Australaria australasia_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Plocamium angustum_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Plocamium cartilagineum_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Plocamium dilatatum_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Pseudolabrus rubicundus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Ranella australasia_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Scaberia agardhii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Scorpis aequipinnis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Scorpis lineolata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Seirococcus axillaris_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Siphamia cephalotes_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Tosia australis_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Tosia magnifica_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Trachinops caudimaculatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Lunella undulata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Uniophora granifera_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Upeneichthys vlamingii_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Urolophus cruciatus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Urolophus cruciatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Urolophus paucimaculatus_A112_P1","IUCN",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Urolophus paucimaculatus_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Vincentia conspersa_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Xiphophora chondrophylla_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_110km_gVelLat",NA,NA,"Xiphophora gladiata_A112_P1","GBIF occurrence",NA,NA,NA,NA
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Acanthaluteres spilomelanurus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Acanthaluteres vittiger_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Acrocarpia paniculata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Aplodactylus arctidens_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Aracana aurita_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Argobuccinum pustulosum_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Atypichthys strigatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Australostichopus mollis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Ballia callitricha_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cabestana spengleri_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caesioperca lepidoptera_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caesioperca rasor_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Callophyllis lambertii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Callophyllis rangiferina_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Carpomitra costata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caulerpa brownii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caulerpa flexilis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caulerpa geminata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caulerpa longifolia_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Caulerpa simpliciuscula_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cenolia trichoptera_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Centrostephanus rodgersii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cephaloscyllium laticeps_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cephaloscyllium laticeps_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Charonia lampas_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cheilodactylus nigripes_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cheilodactylus spectabilis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Chromis hypsilepis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Codium fragile_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Conger verreauxi_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Coscinasterias muricata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cystophora platylobium_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Cystophora retroflexa_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dactylophora nigricans_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Bathytoshia brevicaudata_A112_P1","IUCN",15.955974064176,17.9324656402204,3.49445543289185,33.7608940124512
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Bathytoshia brevicaudata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dicathais orbita_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dictyopteris muelleri_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dinolestes lewini_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dotalabrus aurantiacus_A112_P1","IUCN",30.823037927801,23.1985873618889,10.5364751815796,74.6684226989746
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Dotalabrus aurantiacus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Echinaster arcystatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Echinothamnion hystrix_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Ecklonia radiata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Enoplosus armatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Eubalichthys gunnii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Euptilota articulata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Fromia polypora_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Girella elevata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Girella tricuspidata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Girella zebra_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Goniocidaris tubaria_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haletta semifasciata_A112_P1","IUCN",17.2645290114663,20.8329108117643,3.32471079826355,39.6469284057617
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haletta semifasciata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haliotis laevigata_A112_P1","IUCN",29.1515951355298,22.8971078288987,10.1552119255066,73.7885475158691
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haliotis laevigata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haliotis rubra_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Haliotis rubra_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Heliocidaris erythrogramma_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Hemineura frondosa_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Heterodontus portusjacksoni_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Heterodontus portusjacksoni_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Holopneustes inflatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Jasus edwardsii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Kyphosus sydneyanus_A112_P1","GBIF occurrence",16.0391255501778,18.0816770478473,3.47912209033966,33.8901878356934
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Latridopsis forsteri_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Latris lineata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Lessonia corrugata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Macrocystis pyrifera_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Melanthalia obtusata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meuschenia australis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meuschenia flavolineata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meuschenia freycineti_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meuschenia hippocrepis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Nectocarcinus tuberculosus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Nectria macrobrachia_A112_P1","GBIF occurrence",16.1178569036817,17.9461477445419,3.49445543289185,33.7608940124512
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Nectria ocellata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Neoodax balteatus_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Neoodax balteatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Neosebastes scorpaenoides_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pseudonepanthia troughtoni_A112_P1","GBIF occurrence",16.1178569036817,17.9461477445419,3.49445543289185,33.7608940124512
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Notolabrus fucicola_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Notolabrus fucicola_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Notolabrus tetricus_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Notolabrus tetricus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Heteroscarus acroptilus_A112_P1","IUCN",17.2645290114663,20.8329108117643,3.32471079826355,39.6469284057617
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Heteroscarus acroptilus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Olisthops cyanomelas_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Olisthops cyanomelas_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Ophthalmolepis lineolata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Parma microlepis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meridiastra gunnii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Meridiastra calcar_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pempheris multiradiata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Penion mandarinus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pentaceropsis recurvirostris_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pentagonaster duebeni_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Petricia vernicina_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Phacelocarpus peperocarpos_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pictilabrus laticlavius_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pictilabrus laticlavius_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Plectaster decanus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Australaria australasia_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Plocamium angustum_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Plocamium cartilagineum_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Plocamium dilatatum_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Pseudolabrus rubicundus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Ranella australasia_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Scaberia agardhii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Scorpis aequipinnis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Scorpis lineolata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Seirococcus axillaris_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Siphamia cephalotes_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Tosia australis_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Tosia magnifica_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Trachinops caudimaculatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Lunella undulata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Uniophora granifera_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Upeneichthys vlamingii_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Urolophus cruciatus_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Urolophus cruciatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Urolophus paucimaculatus_A112_P1","IUCN",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Urolophus paucimaculatus_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Vincentia conspersa_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Xiphophora chondrophylla_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_25km_gVelLat",15.7313798225089,16.76688433773,"Xiphophora gladiata_A112_P1","GBIF occurrence",15.960998410764,17.1922611823311,3.58645548820496,32.985131072998
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Acanthaluteres spilomelanurus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Acanthaluteres vittiger_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Acrocarpia paniculata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Aplodactylus arctidens_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Aracana aurita_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Argobuccinum pustulosum_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Atypichthys strigatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Australostichopus mollis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Ballia callitricha_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cabestana spengleri_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caesioperca lepidoptera_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caesioperca rasor_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Callophyllis lambertii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Callophyllis rangiferina_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Carpomitra costata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caulerpa brownii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caulerpa flexilis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caulerpa geminata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caulerpa longifolia_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Caulerpa simpliciuscula_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cenolia trichoptera_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Centrostephanus rodgersii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cephaloscyllium laticeps_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cephaloscyllium laticeps_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Charonia lampas_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cheilodactylus nigripes_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cheilodactylus spectabilis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Chromis hypsilepis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Codium fragile_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Conger verreauxi_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Coscinasterias muricata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cystophora platylobium_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Cystophora retroflexa_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dactylophora nigricans_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Bathytoshia brevicaudata_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Bathytoshia brevicaudata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dicathais orbita_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dictyopteris muelleri_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dinolestes lewini_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dotalabrus aurantiacus_A112_P1","IUCN",57.0216064453125,NA,57.0216064453125,57.0216064453125
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Dotalabrus aurantiacus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Echinaster arcystatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Echinothamnion hystrix_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Ecklonia radiata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Enoplosus armatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Eubalichthys gunnii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Euptilota articulata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Fromia polypora_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Girella elevata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Girella tricuspidata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Girella zebra_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Goniocidaris tubaria_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haletta semifasciata_A112_P1","IUCN",24.3515750567118,28.2931472465181,7.97876453399658,47.2331953048706
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haletta semifasciata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haliotis laevigata_A112_P1","IUCN",57.0216064453125,NA,57.0216064453125,57.0216064453125
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haliotis laevigata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haliotis rubra_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Haliotis rubra_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Heliocidaris erythrogramma_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Hemineura frondosa_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Heterodontus portusjacksoni_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Heterodontus portusjacksoni_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Holopneustes inflatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Jasus edwardsii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Kyphosus sydneyanus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Latridopsis forsteri_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Latris lineata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Lessonia corrugata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Macrocystis pyrifera_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Melanthalia obtusata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meuschenia australis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meuschenia flavolineata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meuschenia freycineti_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meuschenia hippocrepis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Nectocarcinus tuberculosus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Nectria macrobrachia_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Nectria ocellata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Neoodax balteatus_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Neoodax balteatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Neosebastes scorpaenoides_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pseudonepanthia troughtoni_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Notolabrus fucicola_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Notolabrus fucicola_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Notolabrus tetricus_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Notolabrus tetricus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Heteroscarus acroptilus_A112_P1","IUCN",24.3515750567118,28.2931472465181,7.97876453399658,47.2331953048706
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Heteroscarus acroptilus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Olisthops cyanomelas_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Olisthops cyanomelas_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Ophthalmolepis lineolata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Parma microlepis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meridiastra gunnii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Meridiastra calcar_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pempheris multiradiata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Penion mandarinus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pentaceropsis recurvirostris_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pentagonaster duebeni_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Petricia vernicina_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Phacelocarpus peperocarpos_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pictilabrus laticlavius_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pictilabrus laticlavius_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Plectaster decanus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Australaria australasia_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Plocamium angustum_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Plocamium cartilagineum_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Plocamium dilatatum_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Pseudolabrus rubicundus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Ranella australasia_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Scaberia agardhii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Scorpis aequipinnis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Scorpis lineolata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Seirococcus axillaris_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Siphamia cephalotes_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Tosia australis_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Tosia magnifica_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Trachinops caudimaculatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Lunella undulata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Uniophora granifera_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Upeneichthys vlamingii_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Urolophus cruciatus_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Urolophus cruciatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Urolophus paucimaculatus_A112_P1","IUCN",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Urolophus paucimaculatus_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Vincentia conspersa_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Xiphophora chondrophylla_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375
+"A112_P1","sst_50km_gVelLat",24.0559934102572,21.5074606792611,"Xiphophora gladiata_A112_P1","GBIF occurrence",18.9697430398729,15.4753044956052,8.05435419082642,30.4859130859375

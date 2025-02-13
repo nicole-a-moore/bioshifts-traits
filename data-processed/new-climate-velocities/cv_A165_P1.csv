@@ -1,2 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A165_P1","sst_gVelLat",0.188549180204669,2.28915835756949,"Semibalanus balanoides_A165_P1","GBIF occurrence",0.0537923133957228,2.26883426133958
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A165_P1","sst_110km_gVelLat",NA,NA,"Semibalanus balanoides_A165_P1","GBIF occurrence",NA,NA,NA,NA
+"A165_P1","sst_25km_gVelLat",0.763505873292507,2.16701970404937,"Semibalanus balanoides_A165_P1","GBIF occurrence",0.654326182689417,2.17420313146653,-0.278493201173842,2.65010938644409
+"A165_P1","sst_50km_gVelLat",0.956359905952757,2.25133549911633,"Semibalanus balanoides_A165_P1","GBIF occurrence",1.28294477388263,1.74763727465614,0.0540265470743183,3.2536084651947

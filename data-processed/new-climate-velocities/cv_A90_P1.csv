@@ -1,5 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A90_P1","map_gVelEle",-38.9896549648709,3.05127577732348,"Hemideina crassidens_A90_P1","GBIF occurrence",-38.9896549648709,3.05127577732348
-"A90_P1","map_gVelLat",-0.128158094982306,0.0911915605416885,"Hemideina crassidens_A90_P1","GBIF occurrence",-0.128158094982306,0.0911915605416885
-"A90_P1","mat_gVelEle",6.78286176257663,0.0743011352286529,"Hemideina crassidens_A90_P1","GBIF occurrence",6.78286176257663,0.0743011352286529
-"A90_P1","mat_gVelLat",-0.0895135634475284,0.035304271568812,"Hemideina crassidens_A90_P1","GBIF occurrence",-0.0895135634475284,0.035304271568812
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A90_P1","map_1km_gVelLat",0.128158094982306,0.0911915605416885,"Hemideina crassidens_A90_P1","GBIF occurrence",0.128158094982306,0.0911915605416885,0.0356370717287064,0.245544368028641
+"A90_P1","mat_1km_gVelLat",-0.0895135634475284,0.035304271568812,"Hemideina crassidens_A90_P1","GBIF occurrence",-0.0895135634475284,0.035304271568812,-0.121446731686592,-0.0412739105522633
+"A90_P1","mat_gVelEle_1km",148.713773661646,184.2639169588,"Hemideina crassidens_A90_P1","GBIF occurrence",141.976142736582,184.006866423888,-40.5820217132568,329.515289306641

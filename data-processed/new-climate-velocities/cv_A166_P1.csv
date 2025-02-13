@@ -1,2 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A166_P1","sst_gVelLat",2.92608978309741,3.93649615825051,"Melanogrammus aeglefinus_A166_P1","GBIF occurrence",3.43497046342155,3.52832517447787
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A166_P1","sst_110km_gVelLat",4.18261888862361,3.45982773748277,"Melanogrammus aeglefinus_A166_P1","GBIF occurrence",4.4240290381433,2.77565030634493,1.6195127248764,8.25587310791016
+"A166_P1","sst_25km_gVelLat",2.85846422940051,3.95264021241948,"Melanogrammus aeglefinus_A166_P1","GBIF occurrence",3.42611234252952,3.53402591816721,0.397060424089432,7.74452066421509
+"A166_P1","sst_50km_gVelLat",3.25605938353638,3.71541692173937,"Melanogrammus aeglefinus_A166_P1","GBIF occurrence",3.81663482087043,3.30375893777888,0.761648941040039,7.99512634277344

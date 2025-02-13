@@ -1,5 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"A242_P1","map_gVelEle",15.150242867711,9.66502385290181,"Scytalopus robbinsi_A242_P1","BOTW",20.89721255771,9.59975101916364
-"A242_P1","map_gVelLat",0.000599065609523278,0.0714720646169332,"Scytalopus robbinsi_A242_P1","BOTW",0.00328480708051126,0.0811222016334212
-"A242_P1","mat_gVelEle",-1.60457753639237,0.129356305545242,"Scytalopus robbinsi_A242_P1","BOTW",-1.59754915182301,0.120938044802211
-"A242_P1","mat_gVelLat",-0.000178806299727943,0.011577049786948,"Scytalopus robbinsi_A242_P1","BOTW",0.000141281125146987,0.00659747270912827
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"A242_P1","map_1km_gVelLat",0.000455385237500155,0.0869706854351566,"Scytalopus robbinsi_A242_P1","BOTW",0.00399841224714822,0.0981733816775627,-0.0991631858050823,0.149008266627789
+"A242_P1","mat_1km_gVelLat",0.000272208180442803,0.0170512692587718,"Scytalopus robbinsi_A242_P1","BOTW",-0.00020455044811879,0.00973106882639723,-0.0120229180902243,0.0115272495895624
+"A242_P1","mat_gVelEle_1km",115.267922408626,110.011135789592,"Scytalopus robbinsi_A242_P1","BOTW",127.446405587859,114.176071932452,13.887938785553,289.723022460938

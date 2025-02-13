@@ -1,2 +1,4 @@
-"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific"
-"B336_P1","sst_gVelLat",-0.20024093138054,1.0229830966859,"Tetraclita rubescens_B336_P1","GBIF occurrence",-0.211891654682786,0.981000041708005
+"study_id","cv_type","mean_cv_studylevel","sd_cv_studylevel","species_studyid","range_source","mean_cv_sppspecific","sd_cv_sppspecific","p10_cv_sppspecific","p90_cv_sppspecific"
+"B336_P1","sst_110km_gVelLat",NA,NA,"Tetraclita rubescens_B336_P1","GBIF occurrence",NA,NA,NA,NA
+"B336_P1","sst_25km_gVelLat",0.866374863684177,0.578161065923621,"Tetraclita rubescens_B336_P1","GBIF occurrence",0.813535677759271,0.585820024931083,0.209938794374466,1.65270614624023
+"B336_P1","sst_50km_gVelLat",0.815441727638245,0.0846364351938787,"Tetraclita rubescens_B336_P1","GBIF occurrence",0.875288724899292,NA,0.875288724899292,0.875288724899292
