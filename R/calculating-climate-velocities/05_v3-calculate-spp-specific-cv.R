@@ -1,4 +1,4 @@
-## recalculate climate velocity per species per study area
+## recalculate climate velocity measurements per species per study area
 library(tidyverse)
 library(terra)
 library(sf)
@@ -7,11 +7,19 @@ library(sf)
 files = list.files(path = "data-raw/bioshiftsv3/Velocity_SA", pattern="tif$", recursive=TRUE, full.names=FALSE)
 files
 
+## get rid of layers that are not the latitudinal component
+files <- files[-which(str_detect(files, "_gVel.tif"))]
+files <- files[-which(str_detect(files, "spatgrad"))]
+files <- files[-which(str_detect(files, "avg_climate_layers"))]
+files <- files[-which(str_detect(files, "trend"))]
+
 study_ids <- unique(paste(str_split_fixed(files, "\\_", 3)[,1], str_split_fixed(files, "\\_", 3)[,2], sep = "_"))
 
 ## make sure we have velocities for all study areas
 v3 = read.csv("data-raw/bioshiftsv3/BIOSHIFTS_v3.csv")
 unique(v3$ID)[which(!unique(v3$ID) %in% study_ids)]
+## some are missing
+## A100, A171, A191 too small to calculate climate velocity
 
 sf_use_s2(FALSE)
 
@@ -31,16 +39,11 @@ while(i <= length(study_ids)) {
       layers <- paste0("data-raw/bioshiftsv3/Velocity_SA/", files[which(str_detect(files, study))])
       
       if(length(layers)!=0) {
-        layers <- layers[which(!str_detect(layers, "gVel.tif"))] # get rid of non-northward layers
-        
-        if(length(layers)!=0) {
-          if(str_detect(layers[1], "mat")) {
-            layers <- layers[which(str_detect(layers, "gVelLat") | str_detect(layers, "gVelEle"))] # and get rid of velocity layer that isn't northward
-          }
-          
+
+          ## get cv type for each layer
           cv_type = str_split_fixed((str_split_fixed(layers, paste0(study, "_"), 2)[,2]), ".tif", 2)[,1]
           
-          ## calculate cv metrics across entire study area
+          ## for each cv layer, calculate cv metrics across entire study area
           l = 1
           while(l <= length(layers)) {
             r = rast(layers[l]) %>%
@@ -67,7 +70,9 @@ while(i <= length(study_ids)) {
             ## calculate mean per sp specific polygon 
             cropped_means = unlist(lapply(1:length(cropped), function(x) {mean(values(cropped[[x]]), na.rm = TRUE)}))
             cropped_sds = unlist(lapply(1:length(cropped), function(x) {sd(values(cropped[[x]]), na.rm = TRUE)}))
-            
+            cropped_p_10 = unlist(lapply(1:length(cropped), function(x) {quantile(values(cropped[[x]]), c(0.10), na.rm = TRUE)}))
+            cropped_p_90 = unlist(lapply(1:length(cropped), function(x) {quantile(values(cropped[[x]]), c(0.90), na.rm = TRUE)}))
+
             ## save
             if(is.null(cv_data)) {
               cv_data <- data.frame(study_id = rep(study, length(cropped_means)),
@@ -77,7 +82,9 @@ while(i <= length(study_ids)) {
                                     species_studyid = study_polys$spcs_st[index],
                                     range_source = study_polys$rng_src[index],
                                     mean_cv_sppspecific = cropped_means,
-                                    sd_cv_sppspecific = cropped_sds)
+                                    sd_cv_sppspecific = cropped_sds,
+                                    p10_cv_sppspecific = cropped_p_10,
+                                    p90_cv_sppspecific = cropped_p_90)
             } else {
               cv_data <- rbind(cv_data, 
                                data.frame(study_id = rep(study, length(cropped_means)),
@@ -87,14 +94,14 @@ while(i <= length(study_ids)) {
                                           species_studyid = study_polys$spcs_st[index],
                                           range_source = study_polys$rng_src[index],
                                           mean_cv_sppspecific = cropped_means,
-                                          sd_cv_sppspecific = cropped_sds))
+                                          sd_cv_sppspecific = cropped_sds,
+                                          p10_cv_sppspecific = cropped_p_10,
+                                          p90_cv_sppspecific = cropped_p_90))
             }
             
             l = l + 1
           }
         }
-        
-      }
     }
     
     ## save for study 
@@ -112,90 +119,5 @@ while(i <= length(study_ids)) {
   print(paste0("On study area ", i, " of ", length(study_ids)))
 }
 
-cv_data %>%
-  filter(cv_type == "mat_gVelLat") %>%
-  ggplot(aes(x = mean_cv_sppspecific, fill = study_id)) +
-  geom_histogram() +
-  facet_wrap(cv_type~study_id) +
-  geom_vline(aes(xintercept = mean_cv_studylevel)) +
-  labs(x = "Mean climate velocity", y = "No. species")
-
-cv_data %>%
-  filter(cv_type == "mat_gVelEle") %>%
-  ggplot(aes(x = mean_cv_sppspecific, fill = study_id)) +
-  geom_histogram() +
-  facet_wrap(cv_type~study_id) +
-  geom_vline(aes(xintercept = mean_cv_studylevel)) +
-  labs(x = "Mean climate velocity", y = "No. species")
-
-
-## try plotting against range shift 
-v3_sub <- cv_data %>%
-  mutate(species_name = str_split_fixed(.$species_studyid, "\\_", 2)[,1],
-         ID =  str_split_fixed(.$species_studyid, "\\_", 2)[,2]) %>%
-  left_join(., v3)
-
-v3_sub %>%
-  filter(cv_type == "mat_gVelLat") %>%
-  ggplot(aes(x = mean_cv_studylevel, y = Rate)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
-  theme_bw() +
-  scale_x_continuous(limits = c(0,2)) +
-  labs(x = "Climate velocity", y = 'Range shift rate')
-
-v3_sub %>%
-  filter(cv_type == "mat_gVelLat") %>%
-  ggplot(aes(x = mean_cv_sppspecific, y = Rate)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
-  theme_bw() +
-  scale_x_continuous(limits = c(0,2))  +
-  labs(x = "Climate velocity", y = 'Range shift rate')
-
-
-v3_sub %>%
-  filter(cv_type == "mat_gVelEle") %>%
-  ggplot(aes(x = mean_cv_studylevel, y = Rate)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
-  theme_bw()  +
-  labs(x = "Climate velocity", y = 'Range shift rate')
-
-
-v3_sub %>%
-  filter(cv_type == "mat_gVelEle") %>%
-  ggplot(aes(x = mean_cv_sppspecific, y = Rate)) +
-  geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
-  theme_bw() +
-  labs(x = "Climate velocity", y = 'Range shift rate')
-
-
-## PLOTS TO MAKE FOR MEETING
-## - realized range source histogram
-## - realized range bar plot by Class
-## - example of study area A10_P1 (North America) + cropped study areas 
-## - histrogram of spp-specific cv, colour = study, with vertical line showing study mean 
-## - histrogram of sd of spp-specific climate velocity with vertical line showing study sd (expect it to be high relative to spp-specific)
-
-## if time: range shift versus cv (study mean versus species-specific)
-
-
-test <- read.csv("data-raw/bioshiftsv3/Velocity_SA/A1_P1.csv") 
-
-## read one
-test <- rast("data-raw/bioshiftsv3/Velocity_SA/A10_P1_mat_gVel.tif") 
-testlat <- rast("data-raw/bioshiftsv3/Velocity_SA/A10_P1_mat_gVelLat.tif") ## this one is velocity north 
-test
-
-plot(test)
-plot(testlat)
-
-
-## get all climate velocity layers fo
-
-## calculate climate velocity metrics for whole study area
-## check against Brunno's calculation
-
-## crop cv tif by each species x study area combo
+## check which ones have no overlap between species range x study area
+unique(v3$ID)[which(!paste0("cv_", unique(v3$ID), ".csv") %in% list.files("data-processed/new-climate-velocities/"))]

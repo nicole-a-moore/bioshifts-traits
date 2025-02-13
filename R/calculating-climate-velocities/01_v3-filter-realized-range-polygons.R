@@ -93,6 +93,9 @@ iucn = iucn %>%
   ungroup() %>%
   select(-count)
 
+## save object that has multiple ranges for each species (extant, extinct, breeding, non-breeding, etc.)
+st_write(iucn, "data-processed/large-data/IUCN/IUCN_bioshifts_v3_notunion.shp", append = FALSE)
+
 ## keep all ranges (extant, extinct, breeding, non-breeding, etc.)
 ## combine all ranges for a single species into one
 sf_use_s2(FALSE)
@@ -116,6 +119,9 @@ botw = st_read("data-raw/large-data/BirdsOfTheWorld/BOTW/BOTW.gdb", "All_Species
 
 ## filter to bioshifts species
 botw_bs <- filter(botw, sci_name %in% v3$species_name)
+
+## save object that has multiple seasonal ranges for each species
+st_write(iucn, "data-processed/large-data/BirdsOfTheWorld/BOTW_filtered_v3_notunion.shp", append = FALSE)
 
 ## combine all ranges for a single species into one
 botw_bs <- botw_bs %>%

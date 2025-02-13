@@ -44,6 +44,13 @@ polys <- filter(polys, Name %in% id$ID)
 
 length(unique(id$id_cv)) # 21747 unique species-study polygon combos
 
+## make bbox of Australia 
+aus <- as(raster::extent(c(xmin = 110, xmax = 160, ymin = -45, ymax = -10)), "SpatialPolygons") %>%
+  st_as_sf()
+st_crs(aus) <- st_crs(ranges)
+#plot(aus)
+
+
 ## for each study area 
 sf_use_s2(FALSE)
 cropped_polys = NULL
@@ -54,6 +61,13 @@ while(sa <= length(unique(id$ID))) {
   
   ## get list of species in study
   species_list <- filter(id, ID == curr_sa)
+  
+  ## check if study area is fully in Australia
+  crop <- st_crop(aus, poly)
+  if(nrow(crop) != 0){
+    ## if some part of study is outside of austrlia, filter out ranges from Fishmap
+    ranges <- filter(ranges, range_source != "Fishmap")
+  }
   
   sp = 1
   while(sp <= length(unique(species_list$species_name))) {
@@ -74,10 +88,9 @@ while(sa <= length(unique(id$ID))) {
         
       }
       else if(st_geometry_type(crop) == "GEOMETRYCOLLECTION") {
-        
-        
-        # note: shorebirds become weird - e.g., Thalasseus sandvicensis in study area 50 (A141_P1)
-        # fix later
+        # shorebirds become weird - e.g., Thalasseus sandvicensis in study area 50 (A141_P1)
+        # for now, don't create species-specific study areas for them 
+       
         # ggplot(poly) +
         #   geom_sf(fill = "orange") +
         #   geom_sf(data = range, fill = "blue") +

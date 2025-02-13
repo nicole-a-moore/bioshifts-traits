@@ -291,8 +291,7 @@ length(unique(bs_am$SpeciesID))
 length(unique(aqua$SpeciesID)) ## note: 7 missing 
 
 # filter to values above threshold ----------------------------------------
-# usually, >0.5 occurrence probability works for the range
-# inner join species to points in canadian EEZ ----------------------------
+# use low threshold to make sure we are not excluding reasonable parts of study areas
 threshold <- .05
 aqua_thresh <- aqua %>%
   # first, cut ranges to specified threshold
@@ -369,42 +368,4 @@ length(unique(ranges$binomial)) #10833
 
 ## save collated ranges as rds object 
 saveRDS(ranges, "data-processed/large-data/collated-ranges.rds")
-
-
-
-
-## make a breakdown of there they are from 
-ranges_sp = data.frame(species_name = c(iucn$binomial, gard$binomial, botw$binomial, bien$binomial, fshmap$binomial,
-                                        bfs$binomial,aquamaps$binomial, gift$binomial, gbif_list), 
-                  range_source = c(iucn$range_source, gard$range_source, botw$range_source, bien$range_source, 
-                                   fshmap$range_source, bfs$range_source,
-                                   aquamaps$range_source, gift$range_source, rep("GBIF convex hull", length(gbif_list))))
-length(unique(ranges_sp$species_name)) #10838
-key = select(v3, species_name, class) %>%
-  distinct()
-ranges_sp <- left_join(ranges_sp, key)
-
-ranges_sp %>%
-  ggplot(aes(x = range_source)) +
-  geom_bar() +
-  coord_flip() +
-  labs(y = "Number of species", x = "Range polygon source")
-
-ranges_sp %>%
-  ggplot(aes(x = class)) +
-  geom_bar() +
-  coord_flip() +
-  labs(y = "Number of species", x = "Class")
-
-missing_sp = filter(key, !species_name %in% ranges_sp$species_name)
-
-missing_sp %>%
-  ggplot(aes(x = class)) +
-  geom_bar() +
-  coord_flip() +
-  labs(y = "Number of species missing", x = "Class")
-
-## save list of missing species to search for in GBIF
-write.csv(missing_sp, "data-processed/v3_spp-missing-range-polygons.csv", row.names = FALSE)
-
 
